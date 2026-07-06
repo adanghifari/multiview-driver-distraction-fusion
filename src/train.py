@@ -36,6 +36,7 @@ from src.config import (
     LR_SCHEDULER_PATIENCE,
     BINARY_LABEL_MAP,
     NUM_STAGES_TO_FREEZE,
+    DROPOUT,
 )
 from src.dataset import get_all_dataloaders, load_split_dataframe
 from src.model import build_model
@@ -132,8 +133,23 @@ class EarlyStopping:
 # Main training loop
 # ──────────────────────────────────────────────────────────────────────────────
 
-def run_training(view: str, max_epochs: int = MAX_EPOCHS):
+def run_training(view: str, max_epochs: int = MAX_EPOCHS, exp_id: str = ""):
     """Latih model single-view dan simpan checkpoint + history."""
+
+    # ── Tampilkan Ringkasan Konfigurasi Eksperimen ──
+    log.info("\n" + "=" * 45)
+    log.info("Experiment Configuration")
+    log.info("=" * 45)
+    log.info(f"  View           : {view}")
+    log.info(f"  Optimizer      : AdamW")
+    log.info(f"  Learning Rate  : {LEARNING_RATE:.1e}")
+    log.info(f"  Weight Decay   : {WEIGHT_DECAY:.1e}")
+    log.info(f"  Scheduler      : ReduceLROnPlateau")
+    log.info(f"  Dropout        : {DROPOUT}")
+    log.info(f"  Frozen Stages  : {NUM_STAGES_TO_FREEZE}")
+    log.info(f"  EarlyStopping  : patience={EARLY_STOPPING_PATIENCE}")
+    log.info(f"  Experiment ID  : {exp_id if exp_id else 'None'}")
+    log.info("=" * 45 + "\n")
 
     # ── Setup device ──
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -176,8 +192,13 @@ def run_training(view: str, max_epochs: int = MAX_EPOCHS):
     # ── Paths ──
     CHECKPOINT_DIR.mkdir(parents=True, exist_ok=True)
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-    ckpt_path = CHECKPOINT_DIR / f"{view}_best.pt"
-    history_path = RESULTS_DIR / f"{view}_history.json"
+    
+    if exp_id:
+        ckpt_path = CHECKPOINT_DIR / f"{view}_{exp_id}_best.pt"
+        history_path = RESULTS_DIR / f"{view}_history_{exp_id}.json"
+    else:
+        ckpt_path = CHECKPOINT_DIR / f"{view}_best.pt"
+        history_path = RESULTS_DIR / f"{view}_history.json"
 
     # ── History ──
     history = {
@@ -266,9 +287,11 @@ def main():
                         help="Sudut pandang yang akan dilatih: 'front' atau 'side'")
     parser.add_argument("--epochs", type=int, default=MAX_EPOCHS,
                         help=f"Jumlah maksimum epoch (default: {MAX_EPOCHS})")
+    parser.add_argument("--exp_id", type=str, default="",
+                        help="ID Eksperimen (opsional, misal 'exp3' untuk suffix file)")
     args = parser.parse_args()
 
-    run_training(view=args.view, max_epochs=args.epochs)
+    run_training(view=args.view, max_epochs=args.epochs, exp_id=args.exp_id)
 
 
 if __name__ == "__main__":

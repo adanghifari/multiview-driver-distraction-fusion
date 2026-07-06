@@ -109,7 +109,7 @@ IMAGENET_STD = [0.229, 0.224, 0.225]
 
 MODEL_NAME = "tf_efficientnetv2_s"      # identifier timm untuk EfficientNetV2-S
 BATCH_SIZE = 32
-LEARNING_RATE = 1e-4
+LEARNING_RATE = 5e-5
 DROPOUT = 0.3
 EARLY_STOPPING_PATIENCE = 5
 MAX_EPOCHS = 30
@@ -117,7 +117,7 @@ DECISION_THRESHOLD = 0.5
 
 # Konfigurasi perbaikan pipeline
 WEIGHT_DECAY = 1e-4
-NUM_STAGES_TO_FREEZE = 4  # Bekukan 4 stage awal (Stage 0-3 dari total 6 stage blocks)
+NUM_STAGES_TO_FREEZE = 2  # Bekukan 2 stage awal (Stage 0-1 dari total 6 stage blocks)
 LR_SCHEDULER_FACTOR = 0.5
 LR_SCHEDULER_PATIENCE = 2
 

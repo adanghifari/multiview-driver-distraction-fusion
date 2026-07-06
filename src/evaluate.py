@@ -44,9 +44,10 @@ CLASS_NAMES = [k for k, v in sorted(BINARY_LABEL_MAP.items(), key=lambda x: x[1]
 # Helper
 # ──────────────────────────────────────────────────────────────────────────────
 
-def load_trained_model(view: str, device: torch.device):
+def load_trained_model(view: str, device: torch.device, exp_id: str = ""):
     """Muat checkpoint terbaik untuk view tertentu."""
-    ckpt_path = CHECKPOINT_DIR / f"{view}_best.pt"
+    suffix = f"_{exp_id}" if exp_id else ""
+    ckpt_path = CHECKPOINT_DIR / f"{view}{suffix}_best.pt"
     if not ckpt_path.exists():
         raise FileNotFoundError(f"Checkpoint tidak ditemukan: {ckpt_path}")
 
@@ -56,8 +57,8 @@ def load_trained_model(view: str, device: torch.device):
     model = model.to(device)
     model.eval()
 
-    log.info("Loaded %s checkpoint: epoch=%d, val_F1=%.4f",
-             view, checkpoint["epoch"], checkpoint["val_macro_f1"])
+    log.info("Loaded %s checkpoint (%s): epoch=%d, val_F1=%.4f",
+             view, exp_id if exp_id else "default", checkpoint["epoch"], checkpoint["val_macro_f1"])
     return model, checkpoint
 
 
@@ -125,12 +126,12 @@ def print_metrics(view_or_method: str, metrics: dict):
 # Evaluasi satu view
 # ──────────────────────────────────────────────────────────────────────────────
 
-def evaluate_view(view: str) -> dict:
+def evaluate_view(view: str, exp_id: str = "") -> dict:
     """Evaluasi model single-view pada test set, simpan hasil."""
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Load model & test data
-    model, checkpoint = load_trained_model(view, device)
+    model, checkpoint = load_trained_model(view, device, exp_id=exp_id)
     test_loader = get_dataloader(view, "test")
 
     # Predict & compute metrics
@@ -147,7 +148,8 @@ def evaluate_view(view: str) -> dict:
 
     # Simpan
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-    metrics_path = RESULTS_DIR / f"{view}_test_metrics.json"
+    suffix = f"_{exp_id}" if exp_id else ""
+    metrics_path = RESULTS_DIR / f"{view}_test_metrics{suffix}.json"
     with open(metrics_path, "w") as f:
         json.dump(metrics, f, indent=2)
     log.info("Saved to: %s", metrics_path)
@@ -163,14 +165,16 @@ def main():
     parser = argparse.ArgumentParser(description="Evaluasi single-view pada test set")
     parser.add_argument("--view", choices=["front", "side"],
                         help="View yang dievaluasi. Kosongkan untuk evaluasi keduanya.")
+    parser.add_argument("--exp_id", type=str, default="",
+                        help="ID Eksperimen (opsional, misal 'exp3')")
     args = parser.parse_args()
 
     if args.view:
-        evaluate_view(args.view)
+        evaluate_view(args.view, exp_id=args.exp_id)
     else:
         # Evaluasi kedua view
         for v in ("front", "side"):
-            evaluate_view(v)
+            evaluate_view(v, exp_id=args.exp_id)
 
 
 if __name__ == "__main__":

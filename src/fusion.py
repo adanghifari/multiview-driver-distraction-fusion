@@ -186,12 +186,18 @@ def evaluate_fusion(method_name: str, fused_scores: np.ndarray,
 # ──────────────────────────────────────────────────────────────────────────────
 
 def main():
+    import argparse
+    parser = argparse.ArgumentParser(description="Decision-level fusion untuk front & side")
+    parser.add_argument("--exp_id", type=str, default="",
+                        help="ID Eksperimen (opsional, misal 'exp3')")
+    args = parser.parse_args()
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     log.info("Device: %s", device)
 
     # ── Load kedua model ──
-    model_front, ckpt_front = load_trained_model("front", device)
-    model_side, ckpt_side = load_trained_model("side", device)
+    model_front, ckpt_front = load_trained_model("front", device, exp_id=args.exp_id)
+    model_side, ckpt_side = load_trained_model("side", device, exp_id=args.exp_id)
 
     # ── Load paired test data ──
     paired_loader = get_paired_test_loader()
@@ -237,7 +243,8 @@ def main():
         "average_fusion": eval_avg,
         "adaptive_fusion": eval_adapt,
     }
-    results_path = RESULTS_DIR / "fusion_comparison.json"
+    suffix = f"_{args.exp_id}" if args.exp_id else ""
+    results_path = RESULTS_DIR / f"fusion_comparison{suffix}.json"
     with open(results_path, "w") as f:
         json.dump(all_results, f, indent=2)
     log.info("Hasil disimpan di: %s", results_path)

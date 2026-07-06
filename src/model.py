@@ -22,6 +22,34 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 log = logging.getLogger(__name__)
 
 
+def print_layer_status(model):
+    """Cetak status pembekuan (gradient requirements) per komponen model secara terstruktur."""
+    log.info("=" * 55)
+    log.info("STATUS GRADIENT PARAMETER MODEL (FREEZE vs TRAINABLE)")
+    log.info("=" * 55)
+    
+    stem_trainable = any(p.requires_grad for p in model.backbone.conv_stem.parameters())
+    log.info("  backbone.conv_stem  : %s", "TRAINABLE" if stem_trainable else "FROZEN")
+    
+    bn1_trainable = any(p.requires_grad for p in model.backbone.bn1.parameters())
+    log.info("  backbone.bn1        : %s", "TRAINABLE" if bn1_trainable else "FROZEN")
+    
+    for i, stage in enumerate(model.backbone.blocks):
+        stage_trainable = any(p.requires_grad for p in stage.parameters())
+        log.info("  backbone.blocks[%d]  : %s (contains %d blocks)", 
+                 i, "TRAINABLE" if stage_trainable else "FROZEN", len(stage))
+                 
+    head_trainable = any(p.requires_grad for p in model.backbone.conv_head.parameters())
+    log.info("  backbone.conv_head  : %s", "TRAINABLE" if head_trainable else "FROZEN")
+    
+    bn2_trainable = any(p.requires_grad for p in model.backbone.bn2.parameters())
+    log.info("  backbone.bn2        : %s", "TRAINABLE" if bn2_trainable else "FROZEN")
+    
+    classifier_trainable = any(p.requires_grad for p in model.classifier.parameters())
+    log.info("  classifier          : %s", "TRAINABLE" if classifier_trainable else "FROZEN")
+    log.info("=" * 55)
+
+
 def build_model(pretrained: bool = True, num_stages_to_freeze: int = NUM_STAGES_TO_FREEZE) -> nn.Module:
     """Bangun EfficientNetV2-S dengan classifier head untuk klasifikasi biner (2-unit output).
 
@@ -59,6 +87,8 @@ def build_model(pretrained: bool = True, num_stages_to_freeze: int = NUM_STAGES_
         for i in range(min(num_stages_to_freeze, len(backbone.blocks))):
             for p in backbone.blocks[i].parameters():
                 p.requires_grad = False
+
+    print_layer_status(model)
 
     total_params = sum(p.numel() for p in model.parameters())
     trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
