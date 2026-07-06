@@ -42,6 +42,7 @@ from src.config import (
     IMAGENET_MEAN,
     IMAGENET_STD,
     BATCH_SIZE,
+    FRAME_STRIDE,
 )
 from src.dataset import get_transforms
 from src.evaluate import load_trained_model, compute_metrics, print_metrics
@@ -77,7 +78,11 @@ class PairedTestDataset(Dataset):
 
 def get_paired_test_loader(batch_size: int = BATCH_SIZE,
                            num_workers: int = 4) -> DataLoader:
-    """Bangun DataLoader untuk pasangan frame test set."""
+    """Bangun DataLoader untuk pasangan frame test set.
+
+    Menerapkan frame subsampling (FRAME_STRIDE) yang konsisten dengan
+    loader single-view di dataset.py agar evaluasi fusion sebanding.
+    """
     # Ambil subject_id yang masuk test split
     df_split = pd.read_csv(MANIFEST_SPLIT_PATH)
     test_subjects = set(df_split[df_split["split"] == "test"]["subject_id"].unique())
@@ -88,6 +93,12 @@ def get_paired_test_loader(batch_size: int = BATCH_SIZE,
 
     if df_test.empty:
         raise ValueError("Tidak ada data test di manifest_paired.csv")
+
+    # Frame subsampling: konsisten dengan dataset.py [v4]
+    if FRAME_STRIDE > 1:
+        df_test = df_test[(df_test["frame"] - 1) % FRAME_STRIDE == 0]
+        log.info("Frame subsampling diterapkan pada paired test loader (stride=%d): %d pasangan tersisa",
+                 FRAME_STRIDE, len(df_test))
 
     transform = get_transforms("test")  # tanpa augmentasi
     dataset = PairedTestDataset(df_test, transform)

@@ -110,14 +110,24 @@ IMAGENET_STD = [0.229, 0.224, 0.225]
 MODEL_NAME = "tf_efficientnetv2_s"      # identifier timm untuk EfficientNetV2-S
 BATCH_SIZE = 32
 LEARNING_RATE = 5e-5
-DROPOUT = 0.3
+DROPOUT = 0.5          # [v4] dinaikkan dari 0.3 → 0.5 untuk regularisasi lebih kuat
 EARLY_STOPPING_PATIENCE = 5
 MAX_EPOCHS = 30
 DECISION_THRESHOLD = 0.5
 
 # Konfigurasi perbaikan pipeline
-WEIGHT_DECAY = 1e-4
-NUM_STAGES_TO_FREEZE = 2  # Bekukan 2 stage awal (Stage 0-1 dari total 6 stage blocks)
+WEIGHT_DECAY = 5e-4   # [v4] dinaikkan dari 1e-4 → 5e-4 untuk L2 regularisasi lebih kuat
+NUM_STAGES_TO_FREEZE = 4  # [v4] dinaikkan dari 2 → 4: bekukan Stage 0-3 dari 6 stage blocks
 LR_SCHEDULER_FACTOR = 0.5
 LR_SCHEDULER_PATIENCE = 2
+
+# --------------------------------------------------------------------------
+# Frame subsampling (Subbab 3.2.3 — Eksperimen v4)
+# Ambil 1 dari setiap FRAME_STRIDE frame per sekuens untuk mengurangi
+# redundansi temporal pada video 30Hz. Diterapkan pada SEMUA split
+# (train/val/test) agar konsisten. Formula: (frame - 1) % FRAME_STRIDE == 0
+# menghasilkan frame ke-1, 6, 11, 16, ... (selalu dimulai dari frame pertama).
+# Set ke 1 untuk menonaktifkan subsampling (pakai semua frame).
+# --------------------------------------------------------------------------
+FRAME_STRIDE = 5
 

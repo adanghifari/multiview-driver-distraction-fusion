@@ -27,6 +27,7 @@ from src.config import (
     IMAGENET_STD,
     BATCH_SIZE,
     BINARY_LABEL_MAP,
+    FRAME_STRIDE,
 )
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
@@ -58,8 +59,8 @@ def get_transforms(split: str) -> transforms.Compose:
         return transforms.Compose([
             transforms.Resize((IMAGE_SIZE, IMAGE_SIZE)),
             transforms.RandomHorizontalFlip(),
-            transforms.RandomRotation(10),
-            transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2),
+            transforms.RandomRotation(15),     # [v4] dinaikkan dari 10 → 15 derajat
+            transforms.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.3),  # [v4] dari 0.2 → 0.3
             transforms.ToTensor(),
             transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
         ])
@@ -71,11 +72,24 @@ def get_transforms(split: str) -> transforms.Compose:
 
 
 def load_split_dataframe(view: str, split: str) -> pd.DataFrame:
-    """Ambil subset manifest_split.csv untuk satu view dan satu partisi."""
+    """Ambil subset manifest_split.csv untuk satu view dan satu partisi.
+
+    Menerapkan frame subsampling sesuai FRAME_STRIDE dari config.py:
+    hanya frame dengan (frame - 1) % FRAME_STRIDE == 0 yang diambil
+    (frame ke-1, 6, 11, 16, ...). Diterapkan pada semua split secara
+    konsisten agar tidak ada ketidaksesuaian antara train/val/test.
+    """
     df = pd.read_csv(MANIFEST_SPLIT_PATH)
     subset = df[(df["view"] == view) & (df["split"] == split)]
     if subset.empty:
         raise ValueError(f"Tidak ada data untuk view='{view}', split='{split}'. Cek manifest_split.csv.")
+
+    # Frame subsampling: ambil 1 dari setiap FRAME_STRIDE frame [v4]
+    if FRAME_STRIDE > 1:
+        subset = subset[(subset["frame"] - 1) % FRAME_STRIDE == 0]
+        log.info("Frame subsampling diterapkan (stride=%d): %d frame tersisa untuk view=%s split=%s",
+                 FRAME_STRIDE, len(subset), view, split)
+
     return subset
 
 
