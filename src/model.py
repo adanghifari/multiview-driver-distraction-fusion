@@ -16,20 +16,22 @@ import logging
 import timm
 import torch.nn as nn
 
-from src.config import MODEL_NAME, DROPOUT
+from src.config import MODEL_NAME, DROPOUT, NUM_STAGES_TO_FREEZE
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 log = logging.getLogger(__name__)
 
 
-def build_model(pretrained: bool = True) -> nn.Module:
-    """Bangun EfficientNetV2-S dengan classifier head untuk klasifikasi biner.
+def build_model(pretrained: bool = True, num_stages_to_freeze: int = NUM_STAGES_TO_FREEZE) -> nn.Module:
+    """Bangun EfficientNetV2-S dengan classifier head untuk klasifikasi biner (2-unit output).
 
     Parameters
     ----------
     pretrained : bool
         Jika True, muat bobot pretrained ImageNet. Set False jika ingin
         load dari checkpoint sendiri.
+    num_stages_to_freeze : int
+        Jumlah stage block backbone yang dibekukan (frozen) untuk transfer learning.
 
     Returns
     -------
@@ -41,10 +43,22 @@ def build_model(pretrained: bool = True) -> nn.Module:
 
     classifier = nn.Sequential(
         nn.Dropout(p=DROPOUT),
-        nn.Linear(in_features, 1),
+        nn.Linear(in_features, 2),  # 2 output units (safe_driving, phone_use)
     )
 
     model = _EfficientNetBinary(backbone, classifier)
+
+    # Bekukan stage awal backbone jika dikonfigurasi
+    if num_stages_to_freeze > 0:
+        log.info("Membekukan conv_stem, bn1, dan %d stage block pertama pada backbone...", num_stages_to_freeze)
+        for p in backbone.conv_stem.parameters():
+            p.requires_grad = False
+        for p in backbone.bn1.parameters():
+            p.requires_grad = False
+        
+        for i in range(min(num_stages_to_freeze, len(backbone.blocks))):
+            for p in backbone.blocks[i].parameters():
+                p.requires_grad = False
 
     total_params = sum(p.numel() for p in model.parameters())
     trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
@@ -63,8 +77,8 @@ class _EfficientNetBinary(nn.Module):
 
     def forward(self, x):
         features = self.backbone(x)     # (B, in_features)
-        logits = self.classifier(features)  # (B, 1)
-        return logits.squeeze(1)        # (B,) — agar cocok dengan BCEWithLogitsLoss
+        logits = self.classifier(features)  # (B, 2)
+        return logits                   # (B, 2) — cocok untuk CrossEntropyLoss
 
 
 if __name__ == "__main__":
@@ -73,5 +87,6 @@ if __name__ == "__main__":
     model = build_model(pretrained=True)
     dummy = torch.randn(2, 3, 224, 224)
     out = model(dummy)
-    print(f"Output shape: {out.shape}")     # Harusnya torch.Size([2])
+    print(f"Output shape: {out.shape}")     # Harusnya torch.Size([2, 2])
     print(f"Output values: {out.tolist()}")
+

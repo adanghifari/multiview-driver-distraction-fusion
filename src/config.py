@@ -114,3 +114,10 @@ DROPOUT = 0.3
 EARLY_STOPPING_PATIENCE = 5
 MAX_EPOCHS = 30
 DECISION_THRESHOLD = 0.5
+
+# Konfigurasi perbaikan pipeline
+WEIGHT_DECAY = 1e-4
+NUM_STAGES_TO_FREEZE = 4  # Bekukan 4 stage awal (Stage 0-3 dari total 6 stage blocks)
+LR_SCHEDULER_FACTOR = 0.5
+LR_SCHEDULER_PATIENCE = 2
+

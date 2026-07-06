@@ -156,8 +156,8 @@ def get_paired_scores(model_front, model_side, paired_loader, device):
         logits_front = model_front(img_front)
         logits_side = model_side(img_side)
 
-        probs_front = torch.sigmoid(logits_front).cpu().numpy()
-        probs_side = torch.sigmoid(logits_side).cpu().numpy()
+        probs_front = torch.softmax(logits_front, dim=1)[:, 1].cpu().numpy()
+        probs_side = torch.softmax(logits_side, dim=1)[:, 1].cpu().numpy()
 
         all_scores_front.extend(probs_front.tolist())
         all_scores_side.extend(probs_side.tolist())
@@ -168,6 +168,7 @@ def get_paired_scores(model_front, model_side, paired_loader, device):
         np.array(all_scores_side),
         np.array(all_labels),
     )
+
 
 
 def evaluate_fusion(method_name: str, fused_scores: np.ndarray,

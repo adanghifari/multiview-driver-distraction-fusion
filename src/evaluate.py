@@ -72,7 +72,9 @@ def predict_test(model, test_loader, device, threshold=DECISION_THRESHOLD):
     for images, labels in test_loader:
         images = images.to(device)
         logits = model(images)
-        probs = torch.sigmoid(logits)
+        
+        # Softmax probability untuk kelas positif (phone_use, indeks 1)
+        probs = torch.softmax(logits, dim=1)[:, 1]
         preds = (probs >= threshold).long().cpu()
 
         all_probs.extend(probs.cpu().tolist())
@@ -80,6 +82,7 @@ def predict_test(model, test_loader, device, threshold=DECISION_THRESHOLD):
         all_labels.extend(labels.tolist())
 
     return all_labels, all_preds, all_probs
+
 
 
 def compute_metrics(labels, preds):

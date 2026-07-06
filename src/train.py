@@ -31,8 +31,13 @@ from src.config import (
     DECISION_THRESHOLD,
     CHECKPOINT_DIR,
     RESULTS_DIR,
+    WEIGHT_DECAY,
+    LR_SCHEDULER_FACTOR,
+    LR_SCHEDULER_PATIENCE,
+    BINARY_LABEL_MAP,
+    NUM_STAGES_TO_FREEZE,
 )
-from src.dataset import get_all_dataloaders
+from src.dataset import get_all_dataloaders, load_split_dataframe
 from src.model import build_model
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
@@ -51,7 +56,7 @@ def train_one_epoch(model, loader, criterion, optimizer, device):
 
     for images, labels in loader:
         images = images.to(device)
-        labels = labels.float().to(device)
+        labels = labels.long().to(device)  # target int untuk CrossEntropy
 
         optimizer.zero_grad()
         logits = model(images)
@@ -76,12 +81,13 @@ def validate(model, loader, criterion, device, threshold=DECISION_THRESHOLD):
 
     for images, labels in loader:
         images = images.to(device)
-        labels_dev = labels.float().to(device)
+        labels_dev = labels.long().to(device)  # target int untuk CrossEntropy
 
         logits = model(images)
         loss = criterion(logits, labels_dev)
 
-        probs = torch.sigmoid(logits)
+        # Softmax probability untuk kelas positif (phone_use, indeks 1)
+        probs = torch.softmax(logits, dim=1)[:, 1]
         preds = (probs >= threshold).long().cpu()
 
         running_loss += loss.item() * images.size(0)
@@ -94,6 +100,7 @@ def validate(model, loader, criterion, device, threshold=DECISION_THRESHOLD):
     accuracy = sum(p == l for p, l in zip(all_preds, all_labels)) / len(all_labels)
 
     return avg_loss, macro_f1, accuracy
+
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -141,8 +148,27 @@ def run_training(view: str, max_epochs: int = MAX_EPOCHS):
 
     # ── Model, loss, optimizer ──
     model = build_model(pretrained=True).to(device)
-    criterion = nn.BCEWithLogitsLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
+
+    # ── Hitung class weights secara dinamis dari train split ──
+    df_train = load_split_dataframe(view, "train")
+    train_labels = df_train["binary_label"].map(BINARY_LABEL_MAP)
+    class_counts = train_labels.value_counts().sort_index()
+    count_0 = class_counts.get(0, 0)
+    count_1 = class_counts.get(1, 0)
+    total_train = count_0 + count_1
+    w_0 = total_train / (2.0 * count_0) if count_0 > 0 else 1.0
+    w_1 = total_train / (2.0 * count_1) if count_1 > 0 else 1.0
+    class_weights = torch.tensor([w_0, w_1], dtype=torch.float).to(device)
+    log.info("Distribusi kelas training (%s): safe_driving=%d, phone_use=%d", view, count_0, count_1)
+    log.info("Class weights (CrossEntropyLoss): safe_driving=%.4f, phone_use=%.4f", w_0, w_1)
+
+    criterion = nn.CrossEntropyLoss(weight=class_weights)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY)
+
+    # ── Learning Rate Scheduler ──
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+        optimizer, mode="max", factor=LR_SCHEDULER_FACTOR, patience=LR_SCHEDULER_PATIENCE
+    )
 
     # ── Early stopping ──
     early_stopping = EarlyStopping(patience=EARLY_STOPPING_PATIENCE)
@@ -159,6 +185,7 @@ def run_training(view: str, max_epochs: int = MAX_EPOCHS):
         "val_loss": [],
         "val_macro_f1": [],
         "val_accuracy": [],
+        "lr": [],
     }
 
     log.info("=" * 65)
@@ -177,11 +204,16 @@ def run_training(view: str, max_epochs: int = MAX_EPOCHS):
         # ── Validate ──
         val_loss, val_f1, val_acc = validate(model, val_loader, criterion, device)
 
+        # ── Step Scheduler ──
+        scheduler.step(val_f1)
+        current_lr = optimizer.param_groups[0]["lr"]
+
         # ── Record ──
         history["train_loss"].append(round(train_loss, 5))
         history["val_loss"].append(round(val_loss, 5))
         history["val_macro_f1"].append(round(val_f1, 5))
         history["val_accuracy"].append(round(val_acc, 5))
+        history["lr"].append(current_lr)
 
         # ── Early stopping check ──
         is_best = early_stopping.step(val_f1)
@@ -194,13 +226,15 @@ def run_training(view: str, max_epochs: int = MAX_EPOCHS):
                 "val_macro_f1": val_f1,
                 "val_loss": val_loss,
                 "view": view,
+                "class_weights": class_weights.cpu().tolist(),
+                "num_stages_to_freeze": NUM_STAGES_TO_FREEZE,
             }, ckpt_path)
 
         elapsed = time.time() - t_epoch
         status = "★ BEST" if is_best else f"  wait {early_stopping.counter}/{EARLY_STOPPING_PATIENCE}"
         log.info(
-            "Epoch %02d/%02d | train_loss=%.4f | val_loss=%.4f | val_F1=%.4f | val_acc=%.4f | %s | %.0fs",
-            epoch, max_epochs, train_loss, val_loss, val_f1, val_acc, status, elapsed,
+            "Epoch %02d/%02d | train_loss=%.4f | val_loss=%.4f | val_F1=%.4f | val_acc=%.4f | lr=%.1e | %s | %.0fs",
+            epoch, max_epochs, train_loss, val_loss, val_f1, val_acc, current_lr, status, elapsed,
         )
 
         if early_stopping.should_stop:
