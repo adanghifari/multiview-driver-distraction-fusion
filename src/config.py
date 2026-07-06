@@ -109,7 +109,7 @@ IMAGENET_STD = [0.229, 0.224, 0.225]
 
 MODEL_NAME = "tf_efficientnetv2_s"      # identifier timm untuk EfficientNetV2-S
 BATCH_SIZE = 32
-LEARNING_RATE = 5e-5
+LEARNING_RATE = 5e-6
 DROPOUT = 0.5          # [v4] dinaikkan dari 0.3 → 0.5 untuk regularisasi lebih kuat
 EARLY_STOPPING_PATIENCE = 5
 MAX_EPOCHS = 30

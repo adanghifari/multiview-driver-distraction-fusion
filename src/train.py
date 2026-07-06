@@ -133,7 +133,8 @@ class EarlyStopping:
 # Main training loop
 # ──────────────────────────────────────────────────────────────────────────────
 
-def run_training(view: str, max_epochs: int = MAX_EPOCHS, exp_id: str = ""):
+def run_training(view: str, max_epochs: int = MAX_EPOCHS, exp_id: str = "",
+                 lr: float = LEARNING_RATE):
     """Latih model single-view dan simpan checkpoint + history."""
 
     # ── Tampilkan Ringkasan Konfigurasi Eksperimen ──
@@ -142,7 +143,7 @@ def run_training(view: str, max_epochs: int = MAX_EPOCHS, exp_id: str = ""):
     log.info("=" * 45)
     log.info(f"  View           : {view}")
     log.info(f"  Optimizer      : AdamW")
-    log.info(f"  Learning Rate  : {LEARNING_RATE:.1e}")
+    log.info(f"  Learning Rate  : {lr:.1e}" + (" (override)" if lr != LEARNING_RATE else ""))
     log.info(f"  Weight Decay   : {WEIGHT_DECAY:.1e}")
     log.info(f"  Scheduler      : ReduceLROnPlateau")
     log.info(f"  Dropout        : {DROPOUT}")
@@ -179,7 +180,7 @@ def run_training(view: str, max_epochs: int = MAX_EPOCHS, exp_id: str = ""):
     log.info("Class weights (CrossEntropyLoss): safe_driving=%.4f, phone_use=%.4f", w_0, w_1)
 
     criterion = nn.CrossEntropyLoss(weight=class_weights)
-    optimizer = torch.optim.AdamW(model.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=WEIGHT_DECAY)
 
     # ── Learning Rate Scheduler ──
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
@@ -288,10 +289,13 @@ def main():
     parser.add_argument("--epochs", type=int, default=MAX_EPOCHS,
                         help=f"Jumlah maksimum epoch (default: {MAX_EPOCHS})")
     parser.add_argument("--exp_id", type=str, default="",
-                        help="ID Eksperimen (opsional, misal 'exp3' untuk suffix file)")
+                        help="ID Eksperimen (opsional, misal 'lr1e5' untuk suffix file)")
+    parser.add_argument("--lr", type=float, default=LEARNING_RATE,
+                        help=f"Learning rate override (default: {LEARNING_RATE:.1e} dari config.py). "
+                             f"Contoh: --lr 1e-5")
     args = parser.parse_args()
 
-    run_training(view=args.view, max_epochs=args.epochs, exp_id=args.exp_id)
+    run_training(view=args.view, max_epochs=args.epochs, exp_id=args.exp_id, lr=args.lr)
 
 
 if __name__ == "__main__":
