@@ -1,3 +1,16 @@
+# %% [markdown]
+# # Training Loop — Single-View EfficientNetV2-S
+# Model: EfficientNetV2-S (binary classification: safe driving vs phone use)
+#
+# **Penggunaan CLI:**
+# ```
+# python -m src.train --view front
+# python -m src.train --view side
+# python -m src.train --view front --epochs 50
+# ```
+
+# %%
+# Imports & setup logging
 """
 Training loop untuk model single-view EfficientNetV2-S (klasifikasi biner).
 
@@ -45,7 +58,7 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 log = logging.getLogger(__name__)
 
 
-# ──────────────────────────────────────────────────────────────────────────────
+# %%
 # Training & validation satu epoch
 # ──────────────────────────────────────────────────────────────────────────────
 
@@ -104,7 +117,7 @@ def validate(model, loader, criterion, device, threshold=DECISION_THRESHOLD):
 
 
 
-# ──────────────────────────────────────────────────────────────────────────────
+# %%
 # Early Stopping
 # ──────────────────────────────────────────────────────────────────────────────
 
@@ -129,7 +142,7 @@ class EarlyStopping:
         return False        # skor tidak membaik
 
 
-# ──────────────────────────────────────────────────────────────────────────────
+# %%
 # Main training loop
 # ──────────────────────────────────────────────────────────────────────────────
 
@@ -253,7 +266,7 @@ def run_training(view: str, max_epochs: int = MAX_EPOCHS, exp_id: str = "",
             }, ckpt_path)
 
         elapsed = time.time() - t_epoch
-        status = "★ BEST" if is_best else f"  wait {early_stopping.counter}/{EARLY_STOPPING_PATIENCE}"
+        status = "* BEST" if is_best else f"  wait {early_stopping.counter}/{EARLY_STOPPING_PATIENCE}"
         log.info(
             "Epoch %02d/%02d | train_loss=%.4f | val_loss=%.4f | val_F1=%.4f | val_acc=%.4f | lr=%.1e | %s | %.0fs",
             epoch, max_epochs, train_loss, val_loss, val_f1, val_acc, current_lr, status, elapsed,
@@ -278,9 +291,11 @@ def run_training(view: str, max_epochs: int = MAX_EPOCHS, exp_id: str = "",
     return history
 
 
+# %%
+# CLI entry point (jalankan sel ini untuk mulai training)
 # ──────────────────────────────────────────────────────────────────────────────
-# CLI
-# ──────────────────────────────────────────────────────────────────────────────
+# Atau jalankan langsung tanpa CLI:
+#   run_training(view="front", max_epochs=30)
 
 def main():
     parser = argparse.ArgumentParser(description="Training single-view EfficientNetV2-S")

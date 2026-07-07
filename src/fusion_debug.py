@@ -25,6 +25,106 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 log = logging.getLogger(__name__)
 
 
+# ──────────────────────────────────────────────────────────────────────────────
+# Fungsi Diagnostik Kalibrasi
+# ──────────────────────────────────────────────────────────────────────────────
+
+def compute_ece(probs: np.ndarray, labels: np.ndarray, n_bins: int = 10) -> float:
+    """Expected Calibration Error (ECE).
+
+    Membagi prediksi menjadi n_bins interval confidence, lalu menghitung
+    selisih rata-rata antara confidence (mean prob) dan accuracy aktual per bin.
+
+    ECE = sum_b (|B_b| / n) * |accuracy(B_b) - confidence(B_b)|
+
+    Nilai mendekati 0 artinya model well-calibrated.
+    Nilai tinggi (>0.10) menunjukkan overconfidence atau underconfidence.
+    """
+    bin_edges = np.linspace(0.0, 1.0, n_bins + 1)
+    ece = 0.0
+    n = len(probs)
+    for i in range(n_bins):
+        lo, hi = bin_edges[i], bin_edges[i + 1]
+        mask = (probs >= lo) & (probs < hi)
+        if mask.sum() == 0:
+            continue
+        bin_acc  = labels[mask].mean()
+        bin_conf = probs[mask].mean()
+        ece += (mask.sum() / n) * abs(bin_acc - bin_conf)
+    return float(ece)
+
+
+def compute_brier_score(probs: np.ndarray, labels: np.ndarray) -> float:
+    """Brier Score — ukuran akurasi probabilitas (lower is better).
+
+    BS = (1/n) * sum((p_i - y_i)^2)
+
+    Interpretasi:
+      BS = 0.00        : prediksi sempurna
+      BS = 0.25        : prediksi acak (baseline)
+      BS mendekati 0   : kalibrasi baik
+      BS > 0.10 dengan ECE tinggi : overconfidence
+    """
+    return float(np.mean((probs - labels) ** 2))
+
+
+def print_calibration_report(view: str, probs: np.ndarray, labels: np.ndarray) -> None:
+    """Cetak laporan ECE dan Brier Score untuk satu view."""
+    ece = compute_ece(probs, labels)
+    bs  = compute_brier_score(probs, labels)
+
+    # Interpretasi kualitatif
+    ece_qual = "BAIK" if ece < 0.05 else ("SEDANG" if ece < 0.10 else "BURUK (overconfident)")
+    bs_qual  = "BAIK" if bs  < 0.10 else ("SEDANG" if bs  < 0.20 else "BURUK")
+
+    print(f"  [{view.upper()}]")
+    print(f"    ECE         : {ece:.5f}  ({ece_qual})")
+    print(f"    Brier Score : {bs:.5f}  ({bs_qual})")
+    return ece, bs
+
+
+def load_and_print_loss_gap(exp_id: str = "") -> None:
+    """Baca history JSON dan cetak gap train_loss vs val_loss per epoch.
+
+    Gap besar (train_loss << val_loss, selisih > 0.10) mengindikasikan
+    overfitting, bukan legitimate overconfidence.
+    """
+    suffix = f"_{exp_id}" if exp_id else ""
+    print("\n" + "=" * 60)
+    print("ANALISIS GAP TRAIN LOSS vs VAL LOSS")
+    print("=" * 60)
+
+    for view in ("front", "side"):
+        history_path = RESULTS_DIR / f"{view}_history{suffix}.json"
+        if not history_path.exists():
+            print(f"  [{view.upper()}] History tidak ditemukan: {history_path}")
+            continue
+
+        with open(history_path) as f:
+            hist = json.load(f)
+
+        train_losses = np.array(hist["train_loss"])
+        val_losses   = np.array(hist["val_loss"])
+        gaps         = val_losses - train_losses  # positif = val > train (normal/overfit)
+
+        best_epoch_idx = int(np.argmax(hist["val_macro_f1"]))
+        final_train    = train_losses[-1]
+        final_val      = val_losses[-1]
+        final_gap      = gaps[-1]
+        best_gap       = gaps[best_epoch_idx]
+        max_gap        = gaps.max()
+
+        overfit_flag = "OVERFIT" if final_gap > 0.15 else ("OK" if final_gap < 0.08 else "BORDERLINE")
+
+        print(f"\n  [{view.upper()} VIEW]")
+        print(f"    Epoch terbaik (val F1)  : {best_epoch_idx + 1}")
+        print(f"    Train loss (akhir)      : {final_train:.5f}")
+        print(f"    Val   loss (akhir)      : {final_val:.5f}")
+        print(f"    Gap (val-train) akhir   : {final_gap:.5f} -> {overfit_flag}")
+        print(f"    Gap di epoch terbaik    : {best_gap:.5f}")
+        print(f"    Gap maksimum (any epoch): {max_gap:.5f}")
+
+
 def main():
     import argparse
     parser = argparse.ArgumentParser(description="Audit/Diagnostik untuk Adaptive Fusion")
@@ -35,6 +135,9 @@ def main():
     # ── Setup device ──
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     log.info("Device: %s | Exp ID: %s", device, args.exp_id if args.exp_id else "default")
+
+    # ── Analisis Gap Loss (dari history JSON) ──
+    load_and_print_loss_gap(exp_id=args.exp_id)
 
     # ── Load checkpoints ──
     try:
@@ -61,6 +164,46 @@ def main():
     )
     n_samples = len(labels)
     log.info("Inference selesai: %d sampel diperoleh.", n_samples)
+
+    # ── Analisis Kalibrasi (ECE + Brier Score) ──
+    print("\n" + "=" * 60)
+    print("DIAGNOSTIK KALIBRASI PROBABILITAS")
+    print("=" * 60)
+    print("  (ECE mendekati 0 = well-calibrated; Brier Score < 0.10 = baik)")
+    ece_front, bs_front = print_calibration_report("front", scores_front, labels.astype(float))
+    ece_side,  bs_side  = print_calibration_report("side",  scores_side,  labels.astype(float))
+
+    # Interpretasi gabungan: overfitting vs legitimate overconfidence
+    print()
+    train_loss_front = None
+    train_loss_side  = None
+    suffix = f"_{args.exp_id}" if args.exp_id else ""
+    for view in ("front", "side"):
+        hist_path = RESULTS_DIR / f"{view}_history{suffix}.json"
+        if hist_path.exists():
+            with open(hist_path) as f:
+                h = json.load(f)
+            if view == "front":
+                train_loss_front = h["train_loss"][-1]
+            else:
+                train_loss_side = h["train_loss"][-1]
+
+    print("  Interpretasi:")
+    for view, ece, bs, tl in [
+        ("FRONT", ece_front, bs_front, train_loss_front),
+        ("SIDE",  ece_side,  bs_side,  train_loss_side),
+    ]:
+        if tl is None:
+            continue
+        if ece > 0.10 and tl < 0.10:
+            diagnosis = "Overconfidence kemungkinan OVERFITTING (train_loss rendah, ECE tinggi)"
+        elif ece < 0.05:
+            diagnosis = "Well-calibrated — overconfidence kemungkinan LEGITIMATE"
+        else:
+            diagnosis = "Ambiguous — perlu ablasi regularisasi lebih lanjut"
+        print(f"    [{view}] train_loss={tl:.5f}, ECE={ece:.5f} -> {diagnosis}")
+
+    print()
 
     # ── Analisis Matematis Adaptive Fusion ──
     # Rumus:

@@ -59,8 +59,8 @@ def get_transforms(split: str) -> transforms.Compose:
         return transforms.Compose([
             transforms.Resize((IMAGE_SIZE, IMAGE_SIZE)),
             transforms.RandomHorizontalFlip(),
-            transforms.RandomRotation(15),     # [v4] dinaikkan dari 10 → 15 derajat
-            transforms.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.3),  # [v4] dari 0.2 → 0.3
+            transforms.RandomRotation(20),     # [v5/Step4] dinaikkan dari 15 → 20 derajat
+            transforms.ColorJitter(brightness=0.4, contrast=0.4, saturation=0.4),  # [v5/Step4] dari 0.3 → 0.4
             transforms.ToTensor(),
             transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
         ])

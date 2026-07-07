@@ -1,3 +1,14 @@
+# %% [markdown]
+# # Decision-Level Fusion: Average & Adaptive
+# Menggabungkan prediksi model front dan side.
+#
+# - **Average fusion**: S_fused = 0.5 × S_front + 0.5 × S_side
+# - **Adaptive fusion**: bobot berbasis confidence tiap view (Persamaan 3.2–3.4)
+#
+# **Penggunaan CLI:** `python -m src.fusion`
+
+# %%
+# Imports & setup logging
 """
 Decision-level fusion: average dan adaptive.
 
@@ -51,7 +62,7 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 log = logging.getLogger(__name__)
 
 
-# ──────────────────────────────────────────────────────────────────────────────
+# %%
 # Dataset untuk pasangan frame (front + side)
 # ──────────────────────────────────────────────────────────────────────────────
 
@@ -114,8 +125,8 @@ def get_paired_test_loader(batch_size: int = BATCH_SIZE,
     return loader
 
 
-# ──────────────────────────────────────────────────────────────────────────────
-# Fusion methods
+# %%
+# Fusion methods (average & adaptive)
 # ──────────────────────────────────────────────────────────────────────────────
 
 def average_fusion(scores_front: np.ndarray, scores_side: np.ndarray) -> np.ndarray:
@@ -145,7 +156,7 @@ def adaptive_fusion(scores_front: np.ndarray, scores_side: np.ndarray,
     return w_front * scores_front + w_side * scores_side
 
 
-# ──────────────────────────────────────────────────────────────────────────────
+# %%
 # Inferensi & evaluasi
 # ──────────────────────────────────────────────────────────────────────────────
 
@@ -192,8 +203,8 @@ def evaluate_fusion(method_name: str, fused_scores: np.ndarray,
     return metrics
 
 
-# ──────────────────────────────────────────────────────────────────────────────
-# Main
+# %%
+# Main — jalankan sel ini untuk evaluasi fusion secara interaktif
 # ──────────────────────────────────────────────────────────────────────────────
 
 def main():

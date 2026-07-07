@@ -1,0 +1,1862 @@
+=== HALAMAN 1 ===
+Deteksi Penggunaan Ponsel Pengemudi pada
+Citra Multi-View dengan EfficientNetV2 dan
+Decision-Level Fusion
+Proposal Tugas Akhir
+(IF-47-DSIS.05)
+103012300148
+Muhammad Akhdan Ghifari
+Program Studi Sarjana Informatika
+Fakultas Informatika
+Universitas Telkom
+Bandung
+2026
+
+=== HALAMAN 2 ===
+Lembar Persetujuan
+Deteksi Penggunaan Ponsel Pengemudi pada Citra Multi-View
+dengan EfficientNetV2 dan Decision-Level Fusion
+Multi-View Image-Based Driver Mobile Phone Usage Detection
+Using EfficientNetV2 and Decision-Level Fusion
+NIM: 103012300148
+Muhammad Akhdan Ghifari
+Proposal ini diajukan sebagai usulan pembuatan tugas akhir pada
+Program Studi Sarjana Informatika
+Fakultas Informatika Universitas Telkom
+Bandung, 25 Mei 2026
+Menyetujui
+Pembimbing 1
+Pembimbing 2
+Dr. Untari Novia Wisesty,
+Dr. I Wayan Palton Anuwiksa,
+S.T., M.T.
+S.Si., M.Si.
+NIP: 13870083
+NIP: 23950001
+
+=== HALAMAN 3 ===
+Abstrak
+Penggunaan ponsel saat mengemudi merupakan salah satu bentuk distraksi
+yang berisiko karena dapat mengurangi perhatian visual dan kognitif penge-
+mudi, sedangkan sistem deteksi berbasis single-view masih rentan terhadap
+oklusi ketika sebagian tubuh, tangan, atau perangkat ponsel tidak terlihat
+jelas dari satu sudut pandang kamera. Penelitian ini bertujuan untuk menga-
+nalisis perbedaan performa dan pola kegagalan deteksi antara front view dan
+side view, mengevaluasi efektivitas pendekatan multi-view dibandingkan sistem
+single-view terbaik, serta membandingkan strategi average fusion dan adapti-
+ve fusion pada tingkat decision-level. Penelitian ini menggunakan dataset pu-
+blik 3MDAD dengan modalitas citra RGB siang hari dari dua sudut pandang
+tersinkronisasi, yaitu front view dan side view. Tugas klasifikasi dirumuskan
+sebagai klasifikasi biner antara kelas safe driving (A1) dan phone-use distra-
+cted driving (A5–A9), sehingga penelitian ini tidak bertujuan membedakan
+seluruh jenis distraksi pengemudi, melainkan secara khusus mendeteksi aktivi-
+tas penggunaan ponsel terhadap kondisi mengemudi aman. Model single-view
+dibangun menggunakan EfficientNetV2-S yang diinisialisasi dengan bobot pra-
+latih ImageNet dan dilatih melalui skema fine-tuning. Skor probabilitas kelas
+phone-use distracted driving dari kedua sudut pandang kemudian digabungkan
+menggunakan average fusion dan adaptive fusion. Hipotesis awal penelitian ini
+adalah bahwa pendekatan multi-view, khususnya dengan adaptive fusion, ber-
+potensi meningkatkan performa klasifikasi karena mampu menyesuaikan kon-
+tribusi setiap sudut pandang berdasarkan tingkat keyakinan prediksi. Namun,
+efektivitas pendekatan tersebut tetap perlu dibuktikan secara empiris kare-
+na tingkat keyakinan model tidak selalu berbanding lurus dengan kebenaran
+prediksi.
+Kata Kunci: deteksi distraksi pengemudi, multi-view fusion, decision-level
+fusion, EfficientNetV2-S, 3MDAD.
+i
+
+=== HALAMAN 4 ===
+Daftar Isi
+Abstrak
+i
+Daftar Isi
+ii
+Daftar Gambar
+iv
+Daftar Tabel
+v
+I
+Pendahuluan
+1
+1.1
+Latar Belakang . . . . . . . . . . . . . . . . . . . . . . . . . . .
+1
+1.2
+Perumusan Masalah
+. . . . . . . . . . . . . . . . . . . . . . . .
+4
+1.3
+Tujuan . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+4
+1.4
+Batasan Masalah . . . . . . . . . . . . . . . . . . . . . . . . . .
+4
+1.5
+Rencana Kegiatan . . . . . . . . . . . . . . . . . . . . . . . . . .
+5
+1.6
+Jadwal Kegiatan
+. . . . . . . . . . . . . . . . . . . . . . . . . .
+7
+II Kajian Pustaka
+8
+2.1
+Penelitian Terdahulu dan Celah Penelitian . . . . . . . . . . . .
+8
+2.2
+Deteksi Distraksi Pengemudi . . . . . . . . . . . . . . . . . . . .
+10
+2.3
+Dataset 3MDAD
+. . . . . . . . . . . . . . . . . . . . . . . . . .
+11
+2.4
+Oklusi pada Pemantauan Pengemudi . . . . . . . . . . . . . . .
+13
+2.5
+Pendekatan Single-View dan Multi-View . . . . . . . . . . . . .
+13
+2.6
+EfficientNetV2 sebagai Backbone
+. . . . . . . . . . . . . . . . .
+14
+2.7
+Metrik Evaluasi . . . . . . . . . . . . . . . . . . . . . . . . . . .
+16
+2.7.1
+Akurasi
+. . . . . . . . . . . . . . . . . . . . . . . . . . .
+17
+2.7.2
+Presisi . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+17
+2.7.3
+Recall
+. . . . . . . . . . . . . . . . . . . . . . . . . . . .
+17
+2.7.4
+Macro F1-Score . . . . . . . . . . . . . . . . . . . . . . .
+18
+III Perancangan Sistem
+19
+3.1
+Alur Penelitian dan Perancangan Sistem . . . . . . . . . . . . .
+19
+3.2
+Pengumpulan dan Prapemrosesan Data . . . . . . . . . . . . . .
+21
+3.2.1
+Pengumpulan Data dan Perumusan Label
+. . . . . . . .
+21
+3.2.2
+Pembagian Dataset . . . . . . . . . . . . . . . . . . . . .
+23
+ii
+
+=== HALAMAN 5 ===
+3.2.3
+Prapemrosesan Citra . . . . . . . . . . . . . . . . . . . .
+24
+3.3
+Model Single-View Berbasis EfficientNetV2-S
+. . . . . . . . . .
+24
+3.3.1
+Konfigurasi EfficientNetV2-S dan Classifier Head
+. . . .
+24
+3.3.2
+Skema Transfer Learning dan Fine-Tuning . . . . . . . .
+25
+3.3.3
+Pelatihan dan Keluaran Model Single-View
+. . . . . . .
+25
+3.3.4
+Algoritma Sistem . . . . . . . . . . . . . . . . . . . . . .
+26
+3.4
+Strategi Decision-Level Fusion . . . . . . . . . . . . . . . . . . .
+28
+3.4.1
+Average Fusion . . . . . . . . . . . . . . . . . . . . . . .
+28
+3.4.2
+Adaptive Fusion . . . . . . . . . . . . . . . . . . . . . . .
+28
+3.5
+Skenario Pengujian dan Evaluasi
+. . . . . . . . . . . . . . . . .
+29
+3.5.1
+Skenario Pengujian . . . . . . . . . . . . . . . . . . . . .
+29
+3.5.2
+Metrik Evaluasi . . . . . . . . . . . . . . . . . . . . . . .
+30
+Daftar Pustaka
+32
+Lampiran
+35
+iii
+
+=== HALAMAN 6 ===
+Daftar Gambar
+2.1
+Perbandingan struktur MBConv dan Fused-MBConv pada Effi-
+cientNetV2
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+15
+3.1
+Diagram alir perancangan sistem
+. . . . . . . . . . . . . . . . .
+20
+3.2
+Contoh citra dari dataset 3MDAD yang digunakan dalam pe-
+nelitian ini . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+22
+iv
+
+=== HALAMAN 7 ===
+Daftar Tabel
+1.1
+Jadwal kegiatan tugas akhir . . . . . . . . . . . . . . . . . . . .
+7
+2.1
+Ringkasan penelitian terdahulu dan celah penelitian . . . . . . .
+8
+2.2
+Jumlah frame per kelas aktivitas pada dataset 3MDAD . . . . .
+12
+3.1
+Distribusi label biner pada data yang digunakan . . . . . . . . .
+22
+3.2
+Rencana pembagian dataset menggunakan subject-based split . .
+23
+v
+
+=== HALAMAN 8 ===
+Bab I
+Pendahuluan
+Bab ini menguraikan latar belakang penelitian yang mencakup permasa-
+lahan deteksi penggunaan ponsel oleh pengemudi, keterbatasan pendekatan
+single-view, serta celah penelitian pada strategi fusion dalam sistem multi-
+view. Selanjutnya dirumuskan masalah dan tujuan yang ingin dicapai, diikuti
+dengan batasan masalah, serta rencana dan jadwal kegiatan pelaksanaan pe-
+nelitian.
+1.1
+Latar Belakang
+Isu keselamatan di jalan raya senantiasa menjadi fokus utama secara glo-
+bal, mengingat tingginya angka kecelakaan yang terjadi. Salah satu faktor
+penyumbang kecelakaan adalah hilangnya konsentrasi pengemudi (distracted
+driving), yang salah satunya dapat disebabkan oleh interaksi dengan telepon
+seluler. Secara spesifik, pengemudi yang terdistraksi oleh ponsel cenderung
+merespons situasi lebih lambat, kehilangan fokus visual, dan kesulitan meng-
+endalikan laju kendaraan [1, 2]. Kondisi tersebut dapat meningkatkan risiko
+terjadinya kecelakaan atau tabrakan di jalan [1–3].
+Untuk memitigasi ba-
+haya ini, teknologi visi komputer (computer vision) kini banyak dieksplorasi
+sebagai mekanisme pengawasan otomatis. Melalui kamera yang terpasang di
+dalam kabin, sistem cerdas ini dapat mengekstrak informasi visual pengemudi
+dan mengenali berbagai tindakan berisiko secara langsung pada waktu nyata
+(real-time) [3,4].
+Sejumlah penelitian deteksi distraksi atau penggunaan ponsel oleh penge-
+mudi masih banyak dirancang dengan pendekatan single-view, yaitu hanya me-
+manfaatkan satu kamera dari sudut pandang tunggal [5–8]. Namun demikian,
+penerapan sistem ini di kondisi nyata menghadapi tantangan mendasar ber-
+upa oklusi, yaitu kondisi ketika sebagian area tubuh, tangan, atau perangkat
+ponsel pengemudi tidak terlihat secara jelas akibat komponen interior ken-
+daraan, pergerakan tubuh, atau keterbatasan sudut pandang kamera. Oklusi
+dapat menyebabkan hilangnya sebagian informasi visual yang dibutuhkan da-
+lam proses klasifikasi [9, 10].
+Keterbatasan ini membuat sistem single-view
+rentan terhadap situasi berkendara nyata, misalnya saat pengemudi mencon-
+1
+
+=== HALAMAN 9 ===
+dongkan tubuh, menggerakkan tangan ke posisi tertentu, atau terhalang oleh
+setir dan sandaran kursi.
+Studi terkini mulai mengadopsi pendekatan multi-view dengan memanfa-
+atkan beberapa perspektif kamera di dalam kabin, seperti dashboard, rearview
+mirror, dan right-side window, sebagai sumber informasi komplementer [10,11].
+Pendekatan ini dilandasi oleh karakteristik sudut pandang maupun modalitas
+yang berbeda, yang dapat memiliki keunggulan dan kelemahan saling meleng-
+kapi (complementary advantages) dalam kondisi oklusi yang bervariasi. Oleh
+karena itu, penggabungan informasi dari berbagai sumber visual berpoten-
+si meningkatkan ketahanan sistem [11–13]. Sejalan dengan hal ini, Vijeikis
+dkk. [14] menunjukkan bahwa algoritma fusi multi-task yang dirancang un-
+tuk sistem pemantauan pengemudi mampu meningkatkan performa deteksi
+dibandingkan pendekatan single-task.
+Dalam strategi decision-level fusion, average fusion merupakan salah satu
+pendekatan sederhana yang menggabungkan output prediksi dari setiap sum-
+ber dengan bobot yang sama rata. Meskipun sederhana, pendekatan ini tidak
+mempertimbangkan perbedaan kualitas informasi visual yang masuk akibat
+oklusi, sehingga kontribusi setiap kamera diberikan secara setara tanpa me-
+nilai tingkat keyakinan prediksinya. Studi empiris sistematis oleh Roitberg
+dkk. [15] menunjukkan bahwa average fusion tidak selalu menjadi pilihan yang
+paling optimal, karena strategi lain seperti product-fusion dan max-fusion da-
+pat memberikan performa lebih baik pada beberapa skenario evaluasi.
+Selain keterbatasan pada strategi fusion statis tersebut, beberapa studi
+multi-view pada pemantauan pengemudi lebih banyak menekankan pening-
+katan performa akhir atau perancangan mekanisme fusi, misalnya melalui fusi
+tingkat fitur maupun mekanisme attention [10,11]. Berdasarkan kajian terse-
+but, pembahasan yang secara khusus membedah pola kegagalan (failure pat-
+tern) dari masing-masing sudut pandang secara terpisah, misalnya kondisi
+ketika front view gagal akibat oklusi alami dan bagaimana side view dapat
+memberikan informasi komplementer, masih belum menjadi fokus utama. Ce-
+lah ini penting untuk dikaji karena analisis per sudut pandang dapat mem-
+bantu menjelaskan kapan pendekatan multi-view benar-benar efektif maupun
+terbatas dalam menghadapi kondisi oklusi.
+Sebagai alternatif, adaptive fusion menawarkan mekanisme pembobotan di-
+namis yang menyesuaikan kontribusi setiap kamera berdasarkan tingkat keya-
+kinan prediksinya. Secara umum, pendekatan ini memberikan kontribusi yang
+berbeda pada setiap sumber informasi berdasarkan tingkat keyakinan predik-
+si atau kualitas informasi yang dihasilkan [16]. Dengan mekanisme tersebut,
+sumber dengan prediksi yang lebih meyakinkan dapat memberikan pengaruh
+yang lebih besar terhadap keputusan akhir sistem. Namun, efektivitas pen-
+dekatan ini tetap perlu diuji secara empiris karena tingkat keyakinan model
+tidak selalu berbanding lurus dengan kebenaran prediksi.
+2
+
+=== HALAMAN 10 ===
+Di sisi lain, perbandingan langsung antara average fusion dan adaptive fu-
+sion, khususnya pada kasus deteksi penggunaan ponsel oleh pengemudi dengan
+menggunakan dataset yang sama dan konfigurasi yang setara, masih relatif ja-
+rang dikaji secara sistematis dalam literatur yang ada.
+Guna menjawab kesenjangan tersebut, penelitian ini mengusulkan pende-
+katan multi-view berbasis deep learning menggunakan dataset 3MDAD (Mul-
+tiview, Multimodal and Multispectral Driver Action Dataset) [9]. Dataset ini
+dipilih karena menyediakan rekaman naturalistik pengemudi dari dua sudut
+kamera, yaitu depan dan samping, yang diambil secara tersinkronisasi dalam
+kondisi berkendara nyata. Dengan karakteristik tersebut, 3MDAD menjadi da-
+taset yang sesuai untuk menganalisis perilaku sistem multi-view di bawah kon-
+disi oklusi alami. Dari keseluruhan 16 kelas aksi yang tersedia dalam 3MDAD,
+penelitian ini berfokus pada kelas penggunaan ponsel (mobile phone use). Pe-
+milihan ini didasarkan pada tingkat risiko yang tinggi terhadap keselamatan
+berkendara, di mana penggunaan ponsel telah dilaporkan sebagai salah satu
+bentuk distraksi visual dan kognitif yang dapat meningkatkan risiko kecelaka-
+an lalu lintas [1–3]. Selain itu, kategori ini memiliki basis literatur yang kuat
+dalam konteks deteksi berbasis visi komputer [1–4].
+Secara karakteristik, aktivitas penggunaan ponsel berpotensi menimbulkan
+keterbatasan informasi visual dari sudut pandang tertentu, misalnya ketika
+tangan menutupi sebagian area tubuh atau perangkat ponsel tidak terlihat
+jelas dari kamera tunggal [9,10]. Hal ini menjadikan kelas penggunaan ponsel
+sebagai kasus yang relevan untuk menguji efektivitas pendekatan multi-view
+dalam menghadapi keterbatasan informasi visual.
+EfficientNetV2 digunakan sebagai backbone pada model klasifikasi single-
+view karena dikenal memiliki keseimbangan yang baik antara akurasi dan efi-
+siensi komputasi [17]. Kebutuhan akan arsitektur yang ringan pada sistem
+deteksi distraksi pengemudi telah menjadi perhatian aktif dalam literatur [18],
+memperkuat argumen bahwa efisiensi backbone penting agar beban komputasi
+sistem tetap terkendali, sehingga evaluasi dapat lebih difokuskan pada kontri-
+busi sudut pandang dan strategi fusi. Secara khusus, Lv dkk. [16] menunjukk-
+an bahwa mekanisme fusi adaptif berbasis pembobotan skor dinamis (ATFM)
+dengan EfficientNetV2 mampu meningkatkan akurasi dari 87,16% pada avera-
+ge fusion menjadi 88,35% pada tugas pemantauan pengemudi berbasis video.
+Namun, pendekatan tersebut menerapkan fusi adaptif pada dimensi temporal,
+yaitu antar-frame dalam satu kamera, untuk mendeteksi kelelahan pengemudi.
+Berdasarkan hal tersebut, penelitian ini mengevaluasi kemungkinan penerap-
+an prinsip fusi adaptif ke dalam dimensi spasial, yaitu untuk menggabungkan
+prediksi dari sudut pandang kamera yang berbeda melalui multi-view decision-
+level fusion. Mekanisme adaptive fusion pada penelitian ini tidak dimaksudkan
+sebagai replikasi penuh ATFM, melainkan sebagai adaptasi prinsip pembobot-
+an berbasis tingkat keyakinan prediksi untuk penggabungan skor antar sudut
+3
+
+=== HALAMAN 11 ===
+pandang. Dengan demikian, kontribusi penelitian ini tidak terletak pada pe-
+ngembangan arsitektur backbone baru, melainkan pada evaluasi strategi fusi
+dan analisis kontribusi sudut pandang dalam mendeteksi penggunaan ponsel
+oleh pengemudi.
+1.2
+Perumusan Masalah
+Berdasarkan latar belakang yang telah diuraikan, penelitian ini merumusk-
+an permasalahan terkait deteksi penggunaan ponsel oleh pengemudi menggu-
+nakan pendekatan multi-view sebagai berikut:
+1. Seberapa besar perbedaan performa deteksi antara front view dan side
+view secara terpisah dalam membedakan kondisi safe driving dan phone-
+use distracted driving, serta pola kegagalan deteksi seperti apa yang da-
+pat diidentifikasi melalui hasil evaluasi, confusion matrix, dan sampel
+salah klasifikasi pada masing-masing sudut pandang?
+2. Apakah pendekatan multi-view memberikan peningkatan performa di-
+bandingkan sistem single-view terbaik dalam membedakan kondisi safe
+driving dan phone-use distracted driving menggunakan dataset 3MDAD?
+3. Strategi fusion manakah yang lebih efektif antara average fusion dan
+adaptive fusion pada tingkat decision-level dalam meningkatkan perfor-
+ma klasifikasi antara safe driving dan phone-use distracted driving?
+1.3
+Tujuan
+Berdasarkan rumusan masalah tersebut, tujuan dari penelitian ini adalah
+sebagai berikut:
+1. Menganalisis perbedaan performa dan pola kegagalan deteksi antara
+front view dan side view dalam membedakan kondisi safe driving dan
+phone-use distracted driving.
+2. Mengevaluasi efektivitas pendekatan multi-view dibandingkan dengan
+sistem single-view terbaik dalam membedakan kondisi safe driving dan
+phone-use distracted driving.
+3. Membandingkan efektivitas strategi average fusion dan adaptive fusion
+pada tingkat decision-level dalam meningkatkan performa klasifikasi an-
+tara safe driving dan phone-use distracted driving.
+1.4
+Batasan Masalah
+Agar pembahasan tetap terarah dan sesuai dengan ruang lingkup peneliti-
+an, batasan masalah dalam penelitian ini adalah sebagai berikut:
+4
+
+=== HALAMAN 12 ===
+1. Penelitian ini dibatasi pada klasifikasi biner antara safe driving dan
+phone-use distracted driving menggunakan dataset 3MDAD.
+2. Sudut pandang kamera yang digunakan dibatasi pada dua view, yaitu
+front view dan side view.
+3. Model klasifikasi single-view yang digunakan berbasis EfficientNetV2 se-
+bagai backbone, tanpa melakukan eksplorasi atau perbandingan dengan
+arsitektur backbone lainnya.
+4. Strategi fusion yang dibandingkan dibatasi pada average fusion dan
+adaptive fusion pada tingkat decision-level.
+5. Evaluasi performa model dilakukan menggunakan metrik akurasi, presisi,
+recall, dan Macro F1-Score.
+1.5
+Rencana Kegiatan
+Rencana kegiatan dalam penelitian ini terdiri dari enam tahapan utama
+yang disusun secara sistematis untuk memastikan ketercapaian tujuan peneli-
+tian.
+1. Studi Literatur
+Tahap ini bertujuan untuk memahami konsep dasar terkait deteksi dis-
+traksi pengemudi, pendekatan multi-view, serta strategi fusion seperti
+average fusion dan adaptive fusion. Selain itu, dilakukan kajian terha-
+dap penelitian-penelitian terdahulu untuk mengidentifikasi kesenjangan
+penelitian yang menjadi dasar perumusan masalah. Studi literatur dila-
+kukan secara berkelanjutan sepanjang pelaksanaan penelitian.
+2. Pengumpulan Data
+Tahap ini mencakup pengunduhan dan verifikasi dataset 3MDAD, khu-
+susnya data rekaman dari dua sudut pandang kamera (front view dan
+side view) pada kelas safe driving (A1) dan phone-use distracted driving
+(A5–A9). Selain itu, dilakukan prapemrosesan data yang meliputi eks-
+traksi frame, normalisasi citra, serta pembagian dataset menjadi data
+latih, validasi, dan uji dengan proporsi yang sesuai.
+3. Analisis dan Perancangan Sistem
+Pada tahap ini dilakukan analisis kebutuhan sistem dan perancangan
+arsitektur model secara menyeluruh. Perancangan mencakup pemilihan
+konfigurasi model klasifikasi single-view berbasis EfficientNetV2, peran-
+cangan alur pelatihan model untuk masing-masing sudut pandang secara
+5
+
+=== HALAMAN 13 ===
+terpisah, serta perancangan mekanisme decision-level fusion untuk pen-
+dekatan multi-view dengan dua strategi yang akan dibandingkan, yaitu
+average fusion dan adaptive fusion.
+4. Implementasi Sistem
+Tahap ini mencakup implementasi model klasifikasi berbasis Efficient-
+NetV2 untuk front view dan side view secara terpisah, diikuti dengan
+proses fine-tuning, pelatihan, dan validasi masing-masing model. Selan-
+jutnya diimplementasikan mekanisme decision-level fusion dengan kedua
+strategi yang dirancang, yaitu average fusion dan adaptive fusion. Hasil
+implementasi ini digunakan untuk mengevaluasi model single-view dari
+masing-masing sudut pandang, menentukan sistem single-view terbaik,
+serta membandingkannya dengan pendekatan multi-view.
+5. Analisis Hasil Implementasi
+Evaluasi dilakukan terhadap model single-view dari masing-masing su-
+dut pandang serta pendekatan multi-view dengan average fusion dan
+adaptive fusion menggunakan metrik akurasi, presisi, recall, dan Macro
+F1-Score.
+6. Penulisan Laporan
+Tahap ini mencakup penyusunan laporan tugas akhir secara menyeluruh,
+meliputi pendahuluan, kajian pustaka, metodologi, hasil dan pembahas-
+an, serta kesimpulan dan saran.
+Penulisan laporan dilakukan secara
+paralel sejak tahap analisis dan perancangan sistem hingga selesainya
+seluruh kegiatan penelitian.
+6
+
+=== HALAMAN 14 ===
+1.6
+Jadwal Kegiatan
+Jadwal pelaksanaan Tugas Akhir ini disusun secara sistematis berdasarkan
+tahapan pada rencana kegiatan yang telah diuraikan sebelumnya.
+Rincian
+alokasi waktu untuk masing-masing tahapan, mulai dari studi literatur hingga
+penulisan laporan, disajikan pada tabel berikut guna memastikan penelitian
+dapat diselesaikan dengan terstruktur dan sesuai target waktu.
+Tabel 1.1: Jadwal kegiatan tugas akhir
+No
+Kegiatan
+Bulan ke-
+1
+2
+3
+4
+5
+6
+1
+Studi Litera-
+tur
+2
+Pengumpulan
+Data
+3
+Analisis
+dan
+Perancangan
+Sistem
+4
+Implementasi
+Sistem
+5
+Analisis Hasil
+Implementasi
+6
+Penulisan La-
+poran
+7
+
+=== HALAMAN 15 ===
+Bab II
+Kajian Pustaka
+Bab ini memuat kajian terhadap penelitian-penelitian terdahulu dan te-
+ori pendukung yang relevan dengan topik deteksi penggunaan ponsel oleh
+pengemudi berbasis pendekatan multi-view.
+Kajian pustaka disusun untuk
+menunjukkan posisi penelitian, landasan ilmiah yang digunakan, serta celah
+penelitian yang menjadi dasar pengembangan penelitian ini.
+2.1
+Penelitian Terdahulu dan Celah Penelitian
+Bagian ini merangkum penelitian-penelitian terdahulu yang relevan dengan
+topik penelitian, beserta celah (research gap) yang menjadi dasar usulan pe-
+nelitian ini. Ringkasan perbandingan disajikan pada Tabel 2.1.
+Tabel 2.1: Ringkasan penelitian terdahulu dan celah penelitian
+Referensi
+(Tahun)
+Dataset &
+Sudut
+Pandang
+Metode
+Fokus Penelitian
+Relevansi & Celah
+Lv dkk.
+(2024) [16]
+NTHU-DDD
+(Single-view)
+EfficientNetV2
++ adaptive
+temporal fusion
+Menunjukkan
+bahwa fusi adaptif
+(ATFM) dengan
+EfficientNetV2
+mampu
+mengungguli
+average fusion pada
+tugas deteksi
+kelelahan berbasis
+video.
+Relevansi: Acuan
+prinsip fusi adaptif
+berbasis tingkat
+keyakinan prediksi
+dengan EfficientNetV2.
+Celah: Hanya diuji
+pada dimensi temporal
+antar-frame dalam satu
+kamera, sedangkan
+penelitian ini
+mengadaptasi prinsip
+tersebut pada dimensi
+spasial lintas-kamera
+(multi-view).
+8
+
+=== HALAMAN 16 ===
+Referensi
+(Tahun)
+Dataset &
+Sudut
+Pandang
+Metode
+Fokus Penelitian
+Relevansi & Celah
+Roitberg
+dkk.
+(2022) [15]
+Drive&Act
+(Multimodal, 8
+modalitas)
+I3D CNN +
+berbagai
+strategi
+decision-level
+Evaluasi sistematis
+terhadap berbagai
+strategi
+decision-level
+fusion;
+menunjukkan
+bahwa average
+fusion tidak selalu
+menjadi strategi
+terbaik karena
+product-fusion dan
+max-fusion dapat
+memberikan
+performa lebih baik
+pada beberapa
+skenario evaluasi.
+Relevansi: Landasan
+empiris keterbatasan
+average fusion sebagai
+strategi decision-level
+standar. Celah:
+Menguji fusi
+lintas-modalitas sensor
+berbeda, bukan lintas
+sudut pandang kamera
+RGB; tidak membedah
+pola kegagalan per
+sudut pandang.
+Kuang dkk.
+(2023) [11]
+3MDAD
+(Multi-view)
+I3D / ResNet
++ feature-level
+fusion
+Menunjukkan
+pendekatan
+multi-view lebih
+kokoh dalam
+mengatasi oklusi.
+Relevansi: Baseline
+keunggulan multi-view
+pada 3MDAD. Celah:
+Fusi dilakukan pada
+tingkat fitur, bukan
+pada tingkat keputusan
+(decision-level).
+Jegham dkk.
+(2020) [9]
+3MDAD
+(Front+Side)
+ResNet / VGG
++ early fusion
+Memperkenalkan
+dataset naturalistik
+dua sudut pandang
+simultan pada
+lingkungan dinamis.
+Relevansi: Sumber
+data dan acuan
+eksperimen utama.
+Celah: Baseline asli
+belum mengeksplorasi
+decision-level fusion
+tingkat lanjut.
+Duan dkk.
+(2025) [19]
+SFDDD,
+AUCDD &
+100-Driver
+(Cross-dataset)
+CNN +
+Score-Softmax
+(S-Softmax) +
+Gaussian
+Fusion
+Meningkatkan
+performa
+lintas-dataset
+dengan S-Softmax
+classifier dan
+Dynamic Gaussian
+Smoothing, disertai
+strategi fusi
+multi-saluran
+berbasis distribusi
+Gaussian.
+Relevansi: Mendukung
+pentingnya pengolahan
+skor keluaran klasifikasi
+di tingkat keputusan
+untuk meningkatkan
+robustisitas prediksi.
+Celah: Fokus pada
+permasalahan
+background noise dan
+generalisasi
+lintas-dataset, bukan
+kondisi oklusi akibat
+variasi sudut pandang
+kamera pada 3MDAD.
+9
+
+=== HALAMAN 17 ===
+Referensi
+(Tahun)
+Dataset &
+Sudut
+Pandang
+Metode
+Fokus Penelitian
+Relevansi & Celah
+Hsia dkk.
+(2026) [10]
+SynDD1 &
+DMD
+(Multi-view)
+Temporal GCN
++ adaptive
+attention
+Menunjukkan
+bahwa oklusi
+membuat
+single-view rentan,
+sehingga mekanisme
+multi-view attention
+dibutuhkan.
+Relevansi:
+Memperkuat argumen
+kerentanan oklusi pada
+single-view. Celah:
+Menggunakan
+pendekatan berbasis
+graph dan attention
+untuk multi-view
+behavior recognition,
+sedangkan penelitian ini
+berfokus pada klasifikasi
+citra RGB dengan
+decision-level fusion
+berbasis skor
+probabilitas.
+Duan dkk.
+(2023) [18]
+SFD,
+AUCDD-V1 &
+3MDAD
+(Single-view)
+FRNet
+(lightweight
+DCNN)
+Merancang
+arsitektur DCNN
+ringan untuk
+deteksi distraksi
+secara real-time
+pada perangkat
+embedded tanpa
+GPU.
+Relevansi: Justifikasi
+kebutuhan ekstraktor
+fitur efisien pada sistem
+deteksi distraksi.
+Celah: Hanya untuk
+single-view, tidak
+memperhitungkan fusi
+lintas kamera.
+Berdasarkan kajian pada Tabel 2.1, terdapat tiga celah utama yang men-
+jadi landasan penelitian ini. Pertama, studi yang menjadikan pola kegagalan
+deteksi dari masing-masing sudut pandang (front view dan side view) sebagai
+fokus analisis utama pada dataset 3MDAD masih terbatas. Oleh karena itu,
+kontribusi komplementer tiap kamera dalam kondisi oklusi alami masih perlu
+dibuktikan secara empiris.
+Kedua, meskipun adaptive fusion telah menun-
+jukkan performa yang lebih baik dibandingkan average fusion pada dimensi
+temporal [16], penerapannya pada dimensi spasial lintas-kamera (multi-view
+decision-level fusion) untuk kasus penggunaan ponsel pengemudi masih perlu
+dikaji lebih lanjut. Ketiga, beberapa studi multi-view yang ada berfokus pada
+fusi tingkat fitur [11] atau menggunakan pendekatan berbasis graph dan atten-
+tion [10], sehingga evaluasi berbasis citra RGB dengan strategi decision-level
+fusion adaptif pada 3MDAD masih terbuka untuk dikaji. Penelitian ini ber-
+upaya mengisi celah tersebut dengan mengombinasikan analisis per-view, per-
+bandingan average fusion dan adaptive fusion pada tingkat keputusan, serta
+penggunaan EfficientNetV2 sebagai backbone agar evaluasi strategi fusi dapat
+dilakukan secara lebih terarah.
+2.2
+Deteksi Distraksi Pengemudi
+Distraksi pengemudi merupakan kondisi ketika perhatian pengemudi tera-
+lihkan dari tugas utama dalam mengemudi. Salah satu bentuk distraksi yang
+paling berisiko adalah penggunaan ponsel saat berkendara karena dapat meng-
+urangi fokus visual, memperlambat waktu reaksi, dan menurunkan kemampu-
+10
+
+=== HALAMAN 18 ===
+an pengambilan keputusan.
+Tan dkk. [1] mencatat bahwa faktor manusia
+diperkirakan menjadi penyebab sekitar 90% kecelakaan jalan, dengan perilaku
+berbahaya pengemudi berkontribusi sekitar 68% dari keseluruhan statistik ter-
+sebut. Lebih lanjut, Tan dkk. [1] menjelaskan bahwa deteksi perilaku distraksi
+pengemudi telah berkembang melalui berbagai pendekatan, mulai dari meto-
+de berbasis citra, video, sensor multimodal, hingga pembelajaran mendalam.
+Koay dkk. [2] juga menegaskan bahwa perkembangan metode deteksi distraksi
+pengemudi sangat dipengaruhi oleh ketersediaan dataset, kompleksitas kondisi
+kabin kendaraan, serta tantangan variasi sudut pandang dan pencahayaan.
+Pada konteks penggunaan ponsel, Huang dkk. [3] mengusulkan metode
+deteksi penggunaan ponsel pengemudi menggunakan guided learning berbasis
+attention features dan prior knowledge. Pendekatan ini memanfaatkan anotasi
+area perhatian pada citra pengemudi serta pengetahuan yang diperoleh dari
+dataset klasifikasi lain sebagai bobot awal, sehingga meningkatkan akurasi dan
+kemampuan generalisasi model deteksi pada kondisi data latih yang terbatas.
+2.3
+Dataset 3MDAD
+Penelitian ini menggunakan dataset 3MDAD (Multiview, Multimodal and
+Multispectral Driver Action Dataset) sebagai sumber data utama.
+Dataset
+ini diperkenalkan oleh Jegham dkk. [9] sebagai dataset publik untuk analisis
+perilaku dan distraksi pengemudi dalam lingkungan berkendara nyata (na-
+turalistic driving settings). Dataset 3MDAD dirancang dengan karakteristik
+multi-view, multimodal, dan multispectral, sehingga memungkinkan penelitian
+terhadap berbagai kondisi pencahayaan, sudut pandang, dan modalitas citra
+pengemudi.
+Dataset 3MDAD terdiri dari dua subset berdasarkan kondisi pencahayaan,
+yaitu subset siang hari (daytime) dan malam hari (nighttime). Pada subset
+siang hari, dataset menyediakan frame RGB dan frame kedalaman (depth)
+yang tersinkronisasi secara temporal dengan laju akuisisi 30 Hz dan resolusi
+640×480 piksel. Sementara itu, subset malam hari menyediakan frame infra-
+merah (infrared) dan frame kedalaman dengan resolusi yang sama [9].
+Akuisisi data dilakukan menggunakan dua kamera Microsoft Kinect. Ka-
+mera pertama dipasang pada pegangan mobil di bagian atas jendela penum-
+pang untuk memperoleh sudut pandang samping (side view), sedangkan kame-
+ra kedua dipasang pada dasbor di depan pengemudi untuk memperoleh sudut
+pandang depan (front view). Penggunaan dua kamera tersebut memungkink-
+an pengambilan data dari beberapa sudut pandang secara simultan sehingga
+membantu mengurangi permasalahan oklusi dan memberikan representasi ak-
+tivitas pengemudi yang lebih lengkap [9].
+Subset siang hari melibatkan 50 partisipan yang terdiri dari 38 laki-laki dan
+12 perempuan dengan rentang usia 19 hingga 41 tahun. Sementara itu, subset
+malam hari melibatkan 19 partisipan lain yang terdiri dari 11 laki-laki dan
+11
+
+=== HALAMAN 19 ===
+8 perempuan dengan rentang usia 19 hingga 53 tahun [9]. Setiap partisipan
+diminta untuk melakukan 16 aktivitas di dalam kendaraan selama sekitar 20
+hingga 35 detik untuk setiap aktivitas, menghasilkan sekitar 1.104 sekuens
+secara keseluruhan, yaitu 800 sekuens pada siang hari dan 304 sekuens pada
+malam hari. Total durasi rekaman mencapai sekitar 507 menit [9].
+Dataset ini mencakup 16 kelas aktivitas pengemudi yang umum dilakukan
+selama berkendara, yaitu: (A1) safe driving, (A2) doing hair and makeup, (A3)
+adjusting radio, (A4) GPS operating, (A5) writing message using right hand,
+(A6) writing message using left hand, (A7) talking phone using right hand, (A8)
+talking phone using left hand, (A9) having picture, (A10) talking to passenger,
+(A11) singing or dancing, (A12) fatigue and somnolence, (A13) drinking using
+right hand, (A14) drinking using left hand, (A15) reaching behind, dan (A16)
+smoking [9].
+Jumlah frame untuk masing-masing kelas aktivitas pada subset siang dan
+malam hari disajikan pada Tabel 2.2. Secara keseluruhan, subset siang hari
+memuat 444.104 gambar yang mencakup modalitas RGB dan depth dari dua
+sudut pandang, sedangkan subset malam hari memuat 130.028 gambar yang
+mencakup modalitas inframerah dan depth dari dua sudut pandang [9].
+Tabel 2.2: Jumlah frame per kelas aktivitas pada dataset 3MDAD [9]
+Kelas
+Aktivitas
+Siang
+Malam
+A1
+Safe driving
+6.761
+1.857
+A2
+Doing hair and makeup
+6.453
+2.046
+A3
+Adjusting radio
+6.534
+1.803
+A4
+GPS operating
+7.657
+2.284
+A5
+Writing message using right hand
+6.337
+1.916
+A6
+Writing message using left hand
+6.360
+1.864
+A7
+Talking phone using right hand
+7.373
+2.130
+A8
+Talking phone using left hand
+7.487
+1.987
+A9
+Having picture
+7.256
+2.036
+A10
+Talking to passenger
+8.400
+2.569
+A11
+Singing or dancing
+7.243
+1.951
+A12
+Fatigue and somnolence
+6.843
+2.221
+A13
+Drinking using right hand
+6.387
+1.861
+A14
+Drinking using left hand
+6.396
+1.843
+A15
+Reaching behind
+5.801
+1.843
+A16
+Smoking
+7.738
+2.296
+Total
+444.104
+130.028
+Siang: RGB + Depth + Side view + Front view
+Malam: IR + Depth + Side view + Front view
+12
+
+=== HALAMAN 20 ===
+2.4
+Oklusi pada Pemantauan Pengemudi
+Oklusi (occlusion) merupakan kondisi ketika sebagian objek atau bagian
+tubuh tidak terlihat secara penuh dalam citra akibat terhalang oleh objek lain
+atau keterbatasan sudut pandang kamera. Dalam konteks pemantauan penge-
+mudi, oklusi dan keterbatasan sudut pandang menjadi tantangan penting pada
+sistem berbasis kamera [10, 20]. Kondisi ini relevan dengan dataset 3MDAD
+karena aktivitas pengemudi direkam dari dua sudut pandang yang berbeda,
+sehingga visibilitas bagian tubuh atau objek yang digunakan pengemudi dapat
+berbeda antar kamera [9].
+Keberadaan oklusi dapat menyebabkan hilangnya sebagian informasi visu-
+al yang dibutuhkan dalam proses klasifikasi, sehingga menjadi tantangan bagi
+sistem deteksi berbasis visi komputer, khususnya ketika sistem hanya meng-
+andalkan satu sudut pandang kamera [9, 10]. Permasalahan ini relevan pada
+kondisi berkendara nyata karena posisi tubuh pengemudi dan interaksi dengan
+objek di dalam kendaraan dapat menyebabkan sebagian area tubuh tidak ter-
+lihat secara optimal dari sudut pandang kamera tertentu.
+Keunggulan dataset 3MDAD terletak pada kemampuannya merepresenta-
+sikan kondisi berkendara yang lebih natural dibandingkan dataset dengan satu
+sudut kamera saja [9]. Hal ini penting karena pada kondisi nyata, informasi
+visual dari satu sudut pandang saja sering kali tidak cukup untuk menang-
+kap seluruh bagian tubuh atau aktivitas tangan pengemudi secara lengkap.
+Oleh karena itu, dataset ini sangat sesuai untuk menguji apakah pendekat-
+an multi-view benar-benar memberikan keuntungan dibandingkan single-view
+dalam menghadapi kondisi oklusi.
+2.5
+Pendekatan Single-View dan Multi-View
+Pendekatan single-view merupakan metode deteksi yang hanya mengan-
+dalkan satu kamera untuk mengamati pengemudi. Pendekatan ini sederha-
+na dan efisien, tetapi rentan terhadap oklusi serta keterbatasan sudut pan-
+dang [2, 10]. Pada kondisi tertentu, informasi visual penting seperti tangan,
+wajah, atau objek yang digunakan pengemudi dapat terhalang oleh setir, posisi
+tubuh, atau komponen interior kendaraan. Hal ini dapat menyebabkan pre-
+diksi model menjadi kurang stabil karena informasi dari satu sudut pandang
+saja tidak selalu cukup untuk merepresentasikan aktivitas pengemudi secara
+lengkap. Beberapa penelitian single-view berupaya meningkatkan performa
+melalui mekanisme perhatian, seperti yang dilakukan oleh Xiao dkk. [7] serta
+Gao dan Liu [8].
+Sebaliknya, pendekatan multi-view memanfaatkan dua atau lebih sudut
+pandang untuk memperoleh informasi yang saling melengkapi. Pendekatan
+ini bertujuan agar kelemahan satu kamera dapat dikompensasi oleh kamera
+lainnya, terutama pada kondisi oklusi. Kuang dkk. [11] menunjukkan bahwa
+integrasi informasi dari beberapa kamera dapat meningkatkan ketahanan sis-
+13
+
+=== HALAMAN 21 ===
+tem dalam mengenali aktivitas pengemudi. Temuan serupa juga ditunjukkan
+oleh Ma dkk. [12], Yang dkk. [13], Xu dkk. [21], dan Mou dkk. [22], yang
+menekankan bahwa penggabungan informasi atau representasi dari beberapa
+sumber visual dapat meningkatkan robustisitas sistem apabila strategi fusi di-
+rancang dengan tepat.
+Dalam konteks dataset 3MDAD, pendekatan multi-view direpresentasik-
+an melalui dua sudut kamera utama, yaitu front view dan side view, yang
+diambil secara tersinkronisasi [9].
+Kedua sudut pandang tersebut memiliki
+karakteristik visibilitas yang berbeda. Front view cenderung menangkap area
+wajah dan bagian depan tubuh pengemudi, sedangkan side view memberikan
+informasi tambahan terkait posisi tubuh dan pergerakan tangan secara lateral.
+Perbedaan karakteristik ini membuat kedua sudut pandang berpotensi saling
+melengkapi dalam mendeteksi aktivitas penggunaan ponsel.
+Informasi dari beberapa sudut pandang dalam sistem multi-view dapat
+digabungkan melalui beberapa strategi, salah satunya adalah decision-level
+fusion.
+Strategi ini menggabungkan skor probabilitas keluaran dari model
+single-view yang telah dilatih secara independen, sehingga masing-masing su-
+dut pandang tetap dapat dievaluasi secara terpisah sebelum hasil prediksinya
+digabungkan. Pada penelitian ini, strategi decision-level fusion yang diban-
+dingkan adalah average fusion dan adaptive fusion. Average fusion memberik-
+an bobot yang sama pada setiap sumber prediksi dan merupakan salah satu
+strategi decision-level fusion yang umum digunakan [15]. Sementara itu, adap-
+tive fusion pada penelitian ini dirancang dengan mengadaptasi prinsip pem-
+bobotan dinamis berbasis tingkat keyakinan prediksi, yang terinspirasi dari
+pendekatan fusi adaptif pada domain temporal [16].
+2.6
+EfficientNetV2 sebagai Backbone
+EfficientNetV2 digunakan sebagai backbone pada model klasifikasi single-
+view dalam penelitian ini karena memiliki keseimbangan yang baik antara
+akurasi, efisiensi parameter, dan kecepatan pelatihan. Tan dan Le [17] mem-
+perkenalkan EfficientNetV2 sebagai pengembangan dari EfficientNet dengan
+memanfaatkan training-aware neural architecture search, strategi compound
+scaling, serta penggunaan blok Fused-MBConv untuk meningkatkan efisiensi
+pelatihan dan inferensi model.
+Pada keluarga EfficientNet, proses penskalaan model dilakukan menggu-
+nakan pendekatan compound scaling yang diperkenalkan pada EfficientNet
+generasi pertama [23] dan diadopsi kembali pada EfficientNetV2 [17]. Pen-
+dekatan ini secara umum dinyatakan sebagai:
+d = αϕ,
+w = βϕ,
+r = γϕ
+(2.1)
+dengan syarat penskalaan:
+α · β2 · γ2 ≈2
+(2.2)
+14
+
+=== HALAMAN 22 ===
+dengan d, w, dan r masing-masing menyatakan kedalaman jaringan, le-
+bar jaringan, dan resolusi citra masukan. Parameter ϕ menyatakan koefisien
+penskalaan (scaling coefficient), sedangkan α, β, dan γ merupakan konstanta
+penskalaan untuk dimensi kedalaman, lebar, dan resolusi [23].
+Selain itu, EfficientNetV2 menggunakan fungsi reward pada proses neural
+architecture search untuk mempertimbangkan akurasi, efisiensi parameter, dan
+kecepatan pelatihan secara bersamaan. Fungsi tersebut dinyatakan sebagai:
+R = A · Sw · P v
+(2.3)
+dengan R menyatakan nilai reward, A menyatakan akurasi model, S me-
+nyatakan waktu pelatihan yang telah dinormalisasi, dan P menyatakan jumlah
+parameter model. Parameter w = −0.07 dan v = −0.05 merupakan konstanta
+empiris yang digunakan untuk menyeimbangkan kontribusi kecepatan pelatih-
+an dan efisiensi parameter pada proses pencarian arsitektur [17].
+EfficientNetV2 juga memperkenalkan penggunaan blok Fused-MBConv, ya-
+itu pengembangan dari MBConv yang menggabungkan operasi depthwise con-
+volution dan expansion convolution menjadi satu operasi konvolusi reguler pa-
+da tahap awal jaringan untuk meningkatkan efisiensi pelatihan [17]. Perban-
+dingan struktur MBConv dan Fused-MBConv pada EfficientNetV2 ditunjukk-
+an pada Gambar 2.1.
+Gambar 2.1: Perbandingan struktur MBConv dan Fused-MBConv pada Effi-
+cientNetV2 [17]
+Berdasarkan Gambar 2.1, penggunaan Fused-MBConv pada tahap awal
+jaringan bertujuan untuk mengurangi overhead memori dan meningkatkan efi-
+15
+
+=== HALAMAN 23 ===
+siensi komputasi pada perangkat akselerator modern. Pendekatan ini memung-
+kinkan proses pelatihan berlangsung lebih cepat tanpa meningkatkan komplek-
+sitas model secara signifikan [17].
+EfficientNetV2 menawarkan keseimbangan antara efisiensi dan kemampu-
+an representasi fitur melalui optimasi struktur jaringan dan strategi pelatih-
+an yang lebih efisien dibandingkan generasi sebelumnya [17]. Dalam konteks
+deteksi distraksi pengemudi, Khan dkk. [6] menunjukkan bahwa pendekatan
+berbasis EfficientNetB0 yang diintegrasikan dengan mekanisme perhatian ka-
+nal (channel attention) mampu mencapai akurasi 99,58% pada dataset State
+Farm Distracted Driver Detection (SFD3) dan 98,97% pada AUC Distracted
+Driver (AUCD2). Hasil tersebut menunjukkan bahwa keluarga EfficientNet
+layak digunakan sebagai backbone yang efisien dan efektif untuk tugas deteksi
+distraksi pengemudi. Sementara itu, EfficientNetV2 merupakan generasi lan-
+jutan yang dirancang untuk meningkatkan efisiensi pelatihan dan performa
+model [17].
+Beberapa penelitian terdahulu pada dataset 3MDAD memang menggunak-
+an arsitektur seperti ResNet atau VGG sebagai backbone maupun bagian dari
+mekanisme fusi [9,11]. Namun, penelitian ini tidak bertujuan melakukan per-
+bandingan antar-backbone, melainkan mengevaluasi kontribusi sudut pandang
+dan strategi decision-level fusion pada skenario klasifikasi safe driving dan
+phone-use distracted driving. Oleh karena itu, penggunaan ResNet tidak dija-
+dikan fokus utama agar eksperimen tidak bergeser menjadi studi komparatif
+arsitektur. EfficientNetV2 dipilih karena memiliki keseimbangan antara akura-
+si, efisiensi parameter, dan kecepatan pelatihan [17], serta telah digunakan oleh
+Lv dkk. [16] dalam sistem pemantauan pengemudi berbasis fusi adaptif. Pada
+penelitian ini, EfficientNetV2-S digunakan secara konsisten pada front view
+dan side view agar perbedaan performa yang diamati lebih merepresentasik-
+an pengaruh sudut pandang dan strategi fusi, bukan perbedaan kompleksitas
+arsitektur backbone.
+2.7
+Metrik Evaluasi
+Evaluasi performa model dilakukan menggunakan metrik akurasi, presisi,
+recall, dan Macro F1-Score.
+Perhitungan metrik tersebut didasarkan pada
+komponen confusion matrix, yaitu true positive (TP), true negative (TN), fal-
+se positive (FP), dan false negative (FN) [24]. Karena distribusi kelas pada
+penelitian ini tidak seimbang, Macro F1-Score digunakan sebagai metrik uta-
+ma. Metrik ini dipilih karena menghitung nilai F1-Score pada setiap kelas
+secara terpisah, kemudian merata-ratakannya sehingga kelas safe driving dan
+phone-use distracted driving memiliki kontribusi yang setara dalam evaluasi.
+Akurasi, presisi, dan recall digunakan sebagai metrik pendukung.
+16
+
+=== HALAMAN 24 ===
+2.7.1
+Akurasi
+Akurasi (accuracy) digunakan untuk mengukur proporsi keseluruhan pre-
+diksi yang benar terhadap seluruh data pengujian [24]. Nilai akurasi dapat
+dihitung menggunakan persamaan berikut:
+Accuracy =
+TP + TN
+TP + TN + FP + FN
+(2.4)
+dengan:
+• TP : jumlah true positive,
+• TN : jumlah true negative,
+• FP : jumlah false positive,
+• FN : jumlah false negative.
+Semakin tinggi nilai akurasi, semakin besar proporsi prediksi model yang
+sesuai dengan label sebenarnya. Namun, akurasi dapat menjadi kurang repre-
+sentatif pada distribusi data yang tidak seimbang karena cenderung dipenga-
+ruhi oleh kelas mayoritas [24,25].
+2.7.2
+Presisi
+Presisi (precision) digunakan untuk mengukur tingkat ketepatan model da-
+lam memprediksi kelas positif [24]. Presisi dihitung menggunakan persamaan:
+Precision =
+TP
+TP + FP
+(2.5)
+dengan:
+• TP : jumlah true positive,
+• FP : jumlah false positive.
+Nilai presisi yang tinggi menunjukkan bahwa sebagian besar data yang dip-
+rediksi sebagai penggunaan ponsel memang benar merupakan aktivitas peng-
+gunaan ponsel.
+2.7.3
+Recall
+Recall atau sensitivitas digunakan untuk mengukur kemampuan model da-
+lam mendeteksi seluruh data positif yang sebenarnya ada pada dataset [24].
+Nilai recall dihitung menggunakan persamaan:
+Recall =
+TP
+TP + FN
+(2.6)
+dengan:
+17
+
+=== HALAMAN 25 ===
+• TP : jumlah true positive,
+• FN : jumlah false negative.
+Nilai recall yang tinggi menunjukkan bahwa model mampu mendeteksi
+sebagian besar aktivitas penggunaan ponsel yang benar-benar terjadi.
+2.7.4
+Macro F1-Score
+F1-Score merupakan rata-rata harmonik antara presisi dan recall, sehingga
+dapat digunakan untuk mengevaluasi keseimbangan performa model terhadap
+kedua metrik tersebut [24]. Nilai F1-Score dihitung menggunakan persamaan:
+F1 = 2 × Precision × Recall
+Precision + Recall
+(2.7)
+dengan:
+• Precision : nilai presisi,
+• Recall : nilai recall.
+Pada penelitian ini, nilai F1-Score yang digunakan sebagai metrik utama
+adalah Macro F1-Score. Macro F1-Score dihitung dengan merata-ratakan nilai
+F1-Score dari setiap kelas, sehingga setiap kelas memiliki bobot kontribusi
+yang sama tanpa dipengaruhi oleh jumlah sampel pada masing-masing kelas.
+Untuk klasifikasi biner pada penelitian ini, Macro F1-Score dihitung sebagai
+berikut:
+Macro F1 = F1safe + F1phone
+2
+(2.8)
+dengan F1safe menyatakan nilai F1-Score untuk kelas safe driving, se-
+dangkan F1phone menyatakan nilai F1-Score untuk kelas phone-use distracted
+driving.
+Dalam konteks deteksi penggunaan ponsel oleh pengemudi, Macro F1-Score
+menjadi penting karena mampu merepresentasikan performa kedua kelas se-
+cara lebih seimbang, terutama ketika distribusi data antara kelas safe driving
+dan phone-use distracted driving tidak seimbang.
+18
+
+=== HALAMAN 26 ===
+Bab III
+Perancangan Sistem
+Bab ini menguraikan perancangan sistem deteksi penggunaan ponsel pe-
+ngemudi berbasis pendekatan multi-view dengan decision-level fusion. Per-
+ancangan mencakup alur sistem secara keseluruhan, pengumpulan dan pra-
+pemrosesan data, arsitektur model single-view, strategi decision-level fusion,
+serta skenario pengujian dan evaluasi yang digunakan untuk menjawab ketiga
+rumusan masalah penelitian.
+3.1
+Alur Penelitian dan Perancangan Sistem
+Penelitian ini dirancang secara sistematis melalui serangkaian tahapan un-
+tuk mengevaluasi efektivitas pendekatan multi-view dan membandingkan stra-
+tegi decision-level fusion dalam mendeteksi penggunaan ponsel oleh pengemu-
+di.
+Alur perancangan sistem secara keseluruhan dapat dilihat pada Gam-
+bar 3.1.
+Berdasarkan Gambar 3.1, tahapan perancangan sistem diawali dengan pe-
+ngumpulan data dari dataset publik 3MDAD [9]. Data yang digunakan dibata-
+si pada modalitas citra RGB pada kondisi siang hari dari dua sudut pandang,
+yaitu kamera depan (front view) dan kamera samping (side view). Setelah
+data terkumpul, dilakukan seleksi kelas dan perumusan label, kemudian da-
+taset dibagi menjadi himpunan latih, validasi, dan uji menggunakan strategi
+subject-based split. Selanjutnya, setiap partisi melalui tahap prapemrosesan
+yang mencakup ekstraksi frame, penyesuaian resolusi citra, dan normalisasi.
+Setelah data siap, dilakukan pelatihan model klasifikasi single-view se-
+cara terpisah untuk masing-masing sudut pandang menggunakan arsitektur
+EfficientNetV2-S [17].
+Pada tahap ini, EfficientNetV2-S digunakan sebagai
+backbone dalam model klasifikasi end-to-end, bukan hanya sebagai ekstrak-
+tor fitur terpisah. Setiap model menerima citra dari satu sudut pandang dan
+menghasilkan skor probabilitas untuk dua kelas, yaitu safe driving dan phone-
+use distracted driving. Model single-view yang dihasilkan kemudian dievaluasi
+secara mandiri untuk mengidentifikasi tingkat performa dan membedah po-
+la kegagalan (failure pattern) yang terjadi ketika sistem hanya mengandalkan
+satu kamera, terutama pada kondisi oklusi alami.
+19
+
+=== HALAMAN 27 ===
+Gambar 3.1: Diagram alir perancangan sistem
+20
+
+=== HALAMAN 28 ===
+Tahap krusial selanjutnya adalah penerapan pendekatan multi-view mela-
+lui strategi decision-level fusion. Pada tahap ini, skor probabilitas keluaran
+dari model front view dan side view digabungkan menggunakan dua strategi
+yang dibandingkan secara komparatif, yaitu average fusion dengan bobot sa-
+ma rata dan adaptive fusion dengan pembobotan dinamis berdasarkan tingkat
+keyakinan prediksi masing-masing sudut pandang [15, 16]. Tahapan diakhiri
+dengan evaluasi kinerja sistem secara menyeluruh menggunakan metrik akura-
+si, presisi, recall, dan Macro F1-Score untuk menganalisis apakah pendekatan
+multi-view dengan adaptive fusion memberikan peningkatan performa diban-
+dingkan single-view dan average fusion dalam skenario klasifikasi safe driving
+dan phone-use distracted driving.
+3.2
+Pengumpulan dan Prapemrosesan Data
+Tahap ini dilakukan untuk menyiapkan data yang digunakan dalam proses
+pelatihan, validasi, dan pengujian model, mulai dari pengumpulan data hingga
+prapemrosesan agar sesuai dengan kebutuhan masukan model.
+3.2.1
+Pengumpulan Data dan Perumusan Label
+Penelitian difokuskan pada enam kelas aktivitas, yang terdiri dari satu ke-
+las kontrol yaitu mengemudi aman (A1: safe driving), serta lima kelas yang
+berkaitan dengan penggunaan ponsel (A5–A9: phone-use distracted driving)
+yang mencakup aktivitas menulis pesan, berbicara melalui telepon, dan memo-
+tret menggunakan ponsel. Meskipun data yang digunakan berasal dari enam
+kelas aktivitas pada 3MDAD, tugas klasifikasi dalam penelitian ini dirumusk-
+an sebagai klasifikasi biner. Kelas A1 dipetakan sebagai kelas safe driving,
+sedangkan kelas A5–A9 digabungkan sebagai kelas phone-use distracted dri-
+ving. Perumusan ini disesuaikan dengan fokus penelitian, yaitu membedakan
+kondisi mengemudi aman dari aktivitas penggunaan ponsel, bukan membedak-
+an jenis aktivitas penggunaan ponsel secara terpisah maupun seluruh bentuk
+distraksi pengemudi lainnya.
+Berdasarkan spesifikasi dataset 3MDAD, total data yang diekstraksi untuk
+keenam kelas tersebut berjumlah 41.574 pasang frame yang tersinkronisasi,
+atau setara dengan 83.148 citra tunggal dari gabungan front view dan side
+view.
+Distribusi data berdasarkan label biner menunjukkan bahwa kelas safe dri-
+ving terdiri dari 6.761 pasang frame, sedangkan kelas phone-use distracted dri-
+ving yang merupakan gabungan kelas A5–A9 terdiri dari 34.813 pasang frame.
+Dengan demikian, distribusi label pada penelitian ini tidak seimbang karena
+kelas phone-use distracted driving memiliki proporsi yang jauh lebih besar di-
+bandingkan kelas safe driving. Rincian distribusi label biner disajikan pada
+Tabel 3.1.
+21
+
+=== HALAMAN 29 ===
+Tabel 3.1: Distribusi label biner pada data yang digunakan
+Label Biner
+Kelas Asal
+Jumlah Pasang Frame
+Proporsi
+Safe driving
+A1
+6.761
+16,26%
+Phone-use distracted driving
+A5–A9
+34.813
+83,74%
+Total
+A1, A5–A9
+41.574
+100%
+Ketidakseimbangan distribusi label tersebut menjadi dasar penggunaan
+Macro F1-Score sebagai metrik utama. Metrik ini dipilih karena memberikan
+bobot evaluasi yang setara terhadap kelas safe driving dan phone-use distra-
+cted driving, sehingga hasil evaluasi tidak didominasi oleh kelas dengan jumlah
+sampel yang lebih besar.
+Untuk memperlihatkan perbedaan informasi visual antara front view dan
+side view, contoh pasangan citra dari kelas safe driving dan phone-use distra-
+cted driving ditampilkan pada Gambar 3.2.
+Front View
+Side View
+A1: safe driving
+A5–A9: phone-use
+distracted driving
+Gambar 3.2: Contoh citra dari dataset 3MDAD yang digunakan dalam pene-
+litian ini [9].
+Gambar 3.2 menampilkan pasangan frame tersinkronisasi dari dua sudut
+pandang, yaitu front view di sebelah kiri dan side view di sebelah kanan.
+Baris pertama menunjukkan kelas mengemudi aman (A1) yang dipetakan se-
+bagai kelas safe driving, sedangkan baris kedua menunjukkan contoh aktivitas
+penggunaan ponsel (A5–A9) yang dipetakan sebagai kelas phone-use distra-
+cted driving. Perbedaan sudut pandang pada gambar tersebut memperlihatkan
+22
+
+=== HALAMAN 30 ===
+bahwa informasi yang ditangkap oleh front view dan side view bersifat kom-
+plementer, sehingga keduanya dapat digunakan untuk mengevaluasi kontribusi
+masing-masing sudut pandang maupun untuk mendukung proses decision-level
+fusion.
+Karakteristik multi-view pada dataset ini memungkinkan analisis kontribu-
+si masing-masing sudut pandang serta penggabungan informasi antar kamera
+untuk mendukung deteksi aktivitas pengemudi secara lebih komprehensif.
+3.2.2
+Pembagian Dataset
+Pembagian dataset dilakukan menggunakan strategi subject-based split, ya-
+itu seluruh sekuens dari satu subjek hanya dimasukkan ke dalam satu partisi
+saja. Strategi ini digunakan agar model dievaluasi pada subjek yang tidak per-
+nah muncul pada himpunan latih, sehingga risiko kemiripan data antarpartisi
+dapat diminimalkan.
+Pendekatan serupa digunakan pada evaluasi split-by-
+driver dalam penelitian deteksi distraksi pengemudi [8].
+Secara rancangan, dataset dibagi menggunakan proporsi 70:15:15, yaitu
+70% untuk pelatihan, 15% untuk validasi, dan 15% untuk pengujian. Namun,
+karena pembagian dilakukan berdasarkan subjek dan jumlah subjek pada sub-
+set siang hari adalah 50 partisipan, proporsi tersebut dibulatkan pada tingkat
+subjek menjadi 35 subjek untuk pelatihan, 7 subjek untuk validasi, dan 8
+subjek untuk pengujian. Pembagian ini diterapkan secara identik pada data
+front view dan side view, sehingga pasangan frame dari subjek yang sama te-
+tap berada pada partisi yang sama. Dengan demikian, evaluasi antar sudut
+pandang dapat berlangsung secara adil dan risiko kebocoran data antar par-
+tisi dapat diminimalkan. Rencana pembagian dataset berdasarkan proporsi,
+jumlah subjek, estimasi pasangan frame, dan estimasi citra tunggal disajikan
+pada Tabel 3.2.
+Tabel 3.2: Rencana pembagian dataset menggunakan subject-based split
+Partisi
+Proporsi
+Jumlah
+Subjek
+Estimasi
+Pasang
+Frame
+Estimasi
+Citra
+Tunggal
+Latih
+70%
+35
+29.102
+58.204
+Validasi
+15%
+7
+6.236
+12.472
+Uji
+15%
+8
+6.236
+12.472
+Total
+100%
+50
+41.574
+83.148
+Jumlah pasangan frame dan citra tunggal pada Tabel 3.2 merupakan es-
+timasi berdasarkan proporsi 70:15:15 dari total 41.574 pasang frame. Kare-
+na pembagian data dilakukan menggunakan subject-based split, jumlah aktual
+23
+
+=== HALAMAN 31 ===
+frame pada setiap partisi dapat sedikit berbeda dari estimasi tersebut, ber-
+gantung pada jumlah frame yang dimiliki oleh masing-masing subjek. Oleh
+karena itu, pembagian akhir tetap mengutamakan pemisahan subjek secara
+konsisten, dengan memastikan seluruh data front view dan side view dari sub-
+jek yang sama berada pada partisi yang sama untuk meminimalkan risiko data
+leakage antarpartisi.
+3.2.3
+Prapemrosesan Citra
+Setiap frame dari kedua sudut pandang diproses melalui tahapan berikut.
+Pertama, frame diekstraksi dari setiap sekuens dengan stride tertentu untuk
+mengurangi redundansi temporal antar frame yang berdekatan, dengan nilai
+stride ditentukan pada tahap implementasi berdasarkan keseimbangan antara
+efisiensi komputasi dan keragaman temporal sampel yang dihasilkan. Kedua,
+setiap frame diubah ukurannya menjadi 224×224 piksel sebagai pilihan imple-
+mentasi untuk menjaga efisiensi komputasi dan keseragaman ukuran masukan.
+Pemilihan EfficientNetV2-S sebagai backbone didasarkan pada karakteristik
+EfficientNetV2 yang dirancang untuk mencapai keseimbangan antara akurasi,
+efisiensi parameter, dan kecepatan pelatihan [17]. Ketiga, nilai piksel dinorma-
+lisasi menggunakan rata-rata dan standar deviasi ImageNet untuk mendukung
+transfer learning dari bobot pra-latih. Keempat, augmentasi data diterapkan
+secara eksklusif pada himpunan latih, meliputi random horizontal flip, random
+rotation, dan color jitter, untuk meningkatkan keragaman sampel dan mengu-
+rangi overfitting. Himpunan validasi dan uji tidak diberikan augmentasi agar
+evaluasi mencerminkan performa model pada data asli. Seluruh tahapan pra-
+pemrosesan pada masing-masing partisi diterapkan secara identik untuk data
+front view dan side view.
+3.3
+Model Single-View Berbasis EfficientNetV2-S
+Subbab ini menjelaskan rancangan model klasifikasi single-view yang di-
+gunakan pada masing-masing sudut pandang. Sesuai perumusan label pada
+Subbab 3.2.1, setiap model dirancang untuk melakukan klasifikasi biner, ya-
+itu membedakan kelas safe driving dan phone-use distracted driving. Model
+single-view dibangun menggunakan EfficientNetV2-S sebagai backbone utama
+dan menghasilkan skor probabilitas yang selanjutnya digunakan dalam evaluasi
+per sudut pandang maupun pada tahap decision-level fusion.
+3.3.1
+Konfigurasi EfficientNetV2-S dan Classifier Head
+Setiap sudut pandang dimodelkan secara independen menggunakan arsi-
+tektur EfficientNetV2-S sebagai backbone utama [17]. Dalam penelitian ini,
+EfficientNetV2-S tidak hanya digunakan sebagai ekstraktor fitur statis, tetapi
+sebagai bagian dari model klasifikasi single-view end-to-end yang dilatih un-
+tuk menghasilkan prediksi kelas safe driving dan phone-use distracted driving.
+24
+
+=== HALAMAN 32 ===
+Dengan demikian, keluaran akhir dari setiap model single-view berupa skor
+probabilitas kelas yang selanjutnya dapat digunakan pada tahap decision-level
+fusion.
+Varian EfficientNetV2-S dipilih karena memiliki kompleksitas yang lebih
+rendah dibandingkan varian EfficientNetV2-M dan EfficientNetV2-L, sehingga
+beban komputasi dapat dijaga tetap proporsional dalam perbandingan strategi
+fusion [17]. Pemilihan varian ini juga bertujuan agar fokus eksperimen tetap
+diarahkan pada evaluasi kontribusi sudut pandang dan strategi fusi, bukan
+pada perbandingan kapasitas arsitektur backbone.
+Secara umum, arsitektur model single-view yang digunakan terdiri dari ma-
+sukan citra RGB berukuran 224×224 piksel, backbone EfficientNetV2-S, global
+average pooling, dropout, lapisan fully connected, dan aktivasi softmax. Lapis-
+an klasifikasi asli EfficientNetV2-S yang digunakan untuk klasifikasi ImageNet
+diganti dengan classifier head baru yang disesuaikan dengan tugas klasifikasi
+biner pada penelitian ini.
+Lapisan dropout digunakan sebagai teknik regu-
+larisasi untuk mengurangi risiko overfitting, sedangkan lapisan fully connected
+menghasilkan dua unit keluaran yang merepresentasikan kelas safe driving dan
+phone-use distracted driving.
+3.3.2
+Skema Transfer Learning dan Fine-Tuning
+Model diinisialisasi menggunakan bobot pra-latih ImageNet (ImageNet pre-
+trained weights) sebagai bentuk transfer learning. Selanjutnya, model dilatih
+menggunakan skema fine-tuning pada dataset 3MDAD agar representasi fitur
+yang telah dipelajari dari ImageNet dapat disesuaikan dengan domain citra
+pengemudi di dalam kabin kendaraan.
+Pada tahap implementasi, lapisan klasifikasi bawaan EfficientNetV2-S di-
+ganti dengan classifier head baru untuk dua kelas keluaran.
+Detail teknis
+seperti learning rate, batch size, jumlah epoch maksimum, nilai dropout, serta
+pengaturan jumlah lapisan yang dibekukan atau dilatih kembali akan diten-
+tukan berdasarkan hasil eksplorasi awal. Dengan pendekatan ini, rancangan
+model tetap fleksibel terhadap kebutuhan implementasi tanpa mengubah tuju-
+an utama penelitian, yaitu mengevaluasi kontribusi sudut pandang dan strategi
+fusion.
+3.3.3
+Pelatihan dan Keluaran Model Single-View
+Arsitektur yang identik diterapkan pada dua model yang berbeda, yaitu
+model front view (Mfront) dan model side view (Mside). Kedua model terse-
+but dilatih secara independen menggunakan data dari sudut pandang masing-
+masing. Model Mfront hanya menerima citra dari kamera depan, sedangkan
+model Mside hanya menerima citra dari kamera samping. Dengan rancangan
+ini, performa masing-masing sudut pandang dapat dianalisis secara terpisah
+sebelum kedua skor probabilitasnya digabungkan pada tahap decision-level fu-
+25
+
+=== HALAMAN 33 ===
+sion.
+Pada tahap pelatihan, model dioptimasi menggunakan fungsi kerugian
+cross-entropy loss, karena tugas yang dilakukan merupakan klasifikasi dua kelas
+dengan keluaran softmax. Fungsi kerugian tersebut digunakan untuk mengu-
+kur perbedaan antara prediksi model dan label sebenarnya, sehingga bobot
+model dapat diperbarui selama proses pelatihan.
+Keluaran model dinyatakan sebagai skor probabilitas melalui fungsi sof-
+tmax. Untuk setiap citra masukan, model menghasilkan dua nilai probabi-
+litas, yaitu probabilitas kelas safe driving dan probabilitas kelas phone-use
+distracted driving. Dalam tahap evaluasi dan fusion, skor probabilitas kelas
+phone-use distracted driving digunakan sebagai dasar pengambilan keputus-
+an. Prediksi dikategorikan sebagai phone-use distracted driving apabila skor
+probabilitas kelas phone-use distracted driving bernilai lebih besar atau sama
+dengan ambang batas 0,5. Ambang batas yang sama digunakan pada seluruh
+konfigurasi pengujian agar evaluasi antara model single-view dan multi-view
+tetap konsisten.
+Setelah proses pelatihan selesai, masing-masing model single-view dieva-
+luasi secara mandiri untuk mengidentifikasi perbedaan performa serta pola
+kegagalan antar sudut pandang, khususnya pada kondisi oklusi alami yang
+menjadi tantangan utama sistem single-view [10,11].
+3.3.4
+Algoritma Sistem
+Algoritma 1 merangkum alur kerja sistem yang diusulkan, mulai dari pela-
+tihan model single-view berbasis EfficientNetV2-S pada masing-masing sudut
+pandang, pembentukan skor probabilitas kelas phone-use distracted driving,
+hingga penggabungan keputusan menggunakan strategi decision-level fusion.
+Algoritma ini ditempatkan pada bagian model untuk memperjelas hubungan
+antara arsitektur single-view, keluaran probabilitas, dan mekanisme fusi yang
+digunakan dalam sistem.
+26
+
+=== HALAMAN 34 ===
+Algorithm 1 Alur Sistem Klasifikasi safe driving dan phone-use distracted
+driving Berbasis Multi-View
+1: procedure DriverPhoneDetection(Dfront, Dside, F)
+Require: Dataset Dfront dan Dside, serta strategi fusi F ∈{average, adaptive}
+Ensure: Prediksi akhir ˆy dan metrik evaluasi sistem
+2:
+Bagi Dfront dan Dside menjadi data latih, validasi, dan uji menggunakan
+subject-based split
+Tahap pelatihan model single-view
+3:
+for setiap view ∈{front, side} do
+4:
+Inisialisasi Mview dengan EfficientNetV2-S dan bobot pra-latih Ima-
+geNet
+5:
+Ganti classifier head untuk dua kelas: safe driving dan phone-use
+distracted driving
+6:
+Latih Mview pada Dtrain
+view menggunakan cross-entropy loss
+7:
+Validasi Mview pada Dval
+view
+8:
+Simpan model terbaik sebagai M ∗
+view
+9:
+end for
+Tahap inferensi dan decision-level fusion
+10:
+for setiap pasangan sampel uji ke-i do
+11:
+Hitung probabilitas kelas phone-use distracted driving dari masing-
+masing model:
+P (i)
+front ←P(phone-use distracted driving | x(i)
+front; M ∗
+front)
+P (i)
+side ←P(phone-use distracted driving | x(i)
+side; M ∗
+side)
+12:
+if F = average then
+13:
+Hitung skor gabungan: P (i)
+fused ←
+ P (i)
+front + P (i)
+side
+
+/2
+14:
+else if F = adaptive then
+15:
+Hitung confidence tiap view: c(i)
+k ←|P (i)
+k
+−0,5|
+16:
+Hitung bobot adaptif w(i)
+k
+menggunakan softmax terhadap c(i)
+k
+17:
+Hitung skor gabungan: P (i)
+fused ←w(i)
+frontP (i)
+front + w(i)
+sideP (i)
+side
+18:
+end if
+19:
+if P (i)
+fused ≥0,5 then
+20:
+ˆy(i) ←phone-use distracted driving
+21:
+else
+22:
+ˆy(i) ←safe driving
+23:
+end if
+24:
+end for
+Tahap evaluasi
+25:
+Hitung akurasi, presisi, recall, Macro F1-Score, dan confusion matrix
+26: end procedure
+27
+
+=== HALAMAN 35 ===
+3.4
+Strategi Decision-Level Fusion
+Setelah kedua model single-view selesai dilatih, skor probabilitas kelas po-
+sitif (phone-use distracted driving) dari Mfront dan Mside digabungkan meng-
+gunakan dua strategi decision-level fusion yang dibandingkan secara langsung.
+Penggabungan dilakukan pada tingkat keputusan karena input yang digunakan
+pada tahap ini bukan lagi fitur visual dari backbone, melainkan skor probabi-
+litas keluaran dari masing-masing model single-view.
+3.4.1
+Average Fusion
+Pada strategi average fusion, skor probabilitas kelas positif dari kedua mo-
+del digabungkan dengan bobot yang sama rata. Skor gabungan Pavg dinyatak-
+an sebagai:
+Pavg = Pfront + Pside
+2
+(3.1)
+di mana Pfront dan Pside adalah skor probabilitas kelas positif dari masing-
+masing model. Prediksi akhir ditetapkan sebagai kelas positif apabila Pavg ≥
+0,5. Ambang batas 0,5 digunakan sebagai keputusan desain eksperimen un-
+tuk menjaga konsistensi evaluasi antara model single-view, average fusion, dan
+adaptive fusion. Pendekatan ini bersifat statis karena tidak mempertimbangk-
+an perbedaan kualitas prediksi antar kamera pada setiap sampel. Roitberg
+dkk. [15] menunjukkan bahwa average fusion tidak selalu menjadi pilihan yang
+paling optimal karena memperlakukan kontribusi setiap sumber secara setara
+tanpa menilai tingkat kepercayaan prediksinya.
+3.4.2
+Adaptive Fusion
+Pada strategi adaptive fusion, bobot setiap model ditentukan secara dina-
+mis berdasarkan tingkat kepercayaan (confidence) prediksinya. Tingkat keper-
+cayaan model ke-k pada sampel ke-i didefinisikan sebagai jarak skor probabi-
+litas terhadap ambang batas keputusan:
+c(i)
+k =
+P (i)
+k
+−0,5
+
+(3.2)
+Bobot ternormalisasi untuk masing-masing model dihitung menggunakan
+softmax atas nilai kepercayaan tersebut:
+w(i)
+k =
+exp
+
+c(i)
+k
+
+X
+j∈{front, side}
+exp
+
+c(i)
+j
+
+(3.3)
+28
+
+=== HALAMAN 36 ===
+Skor gabungan adaptive fusion kemudian dinyatakan sebagai:
+P (i)
+adp = w(i)
+front · P (i)
+front + w(i)
+side · P (i)
+side
+(3.4)
+dengan i menyatakan indeks sampel uji, k menyatakan sudut pandang yang
+sedang dihitung, yaitu front atau side, dan j menyatakan indeks penjumlahan
+pada proses normalisasi softmax. Nilai P (i)
+front dan P (i)
+side masing-masing me-
+nyatakan skor probabilitas kelas phone-use distracted driving dari model front
+view dan side view, sedangkan w(i)
+front dan w(i)
+side menyatakan bobot adaptif
+untuk masing-masing sudut pandang.
+Prediksi akhir ditetapkan sebagai kelas positif apabila P (i)
+adp ≥0,5, mengi-
+kuti konvensi yang sama dengan strategi average fusion. Mekanisme ini meng-
+adaptasi gagasan umum pembobotan dinamis dari Adaptive Temporal Fusion
+Module (ATFM) yang diusulkan oleh Lv dkk. [16]. Perbedaannya, ATFM di-
+gunakan untuk menggabungkan informasi temporal antar-frame dalam satu
+kamera, sedangkan penelitian ini menerapkan pembobotan berbasis tingkat
+keyakinan pada dimensi spasial lintas-kamera (multi-view). Dengan demiki-
+an, mekanisme adaptive fusion pada penelitian ini tidak dimaksudkan sebagai
+replikasi penuh ATFM, melainkan sebagai adaptasi prinsip pembobotan berba-
+sis tingkat keyakinan prediksi untuk penggabungan skor antar sudut pandang.
+Model yang menghasilkan prediksi lebih meyakinkan pada suatu sampel akan
+memperoleh bobot lebih besar. Namun, efektivitas mekanisme ini tetap perlu
+dibuktikan melalui evaluasi empiris karena prediksi dengan tingkat keyakinan
+tinggi tidak selalu menunjukkan prediksi yang benar.
+3.5
+Skenario Pengujian dan Evaluasi
+Tahap ini dilakukan untuk menguji dan membandingkan performa model
+berdasarkan skenario pengujian dan metrik evaluasi yang telah ditentukan.
+3.5.1
+Skenario Pengujian
+Skenario pengujian dalam penelitian ini disusun secara bertahap untuk
+menggambarkan alur eksperimen sejak pembentukan model dasar hingga eva-
+luasi strategi fusion.
+Untuk menjawab ketiga rumusan masalah penelitian,
+skenario pengujian terdiri dari empat tahap sebagai berikut.
+Tahap
+1:
+Fine-tuning
+model
+single-view.
+Pada tahap ini,
+EfficientNetV2-S yang telah diinisialisasi dengan bobot pra-latih ImageNet
+dilatih secara terpisah pada data front view dan side view. Proses ini meng-
+hasilkan dua model dasar, yaitu Mfront dan Mside, yang masing-masing me-
+representasikan model klasifikasi dari satu sudut pandang. Tahap fine-tuning
+tidak diperlakukan sebagai konfigurasi pembanding akhir, melainkan sebagai
+proses pembentukan model single-view yang digunakan pada tahap evaluasi
+berikutnya.
+29
+
+=== HALAMAN 37 ===
+Tahap 2: Evaluasi model single-view. Model Mfront dan Mside dieva-
+luasi secara independen pada himpunan uji untuk mengukur performa masing-
+masing sudut pandang dalam membedakan kondisi safe driving dan phone-use
+distracted driving. Hasil evaluasi dari kedua model tersebut dibandingkan un-
+tuk menganalisis perbedaan performa dan pola kegagalan deteksi antara front
+view dan side view. Model dengan Macro F1-Score tertinggi ditetapkan se-
+bagai sistem single-view terbaik dan dijadikan baseline untuk perbandingan
+dengan pendekatan multi-view. Selain evaluasi kuantitatif, analisis kualitatif
+dilakukan terhadap confusion matrix dan sampel salah klasifikasi dari masing-
+masing sudut pandang untuk mengidentifikasi pola kegagalan deteksi pada
+kondisi oklusi.
+Tahap 3: Evaluasi multi-view dengan average fusion. Pada tahap
+ini, skor probabilitas kelas phone-use distracted driving dari Mfront dan Mside
+digabungkan menggunakan strategi average fusion sesuai Persamaan 3.1. Ha-
+sil penggabungan tersebut digunakan untuk menghasilkan keputusan akhir
+sistem dan dibandingkan dengan model single-view terbaik sebagai baseline.
+Tahap 4: Evaluasi multi-view dengan adaptive fusion. Pada tahap
+ini, skor probabilitas kelas phone-use distracted driving dari Mfront dan Mside
+digabungkan menggunakan strategi adaptive fusion sesuai Persamaan
+3.4.
+Strategi ini digunakan untuk mengevaluasi apakah pembobotan dinamis ber-
+dasarkan tingkat keyakinan prediksi dapat memberikan performa yang lebih
+baik dibandingkan average fusion maupun model single-view terbaik.
+Karena kelas phone-use distracted driving berasal dari gabungan lima kelas
+aktivitas (A5–A9), sedangkan kelas safe driving hanya berasal dari satu kelas
+aktivitas (A1), distribusi data pada penelitian ini tidak seimbang. Oleh karena
+itu, Macro F1-Score digunakan sebagai metrik utama karena memberikan bo-
+bot evaluasi yang setara terhadap kedua kelas, sedangkan akurasi, presisi, dan
+recall digunakan sebagai metrik pendukung. Selain itu, confusion matrix dan
+sampel salah klasifikasi dianalisis untuk mengamati kecenderungan kesalahan
+prediksi pada masing-masing kelas.
+3.5.2
+Metrik Evaluasi
+Evaluasi dilakukan terhadap model single-view dari masing-masing sudut
+pandang serta pendekatan multi-view dengan average fusion dan adaptive fu-
+sion menggunakan metrik akurasi, presisi, recall, dan Macro F1-Score yang
+telah didefinisikan pada Bab II [24]. Penggunaan metrik tersebut diperluk-
+an agar performa sistem dapat dianalisis secara lebih menyeluruh, khususnya
+karena kelas phone-use distracted driving merupakan gabungan dari bebera-
+pa kelas aktivitas dan memiliki jumlah sampel yang lebih besar dibandingkan
+kelas safe driving. Dalam penelitian ini, Macro F1-Score digunakan sebagai
+metrik utama, sedangkan akurasi, presisi, dan recall digunakan sebagai metrik
+pendukung. Selain evaluasi kuantitatif, analisis confusion matrix dilakukan
+30
+
+=== HALAMAN 38 ===
+pada setiap konfigurasi evaluasi untuk membedah pola kesalahan klasifikasi
+secara lebih mendalam. Sampel salah klasifikasi dianalisis secara visual untuk
+mengidentifikasi kemungkinan penyebab kesalahan, seperti oklusi tangan atau
+perangkat ponsel, posisi tubuh pengemudi, keterbatasan sudut pandang kame-
+ra, atau kemiripan visual antara kondisi safe driving dan phone-use distracted
+driving.
+Pada penelitian ini, kelas positif didefinisikan sebagai phone-use distracted
+driving, sedangkan kelas negatif didefinisikan sebagai safe driving.
+Dengan
+demikian, false negative menunjukkan kondisi penggunaan ponsel yang ga-
+gal terdeteksi sebagai distraksi, sedangkan false positive menunjukkan kondisi
+mengemudi aman yang keliru diprediksi sebagai penggunaan ponsel. Interpre-
+tasi ini digunakan dalam analisis confusion matrix dan sampel salah klasifikasi.
+31
+
+=== HALAMAN 39 ===
+Daftar Pustaka
+[1] D. Tan, W. Tian, C. Wang, L. Chen, and L. Xiong, “Driver distraction
+behavior recognition for autonomous driving: Approaches, datasets and
+challenges,” IEEE Transactions on Intelligent Vehicles, 2024.
+[2] H. V. Koay, J. H. Chuah, C.-O. Chow, and Y.-L. Chang, “Detecting and
+recognizing driver distraction through various data modality using ma-
+chine learning: A review, recent advances, simplified framework and open
+challenges (2014–2021),” Engineering Applications of Artificial Intelligen-
+ce, vol. 115, p. 105309, 2022.
+[3] T. Huang, R. Fu, and Q. Sun, “Driver’s mobile phone usage detection
+using guided learning based on attention features and prior knowledge,”
+Expert Systems with Applications, vol. 206, p. 117877, 2022.
+[4] G. Caiza, A. Guanuche, and C. Villafuerte, “Detection of mobile phone
+use while driving supported by artificial intelligence,” Applied Sciences,
+vol. 16, no. 2, p. 675, 2026.
+[5] A. A. Mohammed, X. Geng, J. Wang, and Z. Ali, “Driver distraction dete-
+ction using semi-supervised lightweight vision transformer,” Engineering
+Applications of Artificial Intelligence, vol. 129, p. 107618, 2024.
+[6] T. Khan, G. Choi, and S. Lee, “Effnet-ca: An efficient driver distraction
+detection based on multiscale feature extractions and channel attention
+mechanism,” Sensors, vol. 23, no. 8, p. 3835, 2023.
+[7] W. Xiao, H. Liu, Z. Ma, and W. Chen, “Attention-based deep neural
+network for driver behavior recognition,” Future Generation Computer
+Systems, vol. 132, pp. 152–161, 2022.
+[8] H. Gao and Y. Liu, “Improving real-time driver distraction detection via
+constrained attention mechanism,” Engineering Applications of Artificial
+Intelligence, vol. 128, p. 107408, 2024.
+[9] I. Jegham, A. B. Khalifa, I. Alouani, and M. A. Mahjoub, “A novel pu-
+blic dataset for multimodal multiview and multispectral driver distraction
+32
+
+=== HALAMAN 40 ===
+analysis: 3mdad,” Signal Processing: Image Communication, vol. 88, p.
+115960, 2020.
+[10] C.-H. Hsia, L.-Y. Ke, S.-T. Chen, and Y.-C. He, “Distracted driving beha-
+vior recognition system based on deep learning approach and multi-view
+imaging,” IEEE Access, vol. 14, pp. 8107–8115, 2026.
+[11] J. Kuang, W. Li, F. Li, J. Zhang, and Z. Wu, “Mifi: Multi-camera feature
+integration for robust 3d distracted driver activity recognition,” IEEE
+Transactions on Intelligent Transportation Systems, vol. 25, no. 1, pp.
+338–348, 2023.
+[12] Y. Ma, V. Sanchez, S. Nikan, D. Upadhyay, B. Atote, and T. Guha,
+“Robust multiview multimodal driver monitoring system using masked
+multi-head self-attention,” in Proceedings of the IEEE/CVF Conference
+on Computer Vision and Pattern Recognition (CVPR), 2023, pp. 2617–
+2625.
+[13] X. Yang, Y. Qiao, S. Han, Z. Feng, and Y. Chen, “Appearance-posture fu-
+sion network for distracted driving behavior recognition,” Expert Systems
+with Applications, vol. 257, p. 124883, 2024.
+[14] R. Vijeikis, I. D. Dada, A. A. Abayomi-Alli, and V. Raudonis, “Enhancing
+driver monitoring systems based on novel multi-task fusion algorithm,”
+Sensors, vol. 25, no. 21, p. 6799, 2025.
+[15] A. Roitberg, K. Peng, Z. Marinov, C. Seibold, D. Schneider, and R. Stie-
+felhagen, “A comparative analysis of decision-level fusion for multimodal
+driver behaviour understanding,” in 2022 IEEE intelligent vehicles sym-
+posium (IV).
+IEEE, 2022, pp. 1438–1444.
+[16] X. Lv, G. Zheng, H. Zhai, K. Zhou, and W. Zhang, “Driver fatigue dete-
+ction method based on temporal–spatial adaptive networks and adaptive
+temporal fusion module,” Computers and Electrical Engineering, vol. 119,
+p. 109540, 2024.
+[17] M. Tan and Q. Le, “Efficientnetv2:
+Smaller models and faster trai-
+ning,” in Proceedings of the International Conference on Machine Le-
+arning (ICML).
+PMLR, 2021, pp. 10 096–10 106.
+[18] C. Duan, Y. Gong, J. Liao, M. Zhang, and L. Cao, “Frnet: Dcnn for real-
+time distracted driving detection toward embedded deployment,” IEEE
+Transactions on Intelligent Transportation Systems, vol. 24, no. 9, pp.
+9835–9848, 2023.
+33
+
+=== HALAMAN 41 ===
+[19] C. Duan, Z. Liu, J. Xia, M. Zhang, J. Liao, and L. Cao, “Enhancing cross-
+dataset performance of distracted driving detection with score softmax
+classifier and dynamic gaussian smoothing supervision,” IEEE Transa-
+ctions on Intelligent Vehicles, vol. 10, no. 1, pp. 282–295, 2025.
+[20] S. B. Sukhavasi, S. B. Sukhavasi, K. Elleithy, A. El-Sayed, and A. Elleithy,
+“Deep neural network approach for pose, illumination, and occlusion inva-
+riant driver emotion detection,” International Journal of Environmental
+Research and Public Health, vol. 19, no. 4, p. 2352, 2022.
+[21] Y. Xu, S. Jiang, Z. Cui, and F. Su, “Multi-view action recognition for
+distracted driver behavior localization,” in Proceedings of the IEEE/CVF
+Conference on Computer Vision and Pattern Recognition, 2024, pp. 7172–
+7179.
+[22] L. Mou, J. Chang, C. Zhou, Y. Zhao, N. Ma, B. Yin, R. Jain, and
+W. Gao, “Multimodal driver distraction detection using dual-channel ne-
+twork of cnn and transformer,” Expert Systems with Applications, vol.
+234, p. 121066, 2023.
+[23] M. Tan and Q. Le, “Efficientnet: Rethinking model scaling for convolu-
+tional neural networks,” in Proceedings of the International Conference
+on Machine Learning (ICML).
+PMLR, 2019, pp. 6105–6114.
+[24] O. Rainio, J. Teuho, and R. Kl´en, “Evaluation metrics and statistical tests
+for machine learning,” Scientific reports, vol. 14, no. 1, p. 6086, 2024.
+[25] I. M. De Diego, A. R. Redondo, R. R. Fern´andez, J. Navarro, and J. M.
+Moguerza, “General performance score for classification problems: Im de
+diego et al.” Applied Intelligence, vol. 52, no. 10, pp. 12 049–12 063, 2022.
+34
+
+=== HALAMAN 42 ===
+Lampiran
+35

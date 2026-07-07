@@ -1,3 +1,17 @@
+# %% [markdown]
+# # Evaluasi Model Single-View
+# Hitung: accuracy, precision, recall, Macro F1-Score, confusion matrix.
+# Simpan hasil ke `results/{view}_test_metrics.json`.
+#
+# **Penggunaan CLI:**
+# ```
+# python -m src.evaluate --view front
+# python -m src.evaluate --view side
+# python -m src.evaluate   # evaluasi kedua view sekaligus
+# ```
+
+# %%
+# Imports & setup logging
 """
 Evaluasi model single-view pada test set.
 
@@ -38,10 +52,12 @@ log = logging.getLogger(__name__)
 
 # Nama kelas untuk laporan (urut sesuai label 0, 1)
 CLASS_NAMES = [k for k, v in sorted(BINARY_LABEL_MAP.items(), key=lambda x: x[1])]
+print("Class names:", CLASS_NAMES)
 
 
+# %%
 # ──────────────────────────────────────────────────────────────────────────────
-# Helper
+# Helper functions
 # ──────────────────────────────────────────────────────────────────────────────
 
 def load_trained_model(view: str, device: torch.device, exp_id: str = ""):
@@ -122,6 +138,7 @@ def print_metrics(view_or_method: str, metrics: dict):
     log.info("-" * 55)
 
 
+# %%
 # ──────────────────────────────────────────────────────────────────────────────
 # Evaluasi satu view
 # ──────────────────────────────────────────────────────────────────────────────
@@ -157,9 +174,13 @@ def evaluate_view(view: str, exp_id: str = "") -> dict:
     return metrics
 
 
+# %%
 # ──────────────────────────────────────────────────────────────────────────────
-# CLI
+# CLI entry point  (jalankan sel ini untuk evaluasi interaktif)
 # ──────────────────────────────────────────────────────────────────────────────
+# Atau gunakan langsung tanpa CLI:
+#   evaluate_view("front")
+#   evaluate_view("side")
 
 def main():
     parser = argparse.ArgumentParser(description="Evaluasi single-view pada test set")
