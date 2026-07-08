@@ -231,6 +231,26 @@ def main():
     )
     log.info("Inference selesai: %d paired frames", len(labels))
 
+    # ── Sanity check: pastikan jumlah sampel di front/side test metrics sinkron dengan paired test set [v5/Exp8] ──
+    suffix = f"_{args.exp_id}" if args.exp_id else ""
+    for view in ("front", "side"):
+        metrics_path = RESULTS_DIR / f"{view}_test_metrics{suffix}.json"
+        if metrics_path.exists():
+            with open(metrics_path, "r") as f:
+                m = json.load(f)
+            # Hitung total sampel dari sum confusion matrix
+            total_samples = sum(sum(r) for r in m.get("confusion_matrix", []))
+            if total_samples != len(labels):
+                raise AssertionError(
+                    f"Mismatch jumlah sampel pada {view} view: "
+                    f"metrics di {metrics_path.name} memiliki {total_samples} sampel, "
+                    f"sedangkan paired test set memiliki {len(labels)} sampel. "
+                    f"Silakan re-run evaluasi single-view terlebih dahulu: "
+                    f"'python -m src.evaluate --view {view}'"
+                )
+        else:
+            log.warning(f"File metrics {metrics_path.name} belum ada, sanity check sampel dilewati.")
+
     # ── Evaluasi single-view (dari skor paired, sebagai baseline) ──
     log.info("")
     eval_front = evaluate_fusion("Single-view FRONT", scores_front, labels)
