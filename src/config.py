@@ -133,5 +133,5 @@ LR_SCHEDULER_PATIENCE = 2
 # menghasilkan frame ke-1, 6, 11, 16, ... (selalu dimulai dari frame pertama).
 # Set ke 1 untuk menonaktifkan subsampling (pakai semua frame).
 # --------------------------------------------------------------------------
-FRAME_STRIDE = 15               # [v5/Exp8] stride 15 untuk memangkas data redundan secara agresif
+FRAME_STRIDE = 30               # [v5/Exp9] stride 30 untuk memangkas data redundan secara ekstrem (1 FPS)
 
