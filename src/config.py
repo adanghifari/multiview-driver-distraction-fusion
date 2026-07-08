@@ -111,15 +111,15 @@ MODEL_NAME = "tf_efficientnetv2_s"      # identifier timm untuk EfficientNetV2-S
 BATCH_SIZE = 32
 LEARNING_RATE_FRONT = 3e-5      # [v5/Exp10] learning rate front diturunkan ke 3e-5 (moderat)
 LEARNING_RATE_SIDE = 2e-5       # [v5/Exp8] learning rate side view (preventive untuk freeze 3 & stride 15)
-DROPOUT_FRONT = 0.6               # [v5/Exp10] dropout front view diperkuat untuk mencegah overfitting
+DROPOUT_FRONT = 0.5               # [v6/Exp11] dropout front view direlaksasi ke 0.5
 DROPOUT_SIDE = 0.5                # [v5/Exp10] dropout side view moderat
-EARLY_STOPPING_PATIENCE_FRONT = 2
+EARLY_STOPPING_PATIENCE_FRONT = 4  # [v6/Exp11] early stopping patience diperpanjang ke 4
 EARLY_STOPPING_PATIENCE_SIDE = 3
 MAX_EPOCHS = 30
 DECISION_THRESHOLD = 0.5
 
-# Konfigurasi Eksperimen 10 (Penyeimbangan Front View & Reduksi ECE)
-WEIGHT_DECAY = 5e-3             # [v5/Exp10] weight decay dinaikkan ke 5e-3 untuk menekan ECE
+# Konfigurasi Eksperimen 11 (Optimasi Front View Regularization & Patience)
+WEIGHT_DECAY = 2e-3             # [v6/Exp11] weight decay direlaksasi ke 2e-3 untuk melatih front view lebih lama
 NUM_STAGES_TO_FREEZE_FRONT = 5  # [v5/Exp10] freeze front stages dinaikkan ke 5 (reduksi overfitting)
 NUM_STAGES_TO_FREEZE_SIDE = 4   # [v5/Exp10] freeze side stages dikembalikan ke 4 untuk stabilitas Side view
 LABEL_SMOOTHING = 0.12          # [v5/Exp10] label smoothing moderat 0.12
