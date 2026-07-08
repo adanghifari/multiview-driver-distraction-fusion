@@ -48,7 +48,10 @@ from src.config import (
     LR_SCHEDULER_FACTOR,
     LR_SCHEDULER_PATIENCE,
     BINARY_LABEL_MAP,
-    NUM_STAGES_TO_FREEZE,
+    NUM_STAGES_TO_FREEZE_FRONT,
+    NUM_STAGES_TO_FREEZE_SIDE,
+    LABEL_SMOOTHING,
+    CLASS_WEIGHTS,
     DROPOUT,
 )
 from src.dataset import get_all_dataloaders, load_split_dataframe
@@ -150,6 +153,8 @@ def run_training(view: str, max_epochs: int = MAX_EPOCHS, exp_id: str = "",
                  lr: float = LEARNING_RATE):
     """Latih model single-view dan simpan checkpoint + history."""
 
+    freeze_stages = NUM_STAGES_TO_FREEZE_FRONT if view == "front" else NUM_STAGES_TO_FREEZE_SIDE
+
     # ── Tampilkan Ringkasan Konfigurasi Eksperimen ──
     log.info("\n" + "=" * 45)
     log.info("Experiment Configuration")
@@ -160,7 +165,7 @@ def run_training(view: str, max_epochs: int = MAX_EPOCHS, exp_id: str = "",
     log.info(f"  Weight Decay   : {WEIGHT_DECAY:.1e}")
     log.info(f"  Scheduler      : ReduceLROnPlateau")
     log.info(f"  Dropout        : {DROPOUT}")
-    log.info(f"  Frozen Stages  : {NUM_STAGES_TO_FREEZE}")
+    log.info(f"  Frozen Stages  : {freeze_stages}")
     log.info(f"  EarlyStopping  : patience={EARLY_STOPPING_PATIENCE}")
     log.info(f"  Experiment ID  : {exp_id if exp_id else 'None'}")
     log.info("=" * 45 + "\n")
@@ -177,22 +182,14 @@ def run_training(view: str, max_epochs: int = MAX_EPOCHS, exp_id: str = "",
     val_loader = loaders["val"]
 
     # ── Model, loss, optimizer ──
-    model = build_model(pretrained=True).to(device)
+    model = build_model(pretrained=True, num_stages_to_freeze=freeze_stages).to(device)
 
-    # ── Hitung class weights secara dinamis dari train split ──
-    df_train = load_split_dataframe(view, "train")
-    train_labels = df_train["binary_label"].map(BINARY_LABEL_MAP)
-    class_counts = train_labels.value_counts().sort_index()
-    count_0 = class_counts.get(0, 0)
-    count_1 = class_counts.get(1, 0)
-    total_train = count_0 + count_1
-    w_0 = total_train / (2.0 * count_0) if count_0 > 0 else 1.0
-    w_1 = total_train / (2.0 * count_1) if count_1 > 0 else 1.0
-    class_weights = torch.tensor([w_0, w_1], dtype=torch.float).to(device)
-    log.info("Distribusi kelas training (%s): safe_driving=%d, phone_use=%d", view, count_0, count_1)
-    log.info("Class weights (CrossEntropyLoss): safe_driving=%.4f, phone_use=%.4f", w_0, w_1)
+    # ── Load static class weights dari config ──
+    class_weights = torch.tensor(CLASS_WEIGHTS, dtype=torch.float).to(device)
+    log.info("Class weights (CrossEntropyLoss): safe_driving=%.4f, phone_use=%.4f", CLASS_WEIGHTS[0], CLASS_WEIGHTS[1])
+    log.info("Label smoothing: %.2f", LABEL_SMOOTHING)
 
-    criterion = nn.CrossEntropyLoss(weight=class_weights)
+    criterion = nn.CrossEntropyLoss(weight=class_weights, label_smoothing=LABEL_SMOOTHING)
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=WEIGHT_DECAY)
 
     # ── Learning Rate Scheduler ──
@@ -262,7 +259,7 @@ def run_training(view: str, max_epochs: int = MAX_EPOCHS, exp_id: str = "",
                 "val_loss": val_loss,
                 "view": view,
                 "class_weights": class_weights.cpu().tolist(),
-                "num_stages_to_freeze": NUM_STAGES_TO_FREEZE,
+                "num_stages_to_freeze": freeze_stages,
             }, ckpt_path)
 
         elapsed = time.time() - t_epoch

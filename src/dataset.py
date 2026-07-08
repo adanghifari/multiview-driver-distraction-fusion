@@ -94,7 +94,7 @@ def load_split_dataframe(view: str, split: str) -> pd.DataFrame:
 
 
 def get_dataloader(view: str, split: str, batch_size: int = BATCH_SIZE,
-                    num_workers: int = 4, shuffle: bool = None) -> DataLoader:
+                    num_workers: int = 0, shuffle: bool = None) -> DataLoader:
     """Bangun satu DataLoader untuk kombinasi view + split tertentu.
 
     view: 'front' atau 'side'
@@ -125,7 +125,7 @@ def get_dataloader(view: str, split: str, batch_size: int = BATCH_SIZE,
     return loader
 
 
-def get_all_dataloaders(view: str, batch_size: int = BATCH_SIZE, num_workers: int = 4) -> dict:
+def get_all_dataloaders(view: str, batch_size: int = BATCH_SIZE, num_workers: int = 0) -> dict:
     """Shortcut: bangun train/val/test DataLoader sekaligus untuk satu view."""
     return {
         split: get_dataloader(view, split, batch_size=batch_size, num_workers=num_workers)

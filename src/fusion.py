@@ -88,7 +88,7 @@ class PairedTestDataset(Dataset):
 
 
 def get_paired_test_loader(batch_size: int = BATCH_SIZE,
-                           num_workers: int = 4) -> DataLoader:
+                           num_workers: int = 0) -> DataLoader:
     """Bangun DataLoader untuk pasangan frame test set.
 
     Menerapkan frame subsampling (FRAME_STRIDE) yang konsisten dengan

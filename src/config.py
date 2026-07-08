@@ -115,9 +115,12 @@ EARLY_STOPPING_PATIENCE = 5
 MAX_EPOCHS = 30
 DECISION_THRESHOLD = 0.5
 
-# Konfigurasi perbaikan pipeline
-WEIGHT_DECAY = 1e-3   # [v5/Step2] dinaikkan dari 5e-4 → 1e-3 untuk memperkuat L2 penalty
-NUM_STAGES_TO_FREEZE = 5  # [v5/Step1] dinaikkan dari 4 → 5: hanya blocks[-1] dan head yang trainable
+# Konfigurasi Eksperimen 7 (Optimasi Side View)
+WEIGHT_DECAY = 1e-2   # [v5/Exp7] dinaikkan dari 1e-3 → 1e-2 untuk L2 regularisasi lebih kuat
+NUM_STAGES_TO_FREEZE_FRONT = 5  # [v5/Exp7] model front membekukan 5 stage
+NUM_STAGES_TO_FREEZE_SIDE = 3   # [v5/Exp7] model side membekukan 3 stage agar blok awal ikut berlatih
+LABEL_SMOOTHING = 0.1           # [v5/Exp7] label smoothing untuk mencegah overconfidence
+CLASS_WEIGHTS = [5.15, 1.0]      # [v5/Exp7] bobot kelas statis (safe_driving=5.15, phone_use=1.0)
 LR_SCHEDULER_FACTOR = 0.5
 LR_SCHEDULER_PATIENCE = 2
 

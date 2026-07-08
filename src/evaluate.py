@@ -67,7 +67,9 @@ def load_trained_model(view: str, device: torch.device, exp_id: str = ""):
     if not ckpt_path.exists():
         raise FileNotFoundError(f"Checkpoint tidak ditemukan: {ckpt_path}")
 
-    model = build_model(pretrained=False)
+    from src.config import NUM_STAGES_TO_FREEZE_FRONT, NUM_STAGES_TO_FREEZE_SIDE
+    freeze_stages = NUM_STAGES_TO_FREEZE_FRONT if view == "front" else NUM_STAGES_TO_FREEZE_SIDE
+    model = build_model(pretrained=False, num_stages_to_freeze=freeze_stages)
     checkpoint = torch.load(ckpt_path, map_location=device, weights_only=False)
     model.load_state_dict(checkpoint["model_state_dict"])
     model = model.to(device)

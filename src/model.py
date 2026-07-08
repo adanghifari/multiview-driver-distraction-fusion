@@ -16,7 +16,7 @@ import logging
 import timm
 import torch.nn as nn
 
-from src.config import MODEL_NAME, DROPOUT, NUM_STAGES_TO_FREEZE
+from src.config import MODEL_NAME, DROPOUT
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 log = logging.getLogger(__name__)
@@ -50,7 +50,7 @@ def print_layer_status(model):
     log.info("=" * 55)
 
 
-def build_model(pretrained: bool = True, num_stages_to_freeze: int = NUM_STAGES_TO_FREEZE) -> nn.Module:
+def build_model(pretrained: bool = True, num_stages_to_freeze: int = 5) -> nn.Module:
     """Bangun EfficientNetV2-S dengan classifier head untuk klasifikasi biner (2-unit output).
 
     Parameters
