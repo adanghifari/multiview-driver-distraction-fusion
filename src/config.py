@@ -113,7 +113,7 @@ LEARNING_RATE_FRONT = 3e-5      # [v5/Exp10] learning rate front diturunkan ke 3
 LEARNING_RATE_SIDE = 2e-5       # [v5/Exp8] learning rate side view (preventive untuk freeze 3 & stride 15)
 DROPOUT_FRONT = 0.5               # [v6/Exp11] dropout front view direlaksasi ke 0.5
 DROPOUT_SIDE = 0.5                # [v5/Exp10] dropout side view moderat
-EARLY_STOPPING_PATIENCE_FRONT = 4  # [v6/Exp11] early stopping patience diperpanjang ke 4
+EARLY_STOPPING_PATIENCE_FRONT = 3  # [v6/Exp11] early stopping patience disesuaikan ke 3
 EARLY_STOPPING_PATIENCE_SIDE = 3
 MAX_EPOCHS = 30
 DECISION_THRESHOLD = 0.5
@@ -130,7 +130,7 @@ LR_SCHEDULER_PATIENCE_SIDE = 1
 
 # Intensitas Augmentasi (Subbab 3.2.3 proposal)
 AUG_ROTATION_DEGREE = 45
-AUG_COLOR_JITTER_FACTOR = 0.6
+AUG_COLOR_JITTER_FACTOR = 0.8      # [v6/Exp11] color jitter ditingkatkan ke 0.8 untuk mencegah late-stage memorization
 
 # --------------------------------------------------------------------------
 # Frame subsampling (Subbab 3.2.3 — Eksperimen v4)
