@@ -291,6 +291,18 @@ def main():
         json.dump(all_results, f, indent=2)
     log.info("Hasil disimpan di: %s", results_path)
 
+    # ── Jalankan audit/diagnostik fusion secara otomatis agar fusion_debug.csv tidak stale ──
+    import subprocess
+    import sys
+    cmd = [sys.executable, "-m", "src.fusion_debug"]
+    if args.exp_id:
+        cmd.extend(["--exp_id", args.exp_id])
+    log.info("Menjalankan audit/diagnostik fusion secara otomatis...")
+    try:
+        subprocess.run(cmd, check=True)
+    except Exception as e:
+        log.error("Gagal menjalankan fusion_debug secara otomatis: %s", e)
+
 
 if __name__ == "__main__":
     main()

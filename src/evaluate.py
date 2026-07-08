@@ -60,16 +60,20 @@ print("Class names:", CLASS_NAMES)
 # Helper functions
 # ──────────────────────────────────────────────────────────────────────────────
 
-def load_trained_model(view: str, device: torch.device, exp_id: str = ""):
+def load_trained_model(view: str, device: torch.device, exp_id: str = "", dropout_rate: float = None):
     """Muat checkpoint terbaik untuk view tertentu."""
     suffix = f"_{exp_id}" if exp_id else ""
     ckpt_path = CHECKPOINT_DIR / f"{view}{suffix}_best.pt"
     if not ckpt_path.exists():
         raise FileNotFoundError(f"Checkpoint tidak ditemukan: {ckpt_path}")
 
+    if dropout_rate is None:
+        from src.config import DROPOUT_FRONT, DROPOUT_SIDE
+        dropout_rate = DROPOUT_FRONT if view == "front" else DROPOUT_SIDE
+
     from src.config import NUM_STAGES_TO_FREEZE_FRONT, NUM_STAGES_TO_FREEZE_SIDE
     freeze_stages = NUM_STAGES_TO_FREEZE_FRONT if view == "front" else NUM_STAGES_TO_FREEZE_SIDE
-    model = build_model(pretrained=False, num_stages_to_freeze=freeze_stages)
+    model = build_model(pretrained=False, num_stages_to_freeze=freeze_stages, dropout_rate=dropout_rate)
     checkpoint = torch.load(ckpt_path, map_location=device, weights_only=False)
     model.load_state_dict(checkpoint["model_state_dict"])
     model = model.to(device)
@@ -150,7 +154,9 @@ def evaluate_view(view: str, exp_id: str = "") -> dict:
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Load model & test data
-    model, checkpoint = load_trained_model(view, device, exp_id=exp_id)
+    from src.config import DROPOUT_FRONT, DROPOUT_SIDE
+    dropout_rate = DROPOUT_FRONT if view == "front" else DROPOUT_SIDE
+    model, checkpoint = load_trained_model(view, device, exp_id=exp_id, dropout_rate=dropout_rate)
     test_loader = get_dataloader(view, "test")
 
     # Predict & compute metrics

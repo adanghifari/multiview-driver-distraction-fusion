@@ -109,21 +109,28 @@ IMAGENET_STD = [0.229, 0.224, 0.225]
 
 MODEL_NAME = "tf_efficientnetv2_s"      # identifier timm untuk EfficientNetV2-S
 BATCH_SIZE = 32
-LEARNING_RATE_FRONT = 5e-5      # [v5/Exp8] learning rate front view (optimal dari Exp 4)
+LEARNING_RATE_FRONT = 3e-5      # [v5/Exp10] learning rate front diturunkan ke 3e-5 (moderat)
 LEARNING_RATE_SIDE = 2e-5       # [v5/Exp8] learning rate side view (preventive untuk freeze 3 & stride 15)
-DROPOUT = 0.5                   # [v5/Exp8] dropout optimal (kembali ke Exp 4)
-EARLY_STOPPING_PATIENCE = 5
+DROPOUT_FRONT = 0.6               # [v5/Exp10] dropout front view diperkuat untuk mencegah overfitting
+DROPOUT_SIDE = 0.5                # [v5/Exp10] dropout side view moderat
+EARLY_STOPPING_PATIENCE_FRONT = 2
+EARLY_STOPPING_PATIENCE_SIDE = 3
 MAX_EPOCHS = 30
 DECISION_THRESHOLD = 0.5
 
-# Konfigurasi Eksperimen 8 (The Golden Balance)
-WEIGHT_DECAY = 5e-4             # [v5/Exp8] weight decay optimal (kembali ke Exp 4)
-NUM_STAGES_TO_FREEZE_FRONT = 4  # [v5/Exp8] freeze front stages
-NUM_STAGES_TO_FREEZE_SIDE = 3   # [v5/Exp8] freeze side stages (fleksibilitas ekstra)
-LABEL_SMOOTHING = 0.1           # [v5/Exp8] label smoothing tetap aktif
+# Konfigurasi Eksperimen 10 (Penyeimbangan Front View & Reduksi ECE)
+WEIGHT_DECAY = 5e-3             # [v5/Exp10] weight decay dinaikkan ke 5e-3 untuk menekan ECE
+NUM_STAGES_TO_FREEZE_FRONT = 5  # [v5/Exp10] freeze front stages dinaikkan ke 5 (reduksi overfitting)
+NUM_STAGES_TO_FREEZE_SIDE = 4   # [v5/Exp10] freeze side stages dikembalikan ke 4 untuk stabilitas Side view
+LABEL_SMOOTHING = 0.12          # [v5/Exp10] label smoothing moderat 0.12
 CLASS_WEIGHTS = [2.5, 1.0]      # [v5/Exp8] bobot kelas moderat untuk safe_driving
 LR_SCHEDULER_FACTOR = 0.5
-LR_SCHEDULER_PATIENCE = 2
+LR_SCHEDULER_PATIENCE_FRONT = 1
+LR_SCHEDULER_PATIENCE_SIDE = 1
+
+# Intensitas Augmentasi (Subbab 3.2.3 proposal)
+AUG_ROTATION_DEGREE = 45
+AUG_COLOR_JITTER_FACTOR = 0.6
 
 # --------------------------------------------------------------------------
 # Frame subsampling (Subbab 3.2.3 — Eksperimen v4)

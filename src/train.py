@@ -30,9 +30,12 @@ Penggunaan:
 import argparse
 import json
 import logging
+import os
+import random
 import time
 from pathlib import Path
 
+import numpy as np
 import torch
 import torch.nn as nn
 from sklearn.metrics import f1_score
@@ -40,26 +43,42 @@ from sklearn.metrics import f1_score
 from src.config import (
     LEARNING_RATE_FRONT,
     LEARNING_RATE_SIDE,
-    EARLY_STOPPING_PATIENCE,
+    EARLY_STOPPING_PATIENCE_FRONT,
+    EARLY_STOPPING_PATIENCE_SIDE,
     MAX_EPOCHS,
     DECISION_THRESHOLD,
     CHECKPOINT_DIR,
     RESULTS_DIR,
     WEIGHT_DECAY,
     LR_SCHEDULER_FACTOR,
-    LR_SCHEDULER_PATIENCE,
+    LR_SCHEDULER_PATIENCE_FRONT,
+    LR_SCHEDULER_PATIENCE_SIDE,
     BINARY_LABEL_MAP,
     NUM_STAGES_TO_FREEZE_FRONT,
     NUM_STAGES_TO_FREEZE_SIDE,
     LABEL_SMOOTHING,
     CLASS_WEIGHTS,
-    DROPOUT,
+    DROPOUT_FRONT,
+    DROPOUT_SIDE,
+    SPLIT_SEED,
 )
 from src.dataset import get_all_dataloaders, load_split_dataframe
 from src.model import build_model
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 log = logging.getLogger(__name__)
+
+
+def seed_everything(seed=42):
+    """Kunci semua random seed agar eksperimen dapat direproduksi sepenuhnya."""
+    random.seed(seed)
+    os.environ["PYTHONHASHSEED"] = str(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    log.info(f"Random seed dikunci pada: {seed}")
 
 
 # %%
@@ -128,7 +147,7 @@ def validate(model, loader, criterion, device, threshold=DECISION_THRESHOLD):
 class EarlyStopping:
     """Early stopping berdasarkan val Macro F1-Score (higher is better)."""
 
-    def __init__(self, patience: int = EARLY_STOPPING_PATIENCE):
+    def __init__(self, patience: int):
         self.patience = patience
         self.best_score = -1.0
         self.counter = 0
@@ -153,6 +172,7 @@ class EarlyStopping:
 def run_training(view: str, max_epochs: int = MAX_EPOCHS, exp_id: str = "",
                  lr: float = None):
     """Latih model single-view dan simpan checkpoint + history."""
+    seed_everything(SPLIT_SEED)
 
     default_lr = LEARNING_RATE_FRONT if view == "front" else LEARNING_RATE_SIDE
     is_override = (lr is not None)
@@ -160,6 +180,9 @@ def run_training(view: str, max_epochs: int = MAX_EPOCHS, exp_id: str = "",
         lr = default_lr
 
     freeze_stages = NUM_STAGES_TO_FREEZE_FRONT if view == "front" else NUM_STAGES_TO_FREEZE_SIDE
+    early_stopping_patience = EARLY_STOPPING_PATIENCE_FRONT if view == "front" else EARLY_STOPPING_PATIENCE_SIDE
+    lr_scheduler_patience = LR_SCHEDULER_PATIENCE_FRONT if view == "front" else LR_SCHEDULER_PATIENCE_SIDE
+    dropout_rate = DROPOUT_FRONT if view == "front" else DROPOUT_SIDE
 
     # ── Tampilkan Ringkasan Konfigurasi Eksperimen ──
     log.info("\n" + "=" * 45)
@@ -170,9 +193,9 @@ def run_training(view: str, max_epochs: int = MAX_EPOCHS, exp_id: str = "",
     log.info(f"  Learning Rate  : {lr:.1e}" + (" (override)" if is_override else ""))
     log.info(f"  Weight Decay   : {WEIGHT_DECAY:.1e}")
     log.info(f"  Scheduler      : ReduceLROnPlateau")
-    log.info(f"  Dropout        : {DROPOUT}")
+    log.info(f"  Dropout        : {dropout_rate}")
     log.info(f"  Frozen Stages  : {freeze_stages}")
-    log.info(f"  EarlyStopping  : patience={EARLY_STOPPING_PATIENCE}")
+    log.info(f"  EarlyStopping  : patience={early_stopping_patience}")
     log.info(f"  Experiment ID  : {exp_id if exp_id else 'None'}")
     log.info("=" * 45 + "\n")
 
@@ -188,7 +211,7 @@ def run_training(view: str, max_epochs: int = MAX_EPOCHS, exp_id: str = "",
     val_loader = loaders["val"]
 
     # ── Model, loss, optimizer ──
-    model = build_model(pretrained=True, num_stages_to_freeze=freeze_stages).to(device)
+    model = build_model(pretrained=True, num_stages_to_freeze=freeze_stages, dropout_rate=dropout_rate).to(device)
 
     # ── Load static class weights dari config ──
     class_weights = torch.tensor(CLASS_WEIGHTS, dtype=torch.float).to(device)
@@ -200,11 +223,11 @@ def run_training(view: str, max_epochs: int = MAX_EPOCHS, exp_id: str = "",
 
     # ── Learning Rate Scheduler ──
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-        optimizer, mode="max", factor=LR_SCHEDULER_FACTOR, patience=LR_SCHEDULER_PATIENCE
+        optimizer, mode="max", factor=LR_SCHEDULER_FACTOR, patience=lr_scheduler_patience
     )
 
     # ── Early stopping ──
-    early_stopping = EarlyStopping(patience=EARLY_STOPPING_PATIENCE)
+    early_stopping = EarlyStopping(patience=early_stopping_patience)
 
     # ── Paths ──
     CHECKPOINT_DIR.mkdir(parents=True, exist_ok=True)
@@ -227,7 +250,7 @@ def run_training(view: str, max_epochs: int = MAX_EPOCHS, exp_id: str = "",
     }
 
     log.info("=" * 65)
-    log.info("Training: view=%s | max_epochs=%d | patience=%d", view, max_epochs, EARLY_STOPPING_PATIENCE)
+    log.info("Training: view=%s | max_epochs=%d | patience=%d", view, max_epochs, early_stopping_patience)
     log.info("=" * 65)
 
     best_epoch = 0
@@ -269,7 +292,7 @@ def run_training(view: str, max_epochs: int = MAX_EPOCHS, exp_id: str = "",
             }, ckpt_path)
 
         elapsed = time.time() - t_epoch
-        status = "* BEST" if is_best else f"  wait {early_stopping.counter}/{EARLY_STOPPING_PATIENCE}"
+        status = "* BEST" if is_best else f"  wait {early_stopping.counter}/{early_stopping.patience}"
         log.info(
             "Epoch %02d/%02d | train_loss=%.4f | val_loss=%.4f | val_F1=%.4f | val_acc=%.4f | lr=%.1e | %s | %.0fs",
             epoch, max_epochs, train_loss, val_loss, val_f1, val_acc, current_lr, status, elapsed,

@@ -16,7 +16,7 @@ import logging
 import timm
 import torch.nn as nn
 
-from src.config import MODEL_NAME, DROPOUT
+from src.config import MODEL_NAME, DROPOUT_FRONT, DROPOUT_SIDE
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 log = logging.getLogger(__name__)
@@ -50,7 +50,7 @@ def print_layer_status(model):
     log.info("=" * 55)
 
 
-def build_model(pretrained: bool = True, num_stages_to_freeze: int = 5) -> nn.Module:
+def build_model(pretrained: bool = True, num_stages_to_freeze: int = 5, dropout_rate: float = 0.5) -> nn.Module:
     """Bangun EfficientNetV2-S dengan classifier head untuk klasifikasi biner (2-unit output).
 
     Parameters
@@ -60,6 +60,8 @@ def build_model(pretrained: bool = True, num_stages_to_freeze: int = 5) -> nn.Mo
         load dari checkpoint sendiri.
     num_stages_to_freeze : int
         Jumlah stage block backbone yang dibekukan (frozen) untuk transfer learning.
+    dropout_rate : float
+        Nilai dropout untuk classifier head.
 
     Returns
     -------
@@ -70,7 +72,7 @@ def build_model(pretrained: bool = True, num_stages_to_freeze: int = 5) -> nn.Mo
     in_features = backbone.num_features
 
     classifier = nn.Sequential(
-        nn.Dropout(p=DROPOUT),
+        nn.Dropout(p=dropout_rate),
         nn.Linear(in_features, 2),  # 2 output units (safe_driving, phone_use)
     )
 
