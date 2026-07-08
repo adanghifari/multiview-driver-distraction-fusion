@@ -38,7 +38,8 @@ import torch.nn as nn
 from sklearn.metrics import f1_score
 
 from src.config import (
-    LEARNING_RATE,
+    LEARNING_RATE_FRONT,
+    LEARNING_RATE_SIDE,
     EARLY_STOPPING_PATIENCE,
     MAX_EPOCHS,
     DECISION_THRESHOLD,
@@ -150,8 +151,13 @@ class EarlyStopping:
 # ──────────────────────────────────────────────────────────────────────────────
 
 def run_training(view: str, max_epochs: int = MAX_EPOCHS, exp_id: str = "",
-                 lr: float = LEARNING_RATE):
+                 lr: float = None):
     """Latih model single-view dan simpan checkpoint + history."""
+
+    default_lr = LEARNING_RATE_FRONT if view == "front" else LEARNING_RATE_SIDE
+    is_override = (lr is not None)
+    if lr is None:
+        lr = default_lr
 
     freeze_stages = NUM_STAGES_TO_FREEZE_FRONT if view == "front" else NUM_STAGES_TO_FREEZE_SIDE
 
@@ -161,7 +167,7 @@ def run_training(view: str, max_epochs: int = MAX_EPOCHS, exp_id: str = "",
     log.info("=" * 45)
     log.info(f"  View           : {view}")
     log.info(f"  Optimizer      : AdamW")
-    log.info(f"  Learning Rate  : {lr:.1e}" + (" (override)" if lr != LEARNING_RATE else ""))
+    log.info(f"  Learning Rate  : {lr:.1e}" + (" (override)" if is_override else ""))
     log.info(f"  Weight Decay   : {WEIGHT_DECAY:.1e}")
     log.info(f"  Scheduler      : ReduceLROnPlateau")
     log.info(f"  Dropout        : {DROPOUT}")
@@ -302,9 +308,9 @@ def main():
                         help=f"Jumlah maksimum epoch (default: {MAX_EPOCHS})")
     parser.add_argument("--exp_id", type=str, default="",
                         help="ID Eksperimen (opsional, misal 'lr1e5' untuk suffix file)")
-    parser.add_argument("--lr", type=float, default=LEARNING_RATE,
-                        help=f"Learning rate override (default: {LEARNING_RATE:.1e} dari config.py). "
-                             f"Contoh: --lr 1e-5")
+    parser.add_argument("--lr", type=float, default=None,
+                        help="Learning rate override (default: Front=5e-5, Side=2e-5 dari config.py). "
+                             "Contoh: --lr 1e-5")
     args = parser.parse_args()
 
     run_training(view=args.view, max_epochs=args.epochs, exp_id=args.exp_id, lr=args.lr)

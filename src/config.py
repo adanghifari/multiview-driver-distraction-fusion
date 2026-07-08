@@ -109,18 +109,19 @@ IMAGENET_STD = [0.229, 0.224, 0.225]
 
 MODEL_NAME = "tf_efficientnetv2_s"      # identifier timm untuk EfficientNetV2-S
 BATCH_SIZE = 32
-LEARNING_RATE = 5e-6
-DROPOUT = 0.6          # [v5/Step3] dinaikkan dari 0.5 → 0.6 untuk regularisasi lebih kuat
+LEARNING_RATE_FRONT = 5e-5      # [v5/Exp8] learning rate front view (optimal dari Exp 4)
+LEARNING_RATE_SIDE = 2e-5       # [v5/Exp8] learning rate side view (preventive untuk freeze 3 & stride 15)
+DROPOUT = 0.5                   # [v5/Exp8] dropout optimal (kembali ke Exp 4)
 EARLY_STOPPING_PATIENCE = 5
 MAX_EPOCHS = 30
 DECISION_THRESHOLD = 0.5
 
-# Konfigurasi Eksperimen 7 (Optimasi Side View)
-WEIGHT_DECAY = 1e-2   # [v5/Exp7] dinaikkan dari 1e-3 → 1e-2 untuk L2 regularisasi lebih kuat
-NUM_STAGES_TO_FREEZE_FRONT = 5  # [v5/Exp7] model front membekukan 5 stage
-NUM_STAGES_TO_FREEZE_SIDE = 3   # [v5/Exp7] model side membekukan 3 stage agar blok awal ikut berlatih
-LABEL_SMOOTHING = 0.1           # [v5/Exp7] label smoothing untuk mencegah overconfidence
-CLASS_WEIGHTS = [5.15, 1.0]      # [v5/Exp7] bobot kelas statis (safe_driving=5.15, phone_use=1.0)
+# Konfigurasi Eksperimen 8 (The Golden Balance)
+WEIGHT_DECAY = 5e-4             # [v5/Exp8] weight decay optimal (kembali ke Exp 4)
+NUM_STAGES_TO_FREEZE_FRONT = 4  # [v5/Exp8] freeze front stages
+NUM_STAGES_TO_FREEZE_SIDE = 3   # [v5/Exp8] freeze side stages (fleksibilitas ekstra)
+LABEL_SMOOTHING = 0.1           # [v5/Exp8] label smoothing tetap aktif
+CLASS_WEIGHTS = [2.5, 1.0]      # [v5/Exp8] bobot kelas moderat untuk safe_driving
 LR_SCHEDULER_FACTOR = 0.5
 LR_SCHEDULER_PATIENCE = 2
 
@@ -132,5 +133,5 @@ LR_SCHEDULER_PATIENCE = 2
 # menghasilkan frame ke-1, 6, 11, 16, ... (selalu dimulai dari frame pertama).
 # Set ke 1 untuk menonaktifkan subsampling (pakai semua frame).
 # --------------------------------------------------------------------------
-FRAME_STRIDE = 5
+FRAME_STRIDE = 15               # [v5/Exp8] stride 15 untuk memangkas data redundan secara agresif
 
