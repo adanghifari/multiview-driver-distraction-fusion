@@ -137,31 +137,59 @@ def collect_logits_and_labels(model, dataloader, device):
 
 def fit_temperature(logits: torch.Tensor, labels: torch.Tensor):
     """Fit temperature parameter T using LBFGS optimizer on the validation set.
-    Uses log(T) reparameterization and clamps T >= 0.1 to avoid degenerate solutions.
+    Uses log(T) reparameterization and clamps T >= 0.3 to avoid degenerate solutions.
     """
     log_temperature = torch.tensor([0.0], dtype=torch.float32, requires_grad=True)
-    optimizer = optim.LBFGS([log_temperature], lr=0.01, max_iter=100)
+    
+    # Use LBFGS with strong_wolfe line search to prevent loss divergence
+    optimizer = optim.LBFGS([log_temperature], lr=0.1, max_iter=50, line_search_fn="strong_wolfe")
     criterion = nn.CrossEntropyLoss()
     
     # Calculate initial loss (T = 1.0)
     initial_loss = criterion(logits, labels).item()
     
+    eval_count = 0
+    best_loss = initial_loss
+    best_T = 1.0
+    
     def eval_val():
+        nonlocal eval_count, best_loss, best_T
         optimizer.zero_grad()
         T = torch.exp(log_temperature)
-        T = torch.clamp(T, min=0.1, max=10.0)
+        # Clamp to [0.3, 10.0] to prevent extreme scaling during line search
+        T = torch.clamp(T, min=0.3, max=10.0)
         loss = criterion(logits / T, labels)
         loss.backward()
+        
+        loss_val = loss.item()
+        T_val = T.item()
+        
+        if loss_val < best_loss:
+            best_loss = loss_val
+            best_T = T_val
+            
+        eval_count += 1
+        if eval_count % 5 == 0 or eval_count == 1:
+            log.info(f"  [LBFGS Eval {eval_count}] T={T_val:.4f}, Loss={loss_val:.6f} (Best Loss={best_loss:.6f})")
+            
         return loss
         
-    optimizer.step(eval_val)
-    
+    try:
+        optimizer.step(eval_val)
+    except Exception as e:
+        log.warning(f"LBFGS optimization error: {e}. Falling back to best T found.")
+        
     T_val = torch.exp(log_temperature).item()
-    T_val = max(0.1, min(10.0, T_val))
+    T_val = max(0.3, min(10.0, T_val))
     
     # Calculate final loss
     final_loss = criterion(logits / T_val, labels).item()
     
+    if final_loss > initial_loss or best_loss < final_loss:
+        log.warning(f"Optimized T ({T_val:.4f}, loss {final_loss:.4f}) did not improve loss or was worse than Best T ({best_T:.4f}, loss {best_loss:.4f}). Falling back to Best T.")
+        T_val = best_T
+        final_loss = best_loss
+        
     return T_val, initial_loss, final_loss
 
 
@@ -196,8 +224,8 @@ def analyze_view_calibration(view: str, device: torch.device, exp_id: str = "", 
     T, init_loss, final_loss = fit_temperature(val_logits, val_labels)
     log.info(f"Optimal Temperature (T) untuk {view.upper()} view: {T:.4f} (Val Loss: {init_loss:.4f} -> {final_loss:.4f})")
     
-    # Sanity check on T value
-    if T <= 0.1001 or T >= 9.999:
+    # Sanity check on T value (minimum clamp raised to 0.3001)
+    if T <= 0.3001 or T >= 9.999:
         log.warning(f"⚠️ KEMUNGKINAN OPTIMASI TIDAK KONVERGEN (T mencapai batas clamp: {T:.4f})")
         log.warning(f"   Initial Val Loss: {init_loss:.4f} -> Final Val Loss: {final_loss:.4f}")
     

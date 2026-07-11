@@ -42,5 +42,5 @@
   },
   "view": "front",
   "best_epoch": 21,
-  "val_macro_f1": 0.72222
+  "val_macro_f1": 0.71762
 }
