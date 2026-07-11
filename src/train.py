@@ -221,6 +221,10 @@ def run_training(view: str, max_epochs: int = MAX_EPOCHS, exp_id: str = "",
     criterion = nn.CrossEntropyLoss(weight=class_weights, label_smoothing=LABEL_SMOOTHING)
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=WEIGHT_DECAY)
 
+    # ── Verifikasi Weight Decay ──
+    for i, g in enumerate(optimizer.param_groups):
+        log.info(f"INFO: [VERIFIKASI] param_group[{i}] weight_decay aktual = {g['weight_decay']}")
+
     # ── Learning Rate Scheduler ──
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
         optimizer, mode="max", factor=LR_SCHEDULER_FACTOR, patience=lr_scheduler_patience

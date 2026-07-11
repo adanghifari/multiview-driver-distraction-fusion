@@ -118,11 +118,11 @@ EARLY_STOPPING_PATIENCE_SIDE = 7  # [v7/Exp12] patience side view dinaikkan untu
 MAX_EPOCHS = 30
 DECISION_THRESHOLD = 0.5
 
-# Konfigurasi Eksperimen 13 (Calibration & Fusion Optimization — Isolasi Weight Decay)
-WEIGHT_DECAY = 1e-2             # [v8/Exp13] weight decay dinaikkan agresif untuk mencegah overfitting & logits ekstrim
+# Konfigurasi Eksperimen 13 (Calibration & Fusion Optimization — Isolasi Label Smoothing)
+WEIGHT_DECAY = 2e-3             # [v8/Exp13] dikembalikan ke baseline 2e-3 untuk mengisolasi efek label smoothing
 NUM_STAGES_TO_FREEZE_FRONT = 5  # [v5/Exp10] freeze front stages dinaikkan ke 5 (reduksi overfitting)
 NUM_STAGES_TO_FREEZE_SIDE = 4   # [v5/Exp10] freeze side stages dikembalikan ke 4 untuk stabilitas Side view
-LABEL_SMOOTHING = 0.12          # [v8/Exp13] dikembalikan ke baseline 0.12 untuk mengisolasi efek weight decay
+LABEL_SMOOTHING = 0.0           # [v8/Exp13] dinonaktifkan (0.00) untuk mengisolasi efeknya terhadap kalibrasi probabilitas biner
 CLASS_WEIGHTS = [2.5, 1.0]      # [v5/Exp8] bobot kelas moderat untuk safe_driving
 LR_SCHEDULER_FACTOR = 0.5
 LR_SCHEDULER_PATIENCE_FRONT = 1

@@ -137,7 +137,7 @@ def collect_logits_and_labels(model, dataloader, device):
 
 def fit_temperature(logits: torch.Tensor, labels: torch.Tensor):
     """Fit temperature parameter T using LBFGS optimizer on the validation set.
-    Uses log(T) reparameterization and clamps T >= 0.3 to avoid degenerate solutions.
+    Uses log(T) reparameterization and clamps T >= 0.2 to avoid degenerate solutions.
     """
     log_temperature = torch.tensor([0.0], dtype=torch.float32, requires_grad=True)
     
@@ -156,8 +156,8 @@ def fit_temperature(logits: torch.Tensor, labels: torch.Tensor):
         nonlocal eval_count, best_loss, best_T
         optimizer.zero_grad()
         T = torch.exp(log_temperature)
-        # Clamp to [0.3, 10.0] to prevent extreme scaling during line search
-        T = torch.clamp(T, min=0.3, max=10.0)
+        # Clamp to [0.2, 10.0] to prevent extreme scaling during line search
+        T = torch.clamp(T, min=0.2, max=10.0)
         loss = criterion(logits / T, labels)
         loss.backward()
         
@@ -180,7 +180,7 @@ def fit_temperature(logits: torch.Tensor, labels: torch.Tensor):
         log.warning(f"LBFGS optimization error: {e}. Falling back to best T found.")
         
     T_val = torch.exp(log_temperature).item()
-    T_val = max(0.3, min(10.0, T_val))
+    T_val = max(0.2, min(10.0, T_val))
     
     # Calculate final loss
     final_loss = criterion(logits / T_val, labels).item()
@@ -224,8 +224,8 @@ def analyze_view_calibration(view: str, device: torch.device, exp_id: str = "", 
     T, init_loss, final_loss = fit_temperature(val_logits, val_labels)
     log.info(f"Optimal Temperature (T) untuk {view.upper()} view: {T:.4f} (Val Loss: {init_loss:.4f} -> {final_loss:.4f})")
     
-    # Sanity check on T value (minimum clamp raised to 0.3001)
-    if T <= 0.3001 or T >= 9.999:
+    # Sanity check on T value (minimum clamp raised to 0.2001)
+    if T <= 0.2001 or T >= 9.999:
         log.warning(f"⚠️ KEMUNGKINAN OPTIMASI TIDAK KONVERGEN (T mencapai batas clamp: {T:.4f})")
         log.warning(f"   Initial Val Loss: {init_loss:.4f} -> Final Val Loss: {final_loss:.4f}")
     
