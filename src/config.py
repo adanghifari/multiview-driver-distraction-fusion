@@ -112,9 +112,9 @@ BATCH_SIZE = 32
 LEARNING_RATE_FRONT = 3e-5      # [v5/Exp10] learning rate front diturunkan ke 3e-5 (moderat)
 LEARNING_RATE_SIDE = 2e-5       # [v5/Exp8] learning rate side view (preventive untuk freeze 3 & stride 15)
 DROPOUT_FRONT = 0.5               # [v6/Exp11] dropout front view direlaksasi ke 0.5
-DROPOUT_SIDE = 0.5                # [v5/Exp10] dropout side view moderat
+DROPOUT_SIDE = 0.3                # [v7/Exp12] dropout side view diturunkan untuk rescue
 EARLY_STOPPING_PATIENCE_FRONT = 3  # [v6/Exp11] early stopping patience disesuaikan ke 3
-EARLY_STOPPING_PATIENCE_SIDE = 3
+EARLY_STOPPING_PATIENCE_SIDE = 7  # [v7/Exp12] patience side view dinaikkan untuk rescue
 MAX_EPOCHS = 30
 DECISION_THRESHOLD = 0.5
 
