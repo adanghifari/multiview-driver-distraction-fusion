@@ -4,15 +4,24 @@ Dokumen ini memuat perbandingan komprehensif seluruh rangkaian eksperimen optima
 
 ## Tabel Perbandingan Hasil Eksperimen
 
-| Eksperimen / Konfigurasi | View | Best Epoch | Val F1 (Best) | Gap Val-Train | Status Gap | Test F1 (Individual) | Test F1 (Avg Fusion) | ECE (Before / After) | Brier Score (After Calib) |
-| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Eksperimen 12**<br>*(Baseline)*<br>DO_F=0.50, DO_S=0.30<br>LS=0.12, WD=2e-3 | Front<br>Side | 21<br>14 | 0.7176<br>0.7074 | 0.0710<br>0.0680 | OK<br>OK | 0.7399<br>0.6262 | **0.7614** | 0.1724 / 0.0825<br>0.1852 / 0.0792 | 0.1110<br>0.1425 |
-| **Eksperimen 13 (Lama)**<br>*(WD & LS Campur)*<br>DO_F=0.50, DO_S=0.30<br>LS=0.00, WD=1e-2 | Front<br>Side | 21<br>14 | 0.7180<br>0.7070 | 0.1390<br>0.0680 | BORDERLINE<br>OK | 0.7206<br>0.6262 | **0.7773** | 0.1124 / 0.0768<br>0.1852 / 0.0792 | 0.1080<br>0.1425 |
-| **Eksperimen 13 (Baru) ⭐**<br>*(Isolasi LS - Final Chosen)*<br>DO_F=0.50, DO_S=0.30<br>LS=0.00, WD=2e-3 | Front<br>Side | 19<br>11 | 0.7556<br>0.7500 | 0.1906<br>0.0694 | **OVERFIT**<br>OK | **0.7740**<br>**0.6202** | **0.7841** | **0.1037 / 0.0721**<br>0.1826 / 0.0779 | **0.0894**<br>0.1415 |
-| **Eksperimen 13 (DO=0.60)**<br>*(Isolasi DO Front 0.6)*<br>DO_F=0.60, DO_S=0.30<br>LS=0.00, WD=2e-3 | Front<br>Side | 6<br>11 | 0.7040<br>0.7500 | 0.0565<br>0.0694 | OK<br>OK | 0.7022<br>0.6202 | **0.6460** | 0.1390 / 0.0782<br>0.1826 / 0.0779 | 0.1125<br>0.1415 |
-| **Eksperimen 13 (DO=0.55)**<br>*(Isolasi DO Front 0.55)*<br>DO_F=0.55, DO_S=0.30<br>LS=0.00, WD=2e-3 | Front<br>Side | 6<br>11 | 0.7040<br>0.7500 | 0.0645<br>0.0694 | OK<br>OK | 0.7075<br>0.6202 | **0.6729** | 0.1311 / 0.0749<br>0.1826 / 0.0779 | 0.1090<br>0.1415 |
+| Eksperimen / Konfigurasi | View | Best Epoch | Val F1 (Best) | Gap Val-Train | Status Gap | Test F1 (Individual) | Test F1 (Avg Fusion) | ECE (Before / After) | Brier Score (After Calib) | Sumber File Rujukan |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
+| **Eksperimen 12**<br>*(Baseline)*<br>DO_F=0.50, DO_S=0.30<br>LS=0.12, WD=2e-3 | Front<br>Side | 21<br>14 | 0.7222<br>0.7074 | 0.0544<br>0.0680 | OK<br>OK | 0.7399<br>0.6262 | **0.7614** | 0.1833 / 0.0825 [1]<br>0.2113 / 0.0792 [1] | 0.1110 [1]<br>0.1425 [1] | Commit `9bd91eb8d`:<br>- [front_history.json](file:///d:/Skripsi/Experiment/results/front_history.json)<br>- [front_test_metrics.json](file:///d:/Skripsi/Experiment/results/front_test_metrics.json)<br>- [side_history.json](file:///d:/Skripsi/Experiment/results/side_history.json) |
+| **Eksperimen 13 (Lama)**<br>*(WD & LS Campur)*<br>DO_F=0.50, DO_S=0.30<br>LS=0.00, WD=1e-2 | Front<br>Side | 21<br>14 | 0.7180 [3]<br>0.7070 [3] | 0.1390<br>0.0680 | BORDERLINE<br>OK | 0.7206<br>0.6262 | **0.7773** | 0.1124 / 0.0768<br>0.1852 / 0.0792 | 0.1080<br>0.1425 | Commit `070b22688`:<br>- [front_history.json](file:///d:/Skripsi/Experiment/results/front_history.json)<br>- [fusion_comparison.json](file:///d:/Skripsi/Experiment/results/fusion_comparison.json) |
+| **Eksperimen 13 (Baru) ⭐**<br>*(Isolasi LS - Final Chosen)*<br>DO_F=0.50, DO_S=0.30<br>LS=0.00, WD=2e-3 | Front<br>Side | 19<br>11 | 0.7556<br>0.7500 | 0.1906<br>0.0694 | **OVERFIT**<br>OK | **0.7740**<br>**0.6202** | **0.7841** | **0.1037 / 0.0721**<br>0.1826 / 0.0779 | **0.0894**<br>0.1415 | Lokal Backup (Aktif):<br>- [front_history_ls_isolated.json](file:///d:/Skripsi/Experiment/results/front_history_ls_isolated.json)<br>- [side_history_ls_isolated.json](file:///d:/Skripsi/Experiment/results/side_history_ls_isolated.json)<br>- [fusion_comparison_ls_isolated.json](file:///d:/Skripsi/Experiment/results/fusion_comparison_ls_isolated.json) |
+| **Eksperimen 13 (DO=0.60)**<br>*(Isolasi DO Front 0.6)*<br>DO_F=0.60, DO_S=0.30<br>LS=0.00, WD=2e-3 | Front<br>Side | 6<br>11 | 0.6898<br>0.7500 [2] | 0.0565<br>0.0694 [2] | OK<br>OK | 0.7022<br>0.6202 [2] | **0.6460** | 0.1390 / N/A [4]<br>0.1826 / 0.0779 [2] | N/A [4]<br>0.1415 [2] | Tidak dapat diverifikasi ulang (timbunan run berikutnya)<br>*Metrik dicatat dari log terminal sesi bimbingan iterasi 4.* |
+| **Eksperimen 13 (DO=0.55)**<br>*(Isolasi DO Front 0.55)*<br>DO_F=0.55, DO_S=0.30<br>LS=0.00, WD=2e-3 | Front<br>Side | 6<br>11 | 0.7040<br>0.7500 [2] | 0.0645<br>0.0694 [2] | OK<br>OK | 0.7075<br>0.6202 [2] | **0.6729** | 0.1311 / 0.0749<br>0.1826 / 0.0779 [2] | 0.1090<br>0.1415 [2] | Tidak dapat diverifikasi ulang (timbunan run berikutnya)<br>*Metrik dicatat dari log terminal sesi bimbingan iterasi 5.* |
 
 *Keterangan: DO = Dropout, LS = Label Smoothing, WD = Weight Decay, ECE = Expected Calibration Error (Binary/Positive Class).*
+
+---
+
+## Catatan Kaki
+
+* **[1] Catatan Kalibrasi Ulang Eksperimen 12**: ECE dan Brier Score setelah kalibrasi untuk Eksperimen 12 dihitung ulang menggunakan script optimasi kalibrasi terbaru yang telah diperbaiki (bug clamp temperature scaling & LBFGS line search). Hal ini menghasilkan nilai ECE after-calibration yang lebih rendah (**0.0825**) dibandingkan dengan nilai awal yang dilaporkan pada sidang sempro (**0.1251**).
+* **[2] Parameter Kontrol Side View**: Model Side View untuk eksperimen dropout Front View tidak dilatih ulang (locked) untuk mempertahankan validitas isolasi ilmiah, sehingga metrik Side View identik dengan Eksperimen 13 Baru.
+* **[3] Estimasi Val F1**: Metrik Val F1 untuk Eksperimen 13 (Lama) diambil dari pembulatan log commit karena file history aslinya telah ditimpa.
+* **[4] Metrik Terhapus (N/A)**: Berkas checkpoint dan metrik lokal untuk uji coba Dropout 0.60 telah tertimpa oleh run berikutnya dan tidak sempat dicadangkan, sehingga ECE after-calibration dan Brier Score pasca-kalibrasi tidak dapat disajikan secara presisi.
 
 ---
 
