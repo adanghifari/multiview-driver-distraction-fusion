@@ -129,8 +129,13 @@ LR_SCHEDULER_PATIENCE_FRONT = 1
 LR_SCHEDULER_PATIENCE_SIDE = 1
 
 # Intensitas Augmentasi (Subbab 3.2.3 proposal)
-AUG_ROTATION_DEGREE = 45
-AUG_COLOR_JITTER_FACTOR = 0.8      # [v6/Exp11] color jitter ditingkatkan ke 0.8 untuk mencegah late-stage memorization
+# Front View (Eksperimen 14 - Naik 1.5x untuk meredam overfitting)
+AUG_ROTATION_DEGREE_FRONT = 68      # 1.5x dari 45 (67.5 -> 68)
+AUG_COLOR_JITTER_FACTOR_FRONT = 1.2  # 1.5x dari 0.8
+
+# Side View (Baseline Eksperimen 12/13)
+AUG_ROTATION_DEGREE_SIDE = 45
+AUG_COLOR_JITTER_FACTOR_SIDE = 0.8
 
 # --------------------------------------------------------------------------
 # Frame subsampling (Subbab 3.2.3 — Eksperimen v4)

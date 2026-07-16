@@ -28,8 +28,10 @@ from src.config import (
     BATCH_SIZE,
     BINARY_LABEL_MAP,
     FRAME_STRIDE,
-    AUG_ROTATION_DEGREE,
-    AUG_COLOR_JITTER_FACTOR,
+    AUG_ROTATION_DEGREE_FRONT,
+    AUG_COLOR_JITTER_FACTOR_FRONT,
+    AUG_ROTATION_DEGREE_SIDE,
+    AUG_COLOR_JITTER_FACTOR_SIDE,
 )
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
@@ -55,17 +57,24 @@ class DriverViewDataset(Dataset):
         return image, label
 
 
-def get_transforms(split: str) -> transforms.Compose:
+def get_transforms(view: str, split: str) -> transforms.Compose:
     """Transform training menyertakan augmentasi; val/test tidak (Subbab 3.2.3)."""
     if split == "train":
+        if view == "front":
+            rot = AUG_ROTATION_DEGREE_FRONT
+            jit = AUG_COLOR_JITTER_FACTOR_FRONT
+        else:
+            rot = AUG_ROTATION_DEGREE_SIDE
+            jit = AUG_COLOR_JITTER_FACTOR_SIDE
+
         return transforms.Compose([
             transforms.Resize((IMAGE_SIZE, IMAGE_SIZE)),
             transforms.RandomHorizontalFlip(),
-            transforms.RandomRotation(AUG_ROTATION_DEGREE),
+            transforms.RandomRotation(rot),
             transforms.ColorJitter(
-                brightness=AUG_COLOR_JITTER_FACTOR,
-                contrast=AUG_COLOR_JITTER_FACTOR,
-                saturation=AUG_COLOR_JITTER_FACTOR
+                brightness=jit,
+                contrast=jit,
+                saturation=jit
             ),
             transforms.ToTensor(),
             transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
@@ -112,7 +121,7 @@ def get_dataloader(view: str, split: str, batch_size: int = BATCH_SIZE,
         raise ValueError(f"split harus 'train', 'val', atau 'test', dapat: {split}")
 
     df_subset = load_split_dataframe(view, split)
-    transform = get_transforms(split)
+    transform = get_transforms(view, split)
     dataset = DriverViewDataset(df_subset, transform)
 
     if shuffle is None:

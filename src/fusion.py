@@ -111,7 +111,7 @@ def get_paired_test_loader(batch_size: int = BATCH_SIZE,
         log.info("Frame subsampling diterapkan pada paired test loader (stride=%d): %d pasangan tersisa",
                  FRAME_STRIDE, len(df_test))
 
-    transform = get_transforms("test")  # tanpa augmentasi
+    transform = get_transforms("front", "test")  # tanpa augmentasi
     dataset = PairedTestDataset(df_test, transform)
 
     loader = DataLoader(
