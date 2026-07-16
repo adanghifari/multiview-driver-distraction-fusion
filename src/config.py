@@ -158,6 +158,7 @@ EXPERIMENT_CONFIGS = {
         "checkpoint_name": "front_best_exp14A.pt",
         "history_name": "front_history_exp14A.json",
         "summary_name": "experiment_14A_front_metrics.json",
+        "fusion_name": "fusion_comparison_exp14A.json",
         "learning_rate": 3e-5,
         "weight_decay": 3e-4,
         "dropout": 0.4,
@@ -170,6 +171,26 @@ EXPERIMENT_CONFIGS = {
             "Front-view stabilization revision: restore learning capacity "
             "by using Experiment 13 freeze depth and no label smoothing, "
             "while keeping light dropout and weight decay regularization."
+        ),
+    },
+    "experiment_14B": {
+        "view": "front",
+        "checkpoint_name": "front_best_exp14B.pt",
+        "history_name": "front_history_exp14B.json",
+        "summary_name": "experiment_14B_front_metrics.json",
+        "fusion_name": "fusion_comparison_exp14B.json",
+        "learning_rate": 3e-5,
+        "weight_decay": 5e-4,
+        "dropout": 0.4,
+        "label_smoothing": 0.0,
+        "num_stages_to_freeze": NUM_STAGES_TO_FREEZE_FRONT,
+        "early_stopping_patience": 4,
+        "lr_scheduler_patience": LR_SCHEDULER_PATIENCE_FRONT,
+        "class_weights": CLASS_WEIGHTS,
+        "description": (
+            "Front-view stabilization refinement: restore dropout to 0.40 "
+            "and slightly increase weight decay from 3e-4 to 5e-4 while "
+            "preserving the Experiment 14A revision training setup."
         ),
     },
 }

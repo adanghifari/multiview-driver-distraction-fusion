@@ -122,3 +122,122 @@ Output utama:
 
 Catatan: jangan menjalankan training untuk side view pada Experiment 14A. Side
 view tetap memakai checkpoint Experiment 13 sebagai kontrol stabil.
+
+## experiment_14B - Front View Stabilization Refinement
+
+Experiment 14B adalah penyempurnaan kecil setelah Experiment 14A revisi berhasil
+sebagai kandidat stabil front view. Fokusnya adalah mencoba meningkatkan
+kemampuan model mengenali kelas minoritas `safe_driving` tanpa merusak stabilitas
+generalisasi yang sudah membaik.
+
+### Catatan Experiment 14B Awal
+
+Experiment 14B awal menurunkan dropout dari 0.40 menjadi 0.35. Hasilnya lebih
+buruk dari 14A revisi: Front Macro F1 turun menjadi 0.74552, safe recall turun
+menjadi 22/40 (0.55), loss gap best naik menjadi 0.08135, dan fusion Macro F1
+turun menjadi 0.71285. Karena itu, penurunan dropout tidak dipertahankan.
+
+### Revisi Experiment 14B
+
+Hipotesis revisi: Experiment 14A revisi sudah stabil dengan dropout 0.40,
+freeze stage 5, dan label smoothing 0.0. Karena penurunan dropout ke 0.35
+memperburuk hasil, dropout dikembalikan ke 0.40. Perubahan yang diuji pada 14B
+revisi hanya menaikkan weight decay dari 3e-4 menjadi 5e-4. Regularisasi bobot
+yang sedikit lebih kuat diharapkan dapat menekan pola spesifik train tanpa
+mengurangi kapasitas model mengenali `safe_driving` secara berlebihan.
+
+Konfigurasi front view:
+- Backbone tetap EfficientNetV2-S.
+- Optimizer tetap AdamW.
+- Learning rate: 3e-5.
+- Weight decay: 5e-4.
+- Dropout: 0.4.
+- Label smoothing: 0.0.
+- Freeze stage: 5.
+- Scheduler: ReduceLROnPlateau.
+- Scheduler factor: 0.5.
+- Scheduler patience: 1.
+- Early stopping aktif, patience 4.
+- Batch size: 32.
+- Max epoch: 30.
+- Best model dipilih berdasarkan validation Macro F1.
+
+Perbedaan dari Experiment 14A revisi:
+- Weight decay dinaikkan dari 3e-4 menjadi 5e-4.
+- Parameter lain dipertahankan sama atau sedekat mungkin dengan 14A revisi.
+
+Perbedaan dari Experiment 14B awal:
+- Dropout dikembalikan dari 0.35 menjadi 0.40.
+- Weight decay dinaikkan dari 3e-4 menjadi 5e-4.
+
+Indikator keberhasilan:
+- Front Test Macro F1 minimal menyamai atau melampaui 14A revisi (0.76626).
+- Safe recall minimal tidak turun dari 0.60.
+- Confusion matrix tidak collapse ke kelas `phone_use`.
+- Loss gap tetap sehat dan tidak membesar ekstrem dari 14A revisi.
+- Fusion Macro F1 minimal menyamai atau melampaui 14A revisi (0.78059).
+
+Command yang dijalankan manual/terekam:
+
+```powershell
+# Training front Experiment 14B saja
+python -m src.train --view front --experiment experiment_14B
+
+# Evaluasi front Experiment 14B
+python -m src.evaluate --view front --checkpoint checkpoints\front_best_exp14B.pt
+
+# Fusion memakai front 14B dan side Experiment 13
+python -m src.fusion --front-checkpoint checkpoints\front_best_exp14B.pt --side-checkpoint checkpoints\side_best_exp13_backup.pt
+```
+
+Output utama:
+- `checkpoints/front_best_exp14B.pt`
+- `results/front_history_exp14B.json`
+- `results/experiment_14B_front_metrics.json`
+- `results/fusion_comparison_exp14B.json`
+
+Catatan: side view tetap memakai checkpoint Experiment 13 sebagai kontrol stabil
+dan tidak dilatih ulang.
+
+### Hasil Experiment 14B Revisi dan Keputusan Branch
+
+Experiment 14B revisi dijalankan untuk menguji apakah peningkatan weight decay
+ringan dapat memperbaiki generalisasi front view. Konfigurasi revisi
+mengembalikan dropout ke 0.40 dan menaikkan weight decay dari 3e-4 menjadi
+5e-4. Experiment 14A revisi tetap menjadi baseline stabil pembanding pada branch
+ini.
+
+Hasil 14B awal tidak dipertahankan sebagai kandidat karena:
+- Front Macro F1 turun dari 0.76626 (14A revisi) menjadi 0.74552.
+- Safe recall turun dari 0.60 menjadi 0.55.
+- Loss gap best epoch naik dari 0.04383 menjadi 0.08135.
+- Fusion Macro F1 turun dari 0.78059 menjadi 0.71285.
+
+Validitas checkpoint 14B revisi dicek dengan SHA256 dan berbeda dari 14A:
+
+```text
+front_best_exp14A.pt
+E2AF60A1F00C906E3F239484E361CF9BAB19215B67B6ABB7B1260FE5EC38979E
+
+front_best_exp14B.pt
+9BAF96C8AA7857585B2965DEAF27AB22BEA3796717C947FA923562797CC92FCF
+```
+
+Walaupun checkpoint 14B revisi berbeda dari checkpoint 14A, trajectory/history
+dan metrik evaluasi yang tercatat identik dengan Experiment 14A revisi. Metrics
+JSON hanya berbeda pada metadata checkpoint dan nilai `weight_decay`.
+
+Ringkasan 14B revisi:
+- Best epoch: 9.
+- Validation Macro F1: 0.72581.
+- Train-validation loss gap best epoch: 0.04383.
+- Test Macro F1 front: 0.76626.
+- Safe recall: 0.60 (24/40).
+- Average fusion Macro F1: 0.78059.
+- Adaptive fusion Macro F1: 0.78059.
+- Confusion matrix front: `[[24, 16], [14, 166]]`.
+- Confusion matrix fusion: `[[20, 20], [4, 176]]`.
+
+Kesimpulan branch `experiment_14B`: 14B revisi valid sebagai ablasi, tetapi
+tidak memberi peningkatan terukur dibandingkan 14A revisi. Kandidat stabil tetap
+Experiment 14A revisi, bukan 14B.

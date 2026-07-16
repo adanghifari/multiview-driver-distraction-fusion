@@ -54,6 +54,7 @@ from src.config import (
     IMAGENET_STD,
     BATCH_SIZE,
     FRAME_STRIDE,
+    EXPERIMENT_CONFIGS,
 )
 from src.dataset import get_transforms
 from src.evaluate import load_trained_model, compute_metrics, print_metrics
@@ -303,8 +304,9 @@ def main():
         "average_fusion": eval_avg,
         "adaptive_fusion": eval_adapt,
     }
-    if ckpt_front.get("experiment") == "experiment_14A":
-        results_path = RESULTS_DIR / "fusion_comparison_exp14A.json"
+    experiment = ckpt_front.get("experiment", "")
+    if experiment in EXPERIMENT_CONFIGS and "fusion_name" in EXPERIMENT_CONFIGS[experiment]:
+        results_path = RESULTS_DIR / EXPERIMENT_CONFIGS[experiment]["fusion_name"]
     else:
         suffix = f"_{args.exp_id}" if args.exp_id else ""
         results_path = RESULTS_DIR / f"fusion_comparison{suffix}.json"
