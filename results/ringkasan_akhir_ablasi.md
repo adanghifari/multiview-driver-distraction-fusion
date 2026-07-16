@@ -55,6 +55,11 @@ mayoritas `phone_use`. Revisi mengembalikan freeze stage ke 5, mematikan label
 smoothing, serta mempertahankan dropout 0.40 dan weight decay 3e-4 sebagai
 regularisasi ringan.
 
+Catatan augmentasi: front-view augmentation yang aktif di konfigurasi
+(`rotation=68`, `color_jitter=1.2`) dipertahankan dari pipeline Experiment 14
+yang sudah berjalan sebelumnya. Augmentasi bukan variabel utama yang diubah pada
+revisi 14A.
+
 Hasilnya menunjukkan stabilisasi yang sehat: Front Test Macro F1 mencapai
 **0.7663**, tidak jauh dari Experiment 13 Baru (**0.7740**), sementara gap
 train-validation loss pada epoch terbaik turun menjadi **0.0438**. Kelas

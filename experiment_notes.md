@@ -40,6 +40,13 @@ Konfigurasi yang diubah untuk front view:
 - Max epoch: 30.
 - Best model dipilih berdasarkan validation Macro F1.
 
+Catatan augmentasi: front-view augmentation pada `src/config.py`
+(`AUG_ROTATION_DEGREE_FRONT = 68`, `AUG_COLOR_JITTER_FACTOR_FRONT = 1.2`)
+dipertahankan dari konfigurasi pipeline Experiment 14 yang sudah aktif
+sebelum revisi 14A. Variabel utama Experiment 14A revisi adalah freeze stage,
+label smoothing, dropout, weight decay, dan early stopping; augmentasi tidak
+diubah khusus pada revisi ini.
+
 Indikator keberhasilan:
 - Test Macro F1 front mendekati atau tidak jauh dari Experiment 13.
 - Safe recall tidak collapse.
