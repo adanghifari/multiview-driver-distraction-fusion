@@ -11,6 +11,7 @@ Dokumen ini memuat perbandingan komprehensif seluruh rangkaian eksperimen optima
 | **Eksperimen 13 (Baru) ⭐**<br>*(Isolasi LS - Final Chosen)*<br>DO_F=0.50, DO_S=0.30<br>LS=0.00, WD=2e-3 | Front<br>Side | 19<br>11 | 0.7556<br>0.7500 | 0.1906<br>0.0694 | **OVERFIT**<br>OK | **0.7740**<br>**0.6202** | **0.7841** | **0.1037 / 0.0721**<br>0.1826 / 0.0779 | **0.0894**<br>0.1415 | Lokal Backup (Aktif):<br>- [front_history_ls_isolated.json](file:///d:/Skripsi/Experiment/results/front_history_ls_isolated.json)<br>- [side_history_ls_isolated.json](file:///d:/Skripsi/Experiment/results/side_history_ls_isolated.json)<br>- [fusion_comparison_ls_isolated.json](file:///d:/Skripsi/Experiment/results/fusion_comparison_ls_isolated.json) |
 | **Eksperimen 13 (DO=0.60)**<br>*(Isolasi DO Front 0.6)*<br>DO_F=0.60, DO_S=0.30<br>LS=0.00, WD=2e-3 | Front<br>Side | 6<br>11 | 0.6898<br>0.7500 [2] | 0.0565<br>0.0694 [2] | OK<br>OK | 0.7022<br>0.6202 [2] | **0.6460** | 0.1390 / N/A [4]<br>0.1826 / 0.0779 [2] | N/A [4]<br>0.1415 [2] | Tidak dapat diverifikasi ulang (timbunan run berikutnya)<br>*Metrik dicatat dari log terminal sesi bimbingan iterasi 4.* |
 | **Eksperimen 13 (DO=0.55)**<br>*(Isolasi DO Front 0.55)*<br>DO_F=0.55, DO_S=0.30<br>LS=0.00, WD=2e-3 | Front<br>Side | 6<br>11 | 0.7040<br>0.7500 [2] | 0.0645<br>0.0694 [2] | OK<br>OK | 0.7075<br>0.6202 [2] | **0.6729** | 0.1311 / 0.0749<br>0.1826 / 0.0779 [2] | 0.1090<br>0.1415 [2] | Tidak dapat diverifikasi ulang (timbunan run berikutnya)<br>*Metrik dicatat dari log terminal sesi bimbingan iterasi 5.* |
+| **Eksperimen 14A Revisi**<br>*(Stabilisasi Front)*<br>DO_F=0.40, DO_S=0.30<br>LS=0.00, WD=3e-4<br>Freeze_F=5, Patience_F=4 | Front<br>Side [2] | 9<br>11 [2] | 0.7258<br>0.7500 [2] | 0.0438<br>0.0694 [2] | **OK**<br>OK | **0.7663**<br>0.6202 [2] | **0.7806** | 0.1251 / N/A<br>0.1826 / 0.0779 [2] | 0.1131<br>0.1415 [2] | Lokal Backup (Stabilisasi):<br>- [front_history_exp14A.json](file:///d:/Skripsi/Experiment/results/front_history_exp14A.json)<br>- [experiment_14A_front_metrics.json](file:///d:/Skripsi/Experiment/results/experiment_14A_front_metrics.json)<br>- [fusion_comparison_exp14A.json](file:///d:/Skripsi/Experiment/results/fusion_comparison_exp14A.json) |
 
 *Keterangan: DO = Dropout, LS = Label Smoothing, WD = Weight Decay, ECE = Expected Calibration Error (Binary/Positive Class).*
 
@@ -46,3 +47,17 @@ Meskipun Front View memiliki gap val-train sebesar **0.1906** (OVERFIT) di akhir
 1. **Ukuran Validation Set yang Sangat Kecil**: Validation set yang digunakan hanya memiliki $N = 225$ frame dengan kelas minoritas (`safe_driving`) yang timpang (hanya 34 sampel). Hal ini membuat kalkulasi loss validation sangat sensitif (*noisy*) terhadap kesalahan kecil pada beberapa sampel minoritas, sehingga gap loss tidak merepresentasikan generalisasi yang buruk secara objektif.
 2. **Konsistensi Performa Test Set**: Performa model pada Test Set independen ($N = 220$) tetap sangat kuat dan konsisten (F1 Front = 0.7740), membuktikan bahwa model tidak mengalami degradasi generalisasi yang sesungguhnya di lapangan.
 3. **Pengorbanan Recall Minoritas**: Upaya paksa meredam gap lewat peningkatan dropout (0.55 dan 0.60) justru secara drastis menurunkan kemampuan model mendeteksi kelas minoritas (`safe_driving`), yang ditunjukkan dengan jatuhnya nilai recall dan F1 secara ekstrem. Mengorbankan performa nyata demi metrik gap yang artifisial adalah kompromi yang merugikan secara praktis.
+
+### 4. Catatan Stabilisasi Experiment 14A Revisi
+Experiment 14A revisi memperbaiki kegagalan 14A awal yang terlalu konservatif
+(freeze stage 6 + label smoothing 0.05) dan menyebabkan collapse ke kelas
+mayoritas `phone_use`. Revisi mengembalikan freeze stage ke 5, mematikan label
+smoothing, serta mempertahankan dropout 0.40 dan weight decay 3e-4 sebagai
+regularisasi ringan.
+
+Hasilnya menunjukkan stabilisasi yang sehat: Front Test Macro F1 mencapai
+**0.7663**, tidak jauh dari Experiment 13 Baru (**0.7740**), sementara gap
+train-validation loss pada epoch terbaik turun menjadi **0.0438**. Kelas
+minoritas `safe_driving` tidak collapse lagi (24/40 sampel benar; recall 0.60).
+Fusion dengan side Experiment 13 juga tetap kompetitif dengan Macro F1
+**0.7806**, mendekati fusion Experiment 13 Baru (**0.7841**).

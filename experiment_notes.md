@@ -48,6 +48,39 @@ Indikator keberhasilan:
 - Train-validation loss gap tidak lebih buruk dari Experiment 13.
 - Fusion dengan side Experiment 13 tidak turun jauh dari hasil Experiment 13.
 
+### Hasil Experiment 14A Revisi
+
+Experiment 14A revisi berhasil sebagai eksperimen stabilisasi. Dibandingkan
+Experiment 14A awal, model tidak lagi collapse ke kelas mayoritas `phone_use`.
+Recall `safe_driving` pada test set kembali menjadi 0.60 (24 dari 40 sampel
+safe dikenali benar).
+
+Ringkasan front view:
+- Best epoch: 9.
+- Validation Macro F1: 0.72581.
+- Train loss best epoch: 0.47353.
+- Validation loss best epoch: 0.51736.
+- Train-validation loss gap best epoch: 0.04383.
+- Test accuracy: 0.86364.
+- Test precision macro: 0.77183.
+- Test recall macro: 0.76111.
+- Test Macro F1: 0.76626.
+- ECE: 0.12513.
+- Brier Score: 0.11311.
+- Confusion matrix front: `[[24, 16], [14, 166]]`.
+
+Ringkasan fusion dengan side Experiment 13:
+- Single front Macro F1: 0.76626.
+- Single side Macro F1: 0.62023.
+- Average fusion Macro F1: 0.78059.
+- Adaptive fusion Macro F1: 0.78059.
+- Confusion matrix fusion: `[[20, 20], [4, 176]]`.
+
+Interpretasi: Experiment 14A revisi menghasilkan kompromi yang lebih sehat.
+Macro F1 front sedikit di bawah Experiment 13, tetapi train-validation loss gap
+jauh lebih kecil dan kelas `safe_driving` tetap dikenali. Fusion juga tetap
+kompetitif terhadap Experiment 13.
+
 Interpretasi jika hasil gagal:
 - Jika train loss dan validation loss sama-sama tinggi, regularisasi terlalu
   kuat atau freeze terlalu banyak.
