@@ -38,7 +38,7 @@ from pathlib import Path
 import numpy as np
 import torch
 import torch.nn as nn
-from sklearn.metrics import f1_score
+from sklearn.metrics import f1_score, precision_score, recall_score
 
 from src.config import (
     LEARNING_RATE_FRONT,
@@ -61,6 +61,7 @@ from src.config import (
     DROPOUT_FRONT,
     DROPOUT_SIDE,
     SPLIT_SEED,
+    EXPERIMENT_CONFIGS,
 )
 from src.dataset import get_all_dataloaders, load_split_dataframe
 from src.model import build_model
@@ -86,10 +87,11 @@ def seed_everything(seed=42):
 # ──────────────────────────────────────────────────────────────────────────────
 
 def train_one_epoch(model, loader, criterion, optimizer, device):
-    """Jalankan satu epoch training. Return rata-rata loss."""
+    """Jalankan satu epoch training. Return rata-rata loss dan accuracy."""
     model.train()
     running_loss = 0.0
     n_samples = 0
+    n_correct = 0
 
     for images, labels in loader:
         images = images.to(device)
@@ -101,15 +103,17 @@ def train_one_epoch(model, loader, criterion, optimizer, device):
         loss.backward()
         optimizer.step()
 
+        preds = torch.argmax(logits, dim=1)
+        n_correct += (preds == labels).sum().item()
         running_loss += loss.item() * images.size(0)
         n_samples += images.size(0)
 
-    return running_loss / n_samples
+    return running_loss / n_samples, n_correct / n_samples
 
 
 @torch.no_grad()
 def validate(model, loader, criterion, device, threshold=DECISION_THRESHOLD):
-    """Jalankan validasi. Return (val_loss, val_macro_f1, val_accuracy)."""
+    """Jalankan validasi. Return loss, F1, accuracy, precision, dan recall."""
     model.eval()
     running_loss = 0.0
     n_samples = 0
@@ -134,9 +138,11 @@ def validate(model, loader, criterion, device, threshold=DECISION_THRESHOLD):
 
     avg_loss = running_loss / n_samples
     macro_f1 = f1_score(all_labels, all_preds, average="macro", zero_division=0)
+    precision = precision_score(all_labels, all_preds, average="macro", zero_division=0)
+    recall = recall_score(all_labels, all_preds, average="macro", zero_division=0)
     accuracy = sum(p == l for p, l in zip(all_preds, all_labels)) / len(all_labels)
 
-    return avg_loss, macro_f1, accuracy
+    return avg_loss, macro_f1, accuracy, precision, recall
 
 
 
@@ -170,19 +176,48 @@ class EarlyStopping:
 # ──────────────────────────────────────────────────────────────────────────────
 
 def run_training(view: str, max_epochs: int = MAX_EPOCHS, exp_id: str = "",
-                 lr: float = None):
+                 lr: float = None, experiment: str = ""):
     """Latih model single-view dan simpan checkpoint + history."""
     seed_everything(SPLIT_SEED)
 
-    default_lr = LEARNING_RATE_FRONT if view == "front" else LEARNING_RATE_SIDE
+    exp_config = None
+    if experiment:
+        if experiment not in EXPERIMENT_CONFIGS:
+            raise ValueError(f"Experiment tidak dikenal: {experiment}. Pilihan: {list(EXPERIMENT_CONFIGS)}")
+        exp_config = EXPERIMENT_CONFIGS[experiment]
+        if view != exp_config["view"]:
+            raise ValueError(
+                f"{experiment} hanya untuk view='{exp_config['view']}'. "
+                "Side view tetap memakai checkpoint Experiment 13 dan tidak dilatih ulang."
+            )
+
+    default_lr = (
+        exp_config["learning_rate"] if exp_config
+        else (LEARNING_RATE_FRONT if view == "front" else LEARNING_RATE_SIDE)
+    )
     is_override = (lr is not None)
     if lr is None:
         lr = default_lr
 
-    freeze_stages = NUM_STAGES_TO_FREEZE_FRONT if view == "front" else NUM_STAGES_TO_FREEZE_SIDE
-    early_stopping_patience = EARLY_STOPPING_PATIENCE_FRONT if view == "front" else EARLY_STOPPING_PATIENCE_SIDE
-    lr_scheduler_patience = LR_SCHEDULER_PATIENCE_FRONT if view == "front" else LR_SCHEDULER_PATIENCE_SIDE
-    dropout_rate = DROPOUT_FRONT if view == "front" else DROPOUT_SIDE
+    freeze_stages = (
+        exp_config["num_stages_to_freeze"] if exp_config
+        else (NUM_STAGES_TO_FREEZE_FRONT if view == "front" else NUM_STAGES_TO_FREEZE_SIDE)
+    )
+    early_stopping_patience = (
+        exp_config["early_stopping_patience"] if exp_config
+        else (EARLY_STOPPING_PATIENCE_FRONT if view == "front" else EARLY_STOPPING_PATIENCE_SIDE)
+    )
+    lr_scheduler_patience = (
+        exp_config["lr_scheduler_patience"] if exp_config
+        else (LR_SCHEDULER_PATIENCE_FRONT if view == "front" else LR_SCHEDULER_PATIENCE_SIDE)
+    )
+    dropout_rate = (
+        exp_config["dropout"] if exp_config
+        else (DROPOUT_FRONT if view == "front" else DROPOUT_SIDE)
+    )
+    weight_decay = exp_config["weight_decay"] if exp_config else WEIGHT_DECAY
+    label_smoothing = exp_config["label_smoothing"] if exp_config else LABEL_SMOOTHING
+    class_weights_values = exp_config["class_weights"] if exp_config else CLASS_WEIGHTS
 
     # ── Tampilkan Ringkasan Konfigurasi Eksperimen ──
     log.info("\n" + "=" * 45)
@@ -191,11 +226,13 @@ def run_training(view: str, max_epochs: int = MAX_EPOCHS, exp_id: str = "",
     log.info(f"  View           : {view}")
     log.info(f"  Optimizer      : AdamW")
     log.info(f"  Learning Rate  : {lr:.1e}" + (" (override)" if is_override else ""))
-    log.info(f"  Weight Decay   : {WEIGHT_DECAY:.1e}")
+    log.info(f"  Weight Decay   : {weight_decay:.1e}")
     log.info(f"  Scheduler      : ReduceLROnPlateau")
     log.info(f"  Dropout        : {dropout_rate}")
+    log.info(f"  Label Smoothing: {label_smoothing}")
     log.info(f"  Frozen Stages  : {freeze_stages}")
     log.info(f"  EarlyStopping  : patience={early_stopping_patience}")
+    log.info(f"  Experiment     : {experiment if experiment else 'default'}")
     log.info(f"  Experiment ID  : {exp_id if exp_id else 'None'}")
     log.info("=" * 45 + "\n")
 
@@ -214,12 +251,15 @@ def run_training(view: str, max_epochs: int = MAX_EPOCHS, exp_id: str = "",
     model = build_model(pretrained=True, num_stages_to_freeze=freeze_stages, dropout_rate=dropout_rate).to(device)
 
     # ── Load static class weights dari config ──
-    class_weights = torch.tensor(CLASS_WEIGHTS, dtype=torch.float).to(device)
-    log.info("Class weights (CrossEntropyLoss): safe_driving=%.4f, phone_use=%.4f", CLASS_WEIGHTS[0], CLASS_WEIGHTS[1])
-    log.info("Label smoothing: %.2f", LABEL_SMOOTHING)
+    class_weights = torch.tensor(class_weights_values, dtype=torch.float).to(device)
+    log.info(
+        "Class weights (CrossEntropyLoss): safe_driving=%.4f, phone_use=%.4f",
+        class_weights_values[0], class_weights_values[1],
+    )
+    log.info("Label smoothing: %.2f", label_smoothing)
 
-    criterion = nn.CrossEntropyLoss(weight=class_weights, label_smoothing=LABEL_SMOOTHING)
-    optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=WEIGHT_DECAY)
+    criterion = nn.CrossEntropyLoss(weight=class_weights, label_smoothing=label_smoothing)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
 
     # ── Verifikasi Weight Decay ──
     for i, g in enumerate(optimizer.param_groups):
@@ -237,19 +277,29 @@ def run_training(view: str, max_epochs: int = MAX_EPOCHS, exp_id: str = "",
     CHECKPOINT_DIR.mkdir(parents=True, exist_ok=True)
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
     
-    if exp_id:
+    if exp_config:
+        ckpt_path = CHECKPOINT_DIR / exp_config["checkpoint_name"]
+        history_path = RESULTS_DIR / exp_config["history_name"]
+        summary_path = RESULTS_DIR / exp_config["summary_name"]
+    elif exp_id:
         ckpt_path = CHECKPOINT_DIR / f"{view}_{exp_id}_best.pt"
         history_path = RESULTS_DIR / f"{view}_history_{exp_id}.json"
+        summary_path = None
     else:
         ckpt_path = CHECKPOINT_DIR / f"{view}_best.pt"
         history_path = RESULTS_DIR / f"{view}_history.json"
+        summary_path = None
 
     # ── History ──
     history = {
         "train_loss": [],
+        "train_accuracy": [],
         "val_loss": [],
         "val_macro_f1": [],
         "val_accuracy": [],
+        "val_precision_macro": [],
+        "val_recall_macro": [],
+        "train_val_loss_gap": [],
         "lr": [],
     }
 
@@ -264,10 +314,11 @@ def run_training(view: str, max_epochs: int = MAX_EPOCHS, exp_id: str = "",
         t_epoch = time.time()
 
         # ── Train ──
-        train_loss = train_one_epoch(model, train_loader, criterion, optimizer, device)
+        train_loss, train_acc = train_one_epoch(model, train_loader, criterion, optimizer, device)
 
         # ── Validate ──
-        val_loss, val_f1, val_acc = validate(model, val_loader, criterion, device)
+        val_loss, val_f1, val_acc, val_precision, val_recall = validate(model, val_loader, criterion, device)
+        loss_gap = val_loss - train_loss
 
         # ── Step Scheduler ──
         scheduler.step(val_f1)
@@ -275,9 +326,13 @@ def run_training(view: str, max_epochs: int = MAX_EPOCHS, exp_id: str = "",
 
         # ── Record ──
         history["train_loss"].append(round(train_loss, 5))
+        history["train_accuracy"].append(round(train_acc, 5))
         history["val_loss"].append(round(val_loss, 5))
         history["val_macro_f1"].append(round(val_f1, 5))
         history["val_accuracy"].append(round(val_acc, 5))
+        history["val_precision_macro"].append(round(val_precision, 5))
+        history["val_recall_macro"].append(round(val_recall, 5))
+        history["train_val_loss_gap"].append(round(loss_gap, 5))
         history["lr"].append(current_lr)
 
         # ── Early stopping check ──
@@ -290,16 +345,40 @@ def run_training(view: str, max_epochs: int = MAX_EPOCHS, exp_id: str = "",
                 "optimizer_state_dict": optimizer.state_dict(),
                 "val_macro_f1": val_f1,
                 "val_loss": val_loss,
+                "train_loss": train_loss,
+                "train_accuracy": train_acc,
+                "val_accuracy": val_acc,
+                "val_precision_macro": val_precision,
+                "val_recall_macro": val_recall,
+                "train_val_loss_gap": loss_gap,
                 "view": view,
+                "experiment": experiment,
                 "class_weights": class_weights.cpu().tolist(),
                 "num_stages_to_freeze": freeze_stages,
+                "hyperparameters": {
+                    "learning_rate": lr,
+                    "weight_decay": weight_decay,
+                    "dropout": dropout_rate,
+                    "label_smoothing": label_smoothing,
+                    "num_stages_to_freeze": freeze_stages,
+                    "early_stopping_patience": early_stopping_patience,
+                    "lr_scheduler_factor": LR_SCHEDULER_FACTOR,
+                    "lr_scheduler_patience": lr_scheduler_patience,
+                    "class_weights": class_weights.cpu().tolist(),
+                },
             }, ckpt_path)
 
         elapsed = time.time() - t_epoch
         status = "* BEST" if is_best else f"  wait {early_stopping.counter}/{early_stopping.patience}"
         log.info(
-            "Epoch %02d/%02d | train_loss=%.4f | val_loss=%.4f | val_F1=%.4f | val_acc=%.4f | lr=%.1e | %s | %.0fs",
-            epoch, max_epochs, train_loss, val_loss, val_f1, val_acc, current_lr, status, elapsed,
+            (
+                "Epoch %02d/%02d | train_loss=%.4f | val_loss=%.4f | gap=%.4f | "
+                "train_acc=%.4f | val_acc=%.4f | val_prec=%.4f | val_rec=%.4f | "
+                "val_F1=%.4f | lr=%.1e | best_epoch=%d | %s | %.0fs"
+            ),
+            epoch, max_epochs, train_loss, val_loss, loss_gap,
+            train_acc, val_acc, val_precision, val_recall,
+            val_f1, current_lr, best_epoch, status, elapsed,
         )
 
         if early_stopping.should_stop:
@@ -317,6 +396,37 @@ def run_training(view: str, max_epochs: int = MAX_EPOCHS, exp_id: str = "",
     with open(history_path, "w") as f:
         json.dump(history, f, indent=2)
     log.info("History tersimpan di: %s", history_path)
+
+    if summary_path is not None:
+        best_idx = max(range(len(history["val_macro_f1"])), key=lambda i: history["val_macro_f1"][i])
+        summary = {
+            "experiment": experiment,
+            "view": view,
+            "checkpoint_path": str(ckpt_path),
+            "history_path": str(history_path),
+            "hyperparameters": {
+                "backbone": "EfficientNetV2-S",
+                "optimizer": "AdamW",
+                "learning_rate": lr,
+                "weight_decay": weight_decay,
+                "dropout": dropout_rate,
+                "label_smoothing": label_smoothing,
+                "scheduler": "ReduceLROnPlateau",
+                "early_stopping": True,
+                "early_stopping_patience": early_stopping_patience,
+                "num_stages_to_freeze": freeze_stages,
+                "metric_for_best_model": "validation Macro F1",
+            },
+            "best_epoch": best_idx + 1,
+            "best_validation_macro_f1": history["val_macro_f1"][best_idx],
+            "train_loss_at_best_epoch": history["train_loss"][best_idx],
+            "validation_loss_at_best_epoch": history["val_loss"][best_idx],
+            "train_validation_loss_gap_at_best_epoch": history["train_val_loss_gap"][best_idx],
+            "test_metrics": None,
+        }
+        with open(summary_path, "w") as f:
+            json.dump(summary, f, indent=2)
+        log.info("Ringkasan awal eksperimen tersimpan di: %s", summary_path)
 
     return history
 
@@ -338,9 +448,17 @@ def main():
     parser.add_argument("--lr", type=float, default=None,
                         help="Learning rate override (default: Front=5e-5, Side=2e-5 dari config.py). "
                              "Contoh: --lr 1e-5")
+    parser.add_argument("--experiment", choices=sorted(EXPERIMENT_CONFIGS.keys()), default="",
+                        help="Preset eksperimen khusus, misalnya experiment_14A untuk front-only.")
     args = parser.parse_args()
 
-    run_training(view=args.view, max_epochs=args.epochs, exp_id=args.exp_id, lr=args.lr)
+    run_training(
+        view=args.view,
+        max_epochs=args.epochs,
+        exp_id=args.exp_id,
+        lr=args.lr,
+        experiment=args.experiment,
+    )
 
 
 if __name__ == "__main__":

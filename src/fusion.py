@@ -212,14 +212,28 @@ def main():
     parser = argparse.ArgumentParser(description="Decision-level fusion untuk front & side")
     parser.add_argument("--exp_id", type=str, default="",
                         help="ID Eksperimen (opsional, misal 'exp3')")
+    parser.add_argument("--front-checkpoint", type=str, default=None,
+                        help="Path checkpoint front eksplisit, misal checkpoints/front_best_exp14A.pt")
+    parser.add_argument("--side-checkpoint", type=str, default=None,
+                        help="Path checkpoint side eksplisit, misal checkpoints/side_best_exp13_backup.pt")
     args = parser.parse_args()
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     log.info("Device: %s", device)
 
     # ── Load kedua model ──
-    model_front, ckpt_front = load_trained_model("front", device, exp_id=args.exp_id)
-    model_side, ckpt_side = load_trained_model("side", device, exp_id=args.exp_id)
+    model_front, ckpt_front = load_trained_model(
+        "front",
+        device,
+        exp_id=args.exp_id,
+        checkpoint_path=args.front_checkpoint,
+    )
+    model_side, ckpt_side = load_trained_model(
+        "side",
+        device,
+        exp_id=args.exp_id,
+        checkpoint_path=args.side_checkpoint,
+    )
 
     # ── Load paired test data ──
     paired_loader = get_paired_test_loader()
@@ -233,7 +247,11 @@ def main():
 
     # ── Sanity check: pastikan jumlah sampel di front/side test metrics sinkron dengan paired test set [v5/Exp8] ──
     suffix = f"_{args.exp_id}" if args.exp_id else ""
+    custom_checkpoint_used = bool(args.front_checkpoint or args.side_checkpoint)
     for view in ("front", "side"):
+        if custom_checkpoint_used:
+            log.info("Checkpoint eksplisit digunakan; sanity check file metrics default untuk %s dilewati.", view)
+            continue
         metrics_path = RESULTS_DIR / f"{view}_test_metrics{suffix}.json"
         if metrics_path.exists():
             with open(metrics_path, "r") as f:
@@ -285,23 +303,29 @@ def main():
         "average_fusion": eval_avg,
         "adaptive_fusion": eval_adapt,
     }
-    suffix = f"_{args.exp_id}" if args.exp_id else ""
-    results_path = RESULTS_DIR / f"fusion_comparison{suffix}.json"
+    if ckpt_front.get("experiment") == "experiment_14A":
+        results_path = RESULTS_DIR / "fusion_comparison_exp14A.json"
+    else:
+        suffix = f"_{args.exp_id}" if args.exp_id else ""
+        results_path = RESULTS_DIR / f"fusion_comparison{suffix}.json"
     with open(results_path, "w") as f:
         json.dump(all_results, f, indent=2)
     log.info("Hasil disimpan di: %s", results_path)
 
     # ── Jalankan audit/diagnostik fusion secara otomatis agar fusion_debug.csv tidak stale ──
-    import subprocess
-    import sys
-    cmd = [sys.executable, "-m", "src.fusion_debug"]
-    if args.exp_id:
-        cmd.extend(["--exp_id", args.exp_id])
-    log.info("Menjalankan audit/diagnostik fusion secara otomatis...")
-    try:
-        subprocess.run(cmd, check=True)
-    except Exception as e:
-        log.error("Gagal menjalankan fusion_debug secara otomatis: %s", e)
+    if custom_checkpoint_used:
+        log.info("Audit fusion_debug otomatis dilewati karena checkpoint eksplisit digunakan.")
+    else:
+        import subprocess
+        import sys
+        cmd = [sys.executable, "-m", "src.fusion_debug"]
+        if args.exp_id:
+            cmd.extend(["--exp_id", args.exp_id])
+        log.info("Menjalankan audit/diagnostik fusion secara otomatis...")
+        try:
+            subprocess.run(cmd, check=True)
+        except Exception as e:
+            log.error("Gagal menjalankan fusion_debug secara otomatis: %s", e)
 
 
 if __name__ == "__main__":

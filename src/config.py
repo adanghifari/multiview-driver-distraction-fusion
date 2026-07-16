@@ -147,3 +147,29 @@ AUG_COLOR_JITTER_FACTOR_SIDE = 0.8
 # --------------------------------------------------------------------------
 FRAME_STRIDE = 30               # [v5/Exp9] stride 30 untuk memangkas data redundan secara ekstrem (1 FPS)
 
+# --------------------------------------------------------------------------
+# Preset eksperimen khusus
+# --------------------------------------------------------------------------
+# Experiment 14A hanya ditujukan untuk stabilisasi FRONT view. Side view tetap
+# memakai checkpoint Experiment 13 sebagai kontrol stabil dan tidak dilatih ulang.
+EXPERIMENT_CONFIGS = {
+    "experiment_14A": {
+        "view": "front",
+        "checkpoint_name": "front_best_exp14A.pt",
+        "history_name": "front_history_exp14A.json",
+        "summary_name": "experiment_14A_front_metrics.json",
+        "learning_rate": 3e-5,
+        "weight_decay": 3e-4,
+        "dropout": 0.4,
+        "label_smoothing": 0.0,
+        "num_stages_to_freeze": NUM_STAGES_TO_FREEZE_FRONT,
+        "early_stopping_patience": 4,
+        "lr_scheduler_patience": LR_SCHEDULER_PATIENCE_FRONT,
+        "class_weights": CLASS_WEIGHTS,
+        "description": (
+            "Front-view stabilization revision: restore learning capacity "
+            "by using Experiment 13 freeze depth and no label smoothing, "
+            "while keeping light dropout and weight decay regularization."
+        ),
+    },
+}
