@@ -1,0 +1,10 @@
+{
+  "experiment": "experiment_14A",
+  "front_best_epoch": 9,
+  "front_val_macro_f1": 0.72581,
+  "front_test_macro_f1": 0.76626,
+  "front_safe_recall": 0.6,
+  "front_loss_gap_best": 0.04382858798961442,
+  "average_fusion_macro_f1": 0.78059,
+  "adaptive_fusion_macro_f1": 0.78059
+}
