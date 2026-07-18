@@ -192,7 +192,7 @@ kelas safe driving, terutama ketika pose tangan pada side view menyerupai pola
 penggunaan ponsel. Hal ini menjelaskan mengapa fusion meningkatkan Macro F1
 secara keseluruhan, tetapi safe recall menurun dibanding front single-view.
 
-## Analisis Adaptive Fusion Lanjutan dari Experiment 17
+## Analisis Adaptive Fusion pada Experiment 17
 
 Experiment 17 dilakukan sebagai analisis lanjutan pada level decision-level
 fusion. Tujuan utamanya bukan untuk mengganti hasil utama penelitian, melainkan
@@ -205,7 +205,7 @@ Pada analisis bobot adaptive fusion lama, diperoleh mean bobot front sebesar
 **0.52368** dan mean bobot side **0.47632**. Simpangan baku bobot front hanya
 **0.03445**, dengan rentang dari **0.42955** sampai **0.61073**. Selain itu,
 sebanyak **167 dari 220 sampel** memiliki `weight_front` pada rentang
-**0.45–0.55**. Temuan ini menunjukkan bahwa meskipun adaptive fusion secara
+**0.45-0.55**. Temuan ini menunjukkan bahwa meskipun adaptive fusion secara
 matematis tidak selalu memberi bobot 0.5 persis, dalam praktik bobot yang
 dihasilkan tetap sangat dekat dengan average fusion pada sebagian besar sampel.
 
@@ -220,8 +220,10 @@ Experiment 17B kemudian mencoba adaptive sharpening dengan faktor
 `alpha = 1, 2, 3, 5, 10`, menggunakan rumus `weight = softmax(alpha *
 confidence)` pada level fusion saja. Hasilnya menunjukkan bahwa seluruh nilai
 alpha tersebut tetap menghasilkan **Macro F1 = 0.78059**, sama dengan average
-fusion dan adaptive fusion lama. Tidak ada satu pun konfigurasi alpha yang
-menghasilkan perubahan prediksi akhir terhadap average fusion.
+fusion dan adaptive fusion lama. Pada seluruh nilai alpha, arah kesalahan juga
+tetap sama, yaitu `safe->phone = 20` dan `phone->safe = 4`. Tidak ada satu pun
+konfigurasi alpha yang menghasilkan perubahan prediksi akhir terhadap average
+fusion.
 
 Temuan ini memberi penjelasan yang lebih jelas mengenai identitas hasil average
 dan adaptive. Perbedaan confidence antara front dan side memang ada, tetapi

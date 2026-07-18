@@ -33,11 +33,12 @@
 
 - Baseline average fusion: 0.78059.
 - Baseline adaptive fusion lama: 0.78059.
-- Tidak ada alpha yang benar-benar memperbaiki Macro F1 di atas baseline average/adaptive lama (0.78059). Nilai terbaik tetap 0.78059 pada alpha=1.
+- Tidak ada alpha yang benar-benar memperbaiki Macro F1 di atas baseline average/adaptive lama (0.78059). Nilai terbaik tetap 0.78059 pada seluruh nilai alpha yang diuji, yaitu alpha=1, 2, 3, 5, dan 10.
 
 ## Trade-off Safe Recall dan Phone Recall
 
 - Perubahan alpha perlu dibaca bersama perubahan `safe->phone` dan `phone->safe`, bukan hanya Macro F1.
+- Pada hasil Experiment 17, trade-off tersebut tidak berubah karena seluruh nilai alpha menghasilkan `safe->phone = 20` dan `phone->safe = 4`.
 - Jika alpha yang lebih besar menurunkan `phone->safe` tetapi menaikkan `safe->phone`, maka peningkatan sensitivitas terhadap phone_use terjadi dengan trade-off false alarm pada safe_driving.
 - Sebaliknya, jika alpha tertentu menurunkan false alarm safe tetapi menaikkan `phone->safe`, maka sistem menjadi lebih konservatif terhadap deteksi phone_use.
 
