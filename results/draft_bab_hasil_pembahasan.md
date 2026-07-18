@@ -242,6 +242,43 @@ peningkatan Macro F1 di atas **0.78059**. Karena itu, hasil utama penelitian
 tetap tidak berubah, yaitu average fusion dan adaptive fusion sama-sama berada
 pada Macro F1 **0.78059**.
 
+## Analisis Threshold Fusion pada Experiment 18
+
+Experiment 18 dilakukan sebagai analisis lanjutan berbasis validation set untuk
+melihat apakah threshold keputusan pada output fusion dapat disesuaikan tanpa
+training ulang. Pada eksperimen ini tidak dilakukan perubahan model, dataset,
+split, checkpoint, maupun rumus average fusion dan adaptive fusion lama.
+Analisis hanya dilakukan pada level probabilitas output decision-level fusion.
+
+Threshold untuk kelas `phone_use` dicari pada validation set dalam rentang
+0.30 sampai 0.80 dengan step 0.01. Setelah threshold terbaik dipilih
+berdasarkan Macro F1 validation, threshold tersebut dievaluasi satu kali pada
+test set. Hasil pencarian menunjukkan bahwa threshold terbaik untuk
+`average_fusion` dan `adaptive_fusion` sama-sama berada pada **0.49**.
+
+Meskipun demikian, threshold terbaik dari validation set tersebut tidak
+memberikan peningkatan pada test set. Pada baseline threshold **0.50**, fusion
+memperoleh Macro F1 **0.78059**, accuracy **0.89091**, dengan `safe->phone =
+20` dan `phone->safe = 4`. Ketika threshold diubah menjadi **0.49**, Macro F1
+test justru turun menjadi **0.72982** dengan accuracy **0.87273**. Pada saat
+yang sama, false alarm `safe->phone` meningkat dari **20** menjadi **24**,
+sedangkan `phone->safe` tetap **4**.
+
+Temuan ini menunjukkan bahwa threshold tuning berbasis validation pada
+Experiment 18 belum berhasil menghasilkan perbaikan lanjutan terhadap hasil
+fusion yang sudah ada. Target untuk mendorong Macro F1 ke kisaran **0.80**
+tidak tercapai, dan threshold terpilih justru memperburuk error pada kelas
+`safe_driving`. Selain itu, average fusion dan adaptive fusion tetap identik,
+baik pada threshold baseline **0.50** maupun pada threshold terpilih
+**0.49**.
+
+Berdasarkan hasil tersebut, threshold **0.50** tetap dipertahankan sebagai
+hasil utama untuk fusion, dengan Macro F1 **0.78059**. Dengan kata lain,
+Experiment 18 menunjukkan bahwa peningkatan lebih lanjut belum berhasil dicapai
+melalui threshold tuning pada konfigurasi ini, walaupun analisis ini tetap
+bermanfaat untuk menegaskan bahwa batas performa fusion saat ini tidak mudah
+didorong hanya dengan menggeser threshold keputusan.
+
 ## Pembahasan Trade-off Fusion
 
 Jika hanya melihat Macro F1, fusion merupakan hasil terbaik pada penelitian

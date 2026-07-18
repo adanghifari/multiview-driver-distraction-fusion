@@ -1,0 +1,122 @@
+{
+  "average_fusion": {
+    "best_validation_threshold": {
+      "threshold": 0.49,
+      "accuracy": 0.88889,
+      "precision_macro": 0.7975,
+      "recall_macro": 0.72906,
+      "macro_f1": 0.75617,
+      "confusion_matrix": [
+        [
+          17,
+          17
+        ],
+        [
+          8,
+          183
+        ]
+      ],
+      "safe_to_phone": 17,
+      "phone_to_safe": 8
+    },
+    "baseline_threshold_0_5": {
+      "threshold": 0.5,
+      "accuracy": 0.89091,
+      "precision_macro": 0.86565,
+      "recall_macro": 0.73889,
+      "macro_f1": 0.78059,
+      "confusion_matrix": [
+        [
+          20,
+          20
+        ],
+        [
+          4,
+          176
+        ]
+      ],
+      "safe_to_phone": 20,
+      "phone_to_safe": 4
+    },
+    "selected_threshold_test": {
+      "threshold": 0.49,
+      "accuracy": 0.87273,
+      "precision_macro": 0.84,
+      "recall_macro": 0.68889,
+      "macro_f1": 0.72982,
+      "confusion_matrix": [
+        [
+          16,
+          24
+        ],
+        [
+          4,
+          176
+        ]
+      ],
+      "safe_to_phone": 24,
+      "phone_to_safe": 4
+    },
+    "macro_f1_improved_vs_baseline": false
+  },
+  "adaptive_fusion": {
+    "best_validation_threshold": {
+      "threshold": 0.49,
+      "accuracy": 0.88889,
+      "precision_macro": 0.7975,
+      "recall_macro": 0.72906,
+      "macro_f1": 0.75617,
+      "confusion_matrix": [
+        [
+          17,
+          17
+        ],
+        [
+          8,
+          183
+        ]
+      ],
+      "safe_to_phone": 17,
+      "phone_to_safe": 8
+    },
+    "baseline_threshold_0_5": {
+      "threshold": 0.5,
+      "accuracy": 0.89091,
+      "precision_macro": 0.86565,
+      "recall_macro": 0.73889,
+      "macro_f1": 0.78059,
+      "confusion_matrix": [
+        [
+          20,
+          20
+        ],
+        [
+          4,
+          176
+        ]
+      ],
+      "safe_to_phone": 20,
+      "phone_to_safe": 4
+    },
+    "selected_threshold_test": {
+      "threshold": 0.49,
+      "accuracy": 0.87273,
+      "precision_macro": 0.84,
+      "recall_macro": 0.68889,
+      "macro_f1": 0.72982,
+      "confusion_matrix": [
+        [
+          16,
+          24
+        ],
+        [
+          4,
+          176
+        ]
+      ],
+      "safe_to_phone": 24,
+      "phone_to_safe": 4
+    },
+    "macro_f1_improved_vs_baseline": false
+  }
+}

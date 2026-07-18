@@ -5,7 +5,8 @@
 Tahap akhir penelitian ini tidak melakukan training ulang, tuning tambahan,
 perubahan arsitektur model, perubahan dataset, maupun perubahan metode fusion.
 Ringkasan ini sepenuhnya disusun dari hasil yang sudah tersedia pada
-Experiment 14A revisi, Experiment 15, dan Experiment 16.
+Experiment 14A revisi, Experiment 15, Experiment 16, Experiment 17, dan
+Experiment 18.
 
 Fokus evaluasi utama adalah **Macro F1-score**, karena penelitian ini perlu
 menilai keseimbangan performa pada dua kelas, yaitu `safe_driving` dan
@@ -116,6 +117,24 @@ Namun, fusion juga meningkatkan kecenderungan false alarm pada kelas
 penggunaan ponsel. Hal ini menjelaskan mengapa fusion meningkatkan Macro F1
 secara keseluruhan, tetapi safe recall menurun dibanding front single-view.
 
+## Ringkasan Analisis Lanjutan Fusion (Experiment 17 dan 18)
+
+Experiment 17 menunjukkan bahwa adaptive fusion lama tetap identik dengan
+average fusion karena distribusi bobotnya masih sangat dekat ke 0.5. Bahkan
+setelah diuji dengan adaptive sharpening pada alpha 1, 2, 3, 5, dan 10, hasil
+akhir tetap tidak berubah dan Macro F1 tetap berada di **0.78059**.
+
+Experiment 18 kemudian menguji threshold tuning berbasis validation set tanpa
+training ulang. Threshold terbaik validation untuk average fusion dan adaptive
+fusion sama-sama **0.49**, tetapi ketika diuji pada test set, hasilnya justru
+menurun dari Macro F1 **0.78059** menjadi **0.72982**. False alarm
+`safe->phone` juga naik dari **20** menjadi **24**, sementara `phone->safe`
+tetap **4**.
+
+Dengan demikian, hasil utama tetap menggunakan threshold **0.50** dengan Macro
+F1 **0.78059**, dan peningkatan lebih lanjut belum berhasil dicapai melalui
+adaptive sharpening maupun threshold tuning pada konfigurasi saat ini.
+
 ## Poin Utama Untuk Bab Hasil dan Pembahasan
 
 - Macro F1 tetap menjadi metrik utama untuk menarik kesimpulan.
@@ -126,6 +145,8 @@ secara keseluruhan, tetapi safe recall menurun dibanding front single-view.
   0.78059.
 - Adaptive fusion belum mengungguli average fusion karena hasil akhirnya
   identik pada seluruh metrik evaluasi utama.
+- Threshold tuning pada Experiment 18 juga belum memperbaiki hasil, sehingga
+  threshold 0.50 tetap dipakai sebagai hasil utama.
 - Calibration belum menjadi fokus utama pada tahap ini, tetapi nilai ECE dan
   Brier Score front menunjukkan confidence model masih layak dianalisis lebih
   lanjut pada tahap lanjutan.
