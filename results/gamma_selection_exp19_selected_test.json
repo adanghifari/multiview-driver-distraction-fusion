@@ -1,0 +1,37 @@
+{
+  "selected_gamma": 0.5,
+  "selected_side_checkpoint": "checkpoints\\side_best_exp19_gamma050.pt",
+  "alasan_selected_gamma": "Dipilih berdasarkan validation Macro F1 tertinggi; jika seri, diprioritaskan phone->safe lebih rendah, lalu safe->phone lebih rendah, lalu gamma yang lebih sederhana/dekat baseline balanced (lebih dekat ke 1.00).",
+  "test_accuracy": 0.88636,
+  "test_precision_macro": 0.83967,
+  "test_recall_macro": 0.74583,
+  "test_macro_f1": 0.77992,
+  "test_confusion_matrix": [
+    [
+      21,
+      19
+    ],
+    [
+      6,
+      174
+    ]
+  ],
+  "test_safe_to_phone": 19,
+  "test_phone_to_safe": 6,
+  "baseline_test_macro_f1": 0.78059,
+  "baseline_test_confusion": [
+    [
+      20,
+      20
+    ],
+    [
+      4,
+      176
+    ]
+  ],
+  "comparison_with_baseline": {
+    "macro_f1_delta": -0.00067,
+    "safe_to_phone_delta": -1,
+    "phone_to_safe_delta": 2
+  }
+}

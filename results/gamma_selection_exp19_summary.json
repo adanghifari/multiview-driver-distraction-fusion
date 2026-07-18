@@ -1,0 +1,323 @@
+{
+  "protocol": "validation-based gamma selection to avoid test set leakage",
+  "available_gammas": [
+    0.25,
+    0.5,
+    0.75,
+    0.85,
+    0.9,
+    0.93,
+    0.94,
+    0.95,
+    0.96,
+    0.97,
+    0.98,
+    1.0
+  ],
+  "validation_results": [
+    {
+      "gamma": 0.25,
+      "side_checkpoint": "checkpoints\\side_best_exp19_gamma025.pt",
+      "class_weight_safe": 1.3247,
+      "class_weight_phone": 0.879,
+      "validation_accuracy": 0.85333,
+      "validation_precision_macro": 0.71691,
+      "validation_recall_macro": 0.55097,
+      "validation_macro_f1": 0.55722,
+      "validation_confusion_matrix": [
+        [
+          4,
+          30
+        ],
+        [
+          3,
+          188
+        ]
+      ],
+      "validation_safe_to_phone": 30,
+      "validation_phone_to_safe": 3
+    },
+    {
+      "gamma": 0.5,
+      "side_checkpoint": "checkpoints\\side_best_exp19_gamma050.pt",
+      "class_weight_safe": 1.7549,
+      "class_weight_phone": 0.7726,
+      "validation_accuracy": 0.88889,
+      "validation_precision_macro": 0.78932,
+      "validation_recall_macro": 0.75323,
+      "validation_macro_f1": 0.76929,
+      "validation_confusion_matrix": [
+        [
+          19,
+          15
+        ],
+        [
+          10,
+          181
+        ]
+      ],
+      "validation_safe_to_phone": 15,
+      "validation_phone_to_safe": 10
+    },
+    {
+      "gamma": 0.75,
+      "side_checkpoint": "checkpoints\\side_best_exp19_gamma075.pt",
+      "class_weight_safe": 2.3247,
+      "class_weight_phone": 0.6791,
+      "validation_accuracy": 0.87556,
+      "validation_precision_macro": 0.75897,
+      "validation_recall_macro": 0.73329,
+      "validation_macro_f1": 0.74498,
+      "validation_confusion_matrix": [
+        [
+          18,
+          16
+        ],
+        [
+          12,
+          179
+        ]
+      ],
+      "validation_safe_to_phone": 16,
+      "validation_phone_to_safe": 12
+    },
+    {
+      "gamma": 0.85,
+      "side_checkpoint": "checkpoints\\side_best_exp19_gamma085.pt",
+      "class_weight_safe": 2.6014,
+      "class_weight_phone": 0.645,
+      "validation_accuracy": 0.87556,
+      "validation_precision_macro": 0.75747,
+      "validation_recall_macro": 0.75747,
+      "validation_macro_f1": 0.75747,
+      "validation_confusion_matrix": [
+        [
+          20,
+          14
+        ],
+        [
+          14,
+          177
+        ]
+      ],
+      "validation_safe_to_phone": 14,
+      "validation_phone_to_safe": 14
+    },
+    {
+      "gamma": 0.9,
+      "side_checkpoint": "checkpoints\\side_best_exp19_gamma090.pt",
+      "class_weight_safe": 2.7519,
+      "class_weight_phone": 0.6285,
+      "validation_accuracy": 0.86222,
+      "validation_precision_macro": 0.73304,
+      "validation_recall_macro": 0.74962,
+      "validation_macro_f1": 0.74079,
+      "validation_confusion_matrix": [
+        [
+          20,
+          14
+        ],
+        [
+          17,
+          174
+        ]
+      ],
+      "validation_safe_to_phone": 14,
+      "validation_phone_to_safe": 17
+    },
+    {
+      "gamma": 0.93,
+      "side_checkpoint": "checkpoints\\side_best_exp19_gamma093.pt",
+      "class_weight_safe": 2.8464,
+      "class_weight_phone": 0.6189,
+      "validation_accuracy": 0.86222,
+      "validation_precision_macro": 0.73304,
+      "validation_recall_macro": 0.74962,
+      "validation_macro_f1": 0.74079,
+      "validation_confusion_matrix": [
+        [
+          20,
+          14
+        ],
+        [
+          17,
+          174
+        ]
+      ],
+      "validation_safe_to_phone": 14,
+      "validation_phone_to_safe": 17
+    },
+    {
+      "gamma": 0.94,
+      "side_checkpoint": "checkpoints\\side_best_exp19_gamma094.pt",
+      "class_weight_safe": 2.8786,
+      "class_weight_phone": 0.6157,
+      "validation_accuracy": 0.86222,
+      "validation_precision_macro": 0.73304,
+      "validation_recall_macro": 0.74962,
+      "validation_macro_f1": 0.74079,
+      "validation_confusion_matrix": [
+        [
+          20,
+          14
+        ],
+        [
+          17,
+          174
+        ]
+      ],
+      "validation_safe_to_phone": 14,
+      "validation_phone_to_safe": 17
+    },
+    {
+      "gamma": 0.95,
+      "side_checkpoint": "checkpoints\\side_best_exp19_gamma095.pt",
+      "class_weight_safe": 2.9111,
+      "class_weight_phone": 0.6125,
+      "validation_accuracy": 0.86222,
+      "validation_precision_macro": 0.73304,
+      "validation_recall_macro": 0.74962,
+      "validation_macro_f1": 0.74079,
+      "validation_confusion_matrix": [
+        [
+          20,
+          14
+        ],
+        [
+          17,
+          174
+        ]
+      ],
+      "validation_safe_to_phone": 14,
+      "validation_phone_to_safe": 17
+    },
+    {
+      "gamma": 0.96,
+      "side_checkpoint": "checkpoints\\side_best_exp19_gamma096.pt",
+      "class_weight_safe": 2.9441,
+      "class_weight_phone": 0.6094,
+      "validation_accuracy": 0.84889,
+      "validation_precision_macro": 0.71216,
+      "validation_recall_macro": 0.74176,
+      "validation_macro_f1": 0.72506,
+      "validation_confusion_matrix": [
+        [
+          20,
+          14
+        ],
+        [
+          20,
+          171
+        ]
+      ],
+      "validation_safe_to_phone": 14,
+      "validation_phone_to_safe": 20
+    },
+    {
+      "gamma": 0.97,
+      "side_checkpoint": "checkpoints\\side_best_exp19_gamma097.pt",
+      "class_weight_safe": 2.9774,
+      "class_weight_phone": 0.6062,
+      "validation_accuracy": 0.85333,
+      "validation_precision_macro": 0.71878,
+      "validation_recall_macro": 0.74438,
+      "validation_macro_f1": 0.73021,
+      "validation_confusion_matrix": [
+        [
+          20,
+          14
+        ],
+        [
+          19,
+          172
+        ]
+      ],
+      "validation_safe_to_phone": 14,
+      "validation_phone_to_safe": 19
+    },
+    {
+      "gamma": 0.98,
+      "side_checkpoint": "checkpoints\\side_best_exp19_gamma098.pt",
+      "class_weight_safe": 3.011,
+      "class_weight_phone": 0.6031,
+      "validation_accuracy": 0.85333,
+      "validation_precision_macro": 0.71878,
+      "validation_recall_macro": 0.74438,
+      "validation_macro_f1": 0.73021,
+      "validation_confusion_matrix": [
+        [
+          20,
+          14
+        ],
+        [
+          19,
+          172
+        ]
+      ],
+      "validation_safe_to_phone": 14,
+      "validation_phone_to_safe": 19
+    },
+    {
+      "gamma": 1.0,
+      "side_checkpoint": "checkpoints\\side_best_exp19.pt",
+      "class_weight_safe": 3.0795,
+      "class_weight_phone": 0.5969,
+      "validation_accuracy": 0.85333,
+      "validation_precision_macro": 0.71878,
+      "validation_recall_macro": 0.74438,
+      "validation_macro_f1": 0.73021,
+      "validation_confusion_matrix": [
+        [
+          20,
+          14
+        ],
+        [
+          19,
+          172
+        ]
+      ],
+      "validation_safe_to_phone": 14,
+      "validation_phone_to_safe": 19
+    }
+  ],
+  "selected_gamma": 0.5,
+  "selected_side_checkpoint": "checkpoints\\side_best_exp19_gamma050.pt",
+  "selection_rule": "validation Macro F1 tertinggi; jika seri pilih phone->safe lebih rendah; jika masih seri pilih safe->phone lebih rendah; jika masih seri pilih gamma lebih dekat ke 1.00",
+  "selected_test_result": {
+    "selected_gamma": 0.5,
+    "selected_side_checkpoint": "checkpoints\\side_best_exp19_gamma050.pt",
+    "alasan_selected_gamma": "Dipilih berdasarkan validation Macro F1 tertinggi; jika seri, diprioritaskan phone->safe lebih rendah, lalu safe->phone lebih rendah, lalu gamma yang lebih sederhana/dekat baseline balanced (lebih dekat ke 1.00).",
+    "test_accuracy": 0.88636,
+    "test_precision_macro": 0.83967,
+    "test_recall_macro": 0.74583,
+    "test_macro_f1": 0.77992,
+    "test_confusion_matrix": [
+      [
+        21,
+        19
+      ],
+      [
+        6,
+        174
+      ]
+    ],
+    "test_safe_to_phone": 19,
+    "test_phone_to_safe": 6,
+    "baseline_test_macro_f1": 0.78059,
+    "baseline_test_confusion": [
+      [
+        20,
+        20
+      ],
+      [
+        4,
+        176
+      ]
+    ],
+    "comparison_with_baseline": {
+      "macro_f1_delta": -0.00067,
+      "safe_to_phone_delta": -1,
+      "phone_to_safe_delta": 2
+    }
+  }
+}

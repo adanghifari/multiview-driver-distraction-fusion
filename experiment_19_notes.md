@@ -378,7 +378,7 @@ Interpretasi:
 - Gamma `0.98` sangat dekat dengan full balanced `1.0`, dan hasil fusion-nya
   juga nyaris identik. Namun hasil ini masih sedikit di bawah `gamma=0.95`.
 
-## Tabel Ringkas Gamma
+## Tabel Ringkas Gamma Eksploratif Berbasis Test
 
 | Gamma | W_safe | W_phone | Side F1 | Side safe recall | Side phone recall | Fusion F1 | Fusion safe->phone | Fusion phone->safe |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
@@ -394,62 +394,144 @@ Interpretasi:
 | 0.97 | 2.9774 | 0.6062 | 0.56805 | 0.550 | 0.68333 | 0.78184 | 15 | 13 |
 | 0.98 | 3.0110 | 0.6031 | 0.56113 | 0.550 | 0.67222 | 0.79172 | 14 | 13 |
 
-## Kandidat Terbaik
+Catatan penting:
+- Tabel di atas bersifat **eksploratif**, karena pada tahap tersebut gamma
+  masih dibandingkan memakai test set.
+- Hasil eksploratif ini berguna untuk membaca pola, tetapi **tidak boleh**
+  dipakai sebagai dasar pemilihan gamma final karena berisiko test set leakage.
 
-Pemilihan kandidat dilakukan dengan aturan:
-1. Fusion Macro F1 tertinggi
-2. Jika seri, pilih `phone->safe` lebih rendah
-3. Jika masih seri, pilih `safe->phone` lebih rendah
+## Protokol Final: Validation-Based Gamma Selection
 
-Berdasarkan aturan tersebut, kandidat terbaik dari sweep gamma `0.25` sampai
-`0.98` tetap:
-- **gamma = 0.95**
-- Fusion Macro F1 = `0.79323`
-- Fusion confusion = `[[25, 15], [11, 169]]`
+Untuk menghindari test set leakage, pemilihan gamma final kemudian diulang
+dengan protokol yang benar:
+
+1. Semua checkpoint gamma yang sudah tersedia dievaluasi pada **validation set**.
+2. Gamma terbaik dipilih berdasarkan **validation Macro F1**.
+3. Jika seri, dipilih yang memiliki `phone->safe` lebih rendah.
+4. Jika masih seri, dipilih yang memiliki `safe->phone` lebih rendah.
+5. Jika masih seri, dipilih gamma yang lebih sederhana dan lebih dekat ke
+   baseline balanced, yaitu lebih dekat ke `1.00`.
+6. Setelah gamma terbaik dipilih dari validation, gamma tersebut dievaluasi
+   **satu kali** pada test set.
+
+Dengan protokol ini, test set tidak lagi dipakai untuk memilih gamma.
+
+## Tabel Validation Semua Gamma
+
+| Gamma | W_safe | W_phone | Val Acc | Val Prec | Val Rec | Val F1 | Val Confusion | Val safe->phone | Val phone->safe |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | --- | ---: | ---: |
+| 0.25 | 1.3247 | 0.8790 | 0.85333 | 0.71691 | 0.55097 | 0.55722 | [[4, 30], [3, 188]] | 30 | 3 |
+| 0.50 | 1.7549 | 0.7726 | 0.88889 | 0.78932 | 0.75323 | 0.76929 | [[19, 15], [10, 181]] | 15 | 10 |
+| 0.75 | 2.3247 | 0.6791 | 0.87556 | 0.75897 | 0.73329 | 0.74498 | [[18, 16], [12, 179]] | 16 | 12 |
+| 0.85 | 2.6014 | 0.6450 | 0.87556 | 0.75747 | 0.75747 | 0.75747 | [[20, 14], [14, 177]] | 14 | 14 |
+| 0.90 | 2.7519 | 0.6285 | 0.86222 | 0.73304 | 0.74962 | 0.74079 | [[20, 14], [17, 174]] | 14 | 17 |
+| 0.93 | 2.8464 | 0.6189 | 0.86222 | 0.73304 | 0.74962 | 0.74079 | [[20, 14], [17, 174]] | 14 | 17 |
+| 0.94 | 2.8786 | 0.6157 | 0.86222 | 0.73304 | 0.74962 | 0.74079 | [[20, 14], [17, 174]] | 14 | 17 |
+| 0.95 | 2.9111 | 0.6125 | 0.86222 | 0.73304 | 0.74962 | 0.74079 | [[20, 14], [17, 174]] | 14 | 17 |
+| 0.96 | 2.9441 | 0.6094 | 0.84889 | 0.71216 | 0.74176 | 0.72506 | [[20, 14], [20, 171]] | 14 | 20 |
+| 0.97 | 2.9774 | 0.6062 | 0.85333 | 0.71878 | 0.74438 | 0.73021 | [[20, 14], [19, 172]] | 14 | 19 |
+| 0.98 | 3.0110 | 0.6031 | 0.85333 | 0.71878 | 0.74438 | 0.73021 | [[20, 14], [19, 172]] | 14 | 19 |
+| 1.00 | 3.0795 | 0.5969 | 0.85333 | 0.71878 | 0.74438 | 0.73021 | [[20, 14], [19, 172]] | 14 | 19 |
+
+## Gamma Final Terpilih dari Validation
+
+Gamma final yang terpilih adalah:
+- **gamma = 0.50**
+- Checkpoint: `checkpoints/side_best_exp19_gamma050.pt`
+- Alasan pemilihan:
+  - validation Macro F1 tertinggi, yaitu `0.76929`
+  - tidak perlu memakai test set untuk memilih gamma
+
+Interpretasi:
+- Hasil ini menunjukkan bahwa gamma yang tampak terbaik pada test set
+  eksploratif (`0.95`) ternyata **bukan** gamma terbaik jika pemilihan
+  dilakukan dengan validation set.
+- Dengan demikian, `gamma=0.95` tidak boleh diklaim sebagai hasil final.
+
+## Hasil Test untuk Gamma Terpilih
+
+Setelah `gamma = 0.50` dipilih dari validation, evaluasi satu kali pada test
+set menghasilkan:
+
+- Test accuracy = `0.88636`
+- Test precision macro = `0.83967`
+- Test recall macro = `0.74583`
+- Test Macro F1 = `0.77992`
+- Test confusion = `[[21, 19], [6, 174]]`
+- Test safe->phone = `19`
+- Test phone->safe = `6`
+
+## Perbandingan dengan Baseline Fusion Lama
+
+Baseline fusion lama (Front14A + Side13):
+- Macro F1 = `0.78059`
+- Confusion = `[[20, 20], [4, 176]]`
+- safe->phone = `20`
+- phone->safe = `4`
+
+Gamma final terpilih dari validation (`gamma=0.50`):
+- Macro F1 = `0.77992`
+- Confusion = `[[21, 19], [6, 174]]`
+- safe->phone = `19`
+- phone->safe = `6`
+
+Perubahan terhadap baseline:
+- Macro F1 turun tipis sebesar `-0.00067`
+- safe->phone membaik dari `20` menjadi `19`
+- phone->safe memburuk dari `4` menjadi `6`
+
+Interpretasi:
+- Secara adil dan bebas leakage, hasil test gamma terpilih **tidak lebih baik**
+  daripada baseline `0.78059`.
+- Meskipun false alarm `safe->phone` turun sedikit, ada trade-off berupa
+  kenaikan `phone->safe`.
+- Karena Macro F1 adalah metrik utama, hasil final validation-based ini berarti
+  Experiment 19 **belum berhasil** melampaui baseline fusion lama.
+
+## Hasil Hash Checkpoint Gamma
+
+SHA256 checkpoint yang diperiksa:
+
+- `gamma=0.90`  -> `922736FB34F0627A38A1F5B2C102547DE4587290CF13216B03027A0C630D8B41`
+- `gamma=0.93`  -> `7FFF94DD29E60EF51848864F60416A5ABD48C8A0DCD03BC157A89185E0253876`
+- `gamma=0.94`  -> `8439A295547E309BFDF79AAE99B949D64A46B7EB2222ABB7BDDBEFEB0BEC48BA`
+- `gamma=0.95`  -> `5CA34572998A518D81EB97F0325A4ED6527C833C2101959B0602CEBB91BB07B8`
+- `gamma=0.97`  -> `5E70BD3C5837ACDBE91A4070301B8EE3879F509811F6F4AD78E2B1B04D43B1C5`
+- `gamma=0.98`  -> `FE363857DB6B1E10BD61DB4F25C8CAF9F218E66ACD59E521B64522876415F7F0`
+- `gamma=1.00` (`side_best_exp19.pt`) -> `F5C2CDF00EED0067FCF1EAFD5417435B9075AA411FA8385C308E5D9D009FA777`
+
+Interpretasi hash:
+
+- Semua checkpoint yang diperiksa memiliki hash **berbeda**.
+- Artinya, tidak ada indikasi bahwa file checkpoint antar gamma saling
+  overwrite atau sebenarnya file yang sama dengan nama berbeda.
+- Pada beberapa gamma, terutama `0.90`, `0.93`, `0.94`, dan `0.95`, confusion
+  matrix validation memang identik meskipun checkpoint/model yang dihasilkan
+  **berbeda**. Dengan demikian, kesimpulan yang tepat adalah bahwa model
+  berbeda tersebut tetap menghasilkan keputusan akhir yang sama pada validation
+  set.
+- Tidak ditemukan hash yang sama pada checkpoint yang seharusnya berbeda,
+  sehingga tidak ada tanda langsung potensi overwrite/bug pada file checkpoint
+  yang diperiksa.
 
 ## Apakah Ada Yang Tembus 0.80
 
-Tidak. Tidak ada gamma `0.25`, `0.50`, `0.75`, `0.85`, `0.90`, `0.93`,
-`0.94`, `0.95`, `0.96`, `0.97`, atau `0.98` yang menembus `0.80`.
+Tidak.
 
-## Trade-off Safe->Phone dan Phone->Safe
-
-Perbandingan dengan revised v2 full balanced:
-- Revised v2 full balanced:
-  - Fusion Macro F1 = `0.79166`
-  - safe->phone = `14`
-  - phone->safe = `13`
-
-Perbandingan kandidat terbaik current sweep (`gamma=0.95`):
-- Fusion Macro F1 naik tipis menjadi `0.79323`
-- safe->phone sedikit memburuk dari `14` menjadi `15`
-- phone->safe membaik dari `13` menjadi `11`
-
-Interpretasi:
-- Sweep high-gamma menunjukkan bahwa titik yang sangat dekat dengan full
-  balanced lebih menjanjikan daripada mild gamma yang lebih kecil.
-- Gamma `0.95` memberi kompromi yang sedikit lebih baik daripada full balanced
-  `1.0`: `phone->safe` turun dari `13` menjadi `11`, sementara `safe->phone`
-  hanya naik tipis dari `14` menjadi `15`.
-- Karena itu, Macro F1 fusion ikut naik tipis dari `0.79166` menjadi `0.79323`,
-  tetapi masih belum mencapai `0.80`.
-- Narrow sweep di sekitar `0.95` tidak menemukan kandidat yang lebih tinggi.
-  Titik terdekat yang paling kompetitif adalah `0.98` dengan Macro F1
-  `0.79172`, yang tetap berada di bawah `0.95`.
+- Validation Macro F1 terbaik adalah `0.76929` pada `gamma=0.50`
+- Test Macro F1 gamma terpilih adalah `0.77992`
+- Tidak ada konfigurasi final yang menembus `0.80`
 
 ## Kesimpulan Sementara
 
-- Gamma `0.25` terlalu lemah dan tidak layak dipakai.
-- Gamma `0.50` tetap menjadi mild candidate terbaik jika fokus utamanya adalah
-  menahan `phone->safe`, tetapi fusion-nya tidak melampaui baseline utama.
-- Sweep high-gamma menunjukkan bahwa performa fusion terbaik saat ini justru
-  datang dari **gamma `0.95`** dengan Macro F1 `0.79323`.
-- Sweep sempit `0.93`, `0.94`, `0.96`, `0.97`, dan `0.98` tidak berhasil
-  melampaui `gamma=0.95`.
-- Dibanding full balanced `1.0`, gamma `0.95` memberi perbaikan tipis pada
-  Macro F1 fusion dan menurunkan `phone->safe`, dengan konsekuensi kenaikan
-  kecil pada `safe->phone`.
-- Meski demikian, **belum ada kandidat** yang menembus `0.80`.
-- Dengan demikian, hasil terbaru mendukung bahwa class weight yang mendekati
-  full balanced masih paling potensial, tetapi ruang peningkatannya tetap
-  terbatas pada konfigurasi fusion saat ini.
+- Sweep gamma berbasis test sebelumnya bersifat eksploratif dan tidak dipakai
+  sebagai dasar pemilihan final.
+- Setelah protokol diperbaiki menjadi validation-based selection, gamma final
+  yang terpilih adalah **`0.50`**, bukan `0.95`.
+- Hasil test untuk gamma terpilih adalah Macro F1 `0.77992`, sedikit di bawah
+  baseline fusion lama `0.78059`.
+- Trade-off hasil final adalah:
+  - `safe->phone` membaik dari `20` ke `19`
+  - `phone->safe` memburuk dari `4` ke `6`
+- Dengan demikian, pada protokol pemilihan yang benar, Experiment 19 belum
+  menghasilkan peningkatan final di atas baseline fusion lama.

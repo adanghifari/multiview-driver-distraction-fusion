@@ -1,0 +1,13 @@
+gamma,side_checkpoint,class_weight_safe,class_weight_phone,validation_accuracy,validation_precision_macro,validation_recall_macro,validation_macro_f1,validation_confusion_matrix,validation_safe_to_phone,validation_phone_to_safe
+0.25,checkpoints\side_best_exp19_gamma025.pt,1.3247,0.879,0.85333,0.71691,0.55097,0.55722,"[[4, 30], [3, 188]]",30,3
+0.5,checkpoints\side_best_exp19_gamma050.pt,1.7549,0.7726,0.88889,0.78932,0.75323,0.76929,"[[19, 15], [10, 181]]",15,10
+0.75,checkpoints\side_best_exp19_gamma075.pt,2.3247,0.6791,0.87556,0.75897,0.73329,0.74498,"[[18, 16], [12, 179]]",16,12
+0.85,checkpoints\side_best_exp19_gamma085.pt,2.6014,0.645,0.87556,0.75747,0.75747,0.75747,"[[20, 14], [14, 177]]",14,14
+0.9,checkpoints\side_best_exp19_gamma090.pt,2.7519,0.6285,0.86222,0.73304,0.74962,0.74079,"[[20, 14], [17, 174]]",14,17
+0.93,checkpoints\side_best_exp19_gamma093.pt,2.8464,0.6189,0.86222,0.73304,0.74962,0.74079,"[[20, 14], [17, 174]]",14,17
+0.94,checkpoints\side_best_exp19_gamma094.pt,2.8786,0.6157,0.86222,0.73304,0.74962,0.74079,"[[20, 14], [17, 174]]",14,17
+0.95,checkpoints\side_best_exp19_gamma095.pt,2.9111,0.6125,0.86222,0.73304,0.74962,0.74079,"[[20, 14], [17, 174]]",14,17
+0.96,checkpoints\side_best_exp19_gamma096.pt,2.9441,0.6094,0.84889,0.71216,0.74176,0.72506,"[[20, 14], [20, 171]]",14,20
+0.97,checkpoints\side_best_exp19_gamma097.pt,2.9774,0.6062,0.85333,0.71878,0.74438,0.73021,"[[20, 14], [19, 172]]",14,19
+0.98,checkpoints\side_best_exp19_gamma098.pt,3.011,0.6031,0.85333,0.71878,0.74438,0.73021,"[[20, 14], [19, 172]]",14,19
+1.0,checkpoints\side_best_exp19.pt,3.0795,0.5969,0.85333,0.71878,0.74438,0.73021,"[[20, 14], [19, 172]]",14,19

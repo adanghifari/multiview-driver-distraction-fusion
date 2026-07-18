@@ -143,23 +143,23 @@ baseline masih relatif lemah, terutama dalam membedakan sampel aman dari
 `phone_use`, sehingga kontribusi side pada fusion belum optimal.
 
 Baseline fusion lama antara Front14A dan Side13 memiliki Macro F1
-**0.78059** dengan confusion matrix `[[20, 20], [4, 176]]`. Setelah dilakukan
-sweep class weighting pada side, kandidat terbaik diperoleh pada
-**gamma = 0.95** dengan hasil fusion Macro F1 **0.79323** dan confusion matrix
-`[[25, 15], [11, 169]]`. Ini berarti Experiment 19 berhasil meningkatkan Macro
-F1 fusion dibanding baseline fusion sebelumnya.
+**0.78059** dengan confusion matrix `[[20, 20], [4, 176]]`. Pada sweep
+eksploratif berbasis test, `gamma = 0.95` sempat terlihat sebagai test-best
+dengan Macro F1 **0.79323** dan confusion matrix `[[25, 15], [11, 169]]`.
+Namun, hasil tersebut tidak dijadikan final karena gamma dipilih berdasarkan
+test set, sehingga berisiko menimbulkan test set leakage.
 
-Namun, perbaikannya tetap disertai trade-off. Error `safe->phone` membaik dari
-**20** menjadi **15**, tetapi error `phone->safe` memburuk dari **4** menjadi
-**11**. Dengan demikian, hasil terbaik Experiment 19 tidak dapat dibaca
-sebagai perbaikan menyeluruh pada semua aspek, melainkan sebagai peningkatan
-Macro F1 dengan perubahan karakter kesalahan.
+Setelah protokol diperbaiki, gamma dipilih ulang secara benar menggunakan
+validation set. Hasil validation-based selection menunjukkan bahwa gamma
+terpilih adalah **0.50** dengan validation Macro F1 **0.76929**. Ketika
+gamma terpilih ini dievaluasi satu kali pada test set, hasilnya adalah Macro
+F1 **0.77992** dengan confusion matrix `[[21, 19], [6, 174]]`.
 
-Sebagai pembanding, konfigurasi **gamma = 1.00** menghasilkan Macro F1 fusion
-**0.79166** dengan confusion matrix `[[26, 14], [13, 167]]`. Narrow sweep pada
-gamma `0.93`, `0.94`, `0.96`, `0.97`, dan `0.98` juga tidak berhasil
-melampaui `gamma = 0.95`. Tidak ada konfigurasi Experiment 19 yang menembus
-Macro F1 **0.80**.
+Dengan demikian, class weighting pada side **belum terbukti mengungguli
+baseline** Front14A + Side13. Trade-off yang muncul adalah `safe->phone`
+membaik tipis dari **20** menjadi **19**, tetapi `phone->safe` memburuk dari
+**4** menjadi **6**. Tidak ada konfigurasi validation-based final yang
+menembus Macro F1 **0.80**.
 
 ## Poin Utama Untuk Bab Hasil dan Pembahasan
 
@@ -175,9 +175,11 @@ Macro F1 **0.80**.
   threshold 0.50 tetap dipakai sebagai hasil utama.
 - Experiment 19 menunjukkan bahwa perbaikan lebih lanjut lebih mungkin datang
   dari penguatan kualitas side view daripada dari modifikasi bobot fusion.
-- Kandidat terbaik Experiment 19 adalah `gamma = 0.95` dengan Macro F1 fusion
-  `0.79323`, tetapi hasil ini tetap memiliki trade-off pada error
-  `phone->safe`.
+- Hasil eksploratif terbaik Experiment 19 muncul pada `gamma = 0.95`, tetapi
+  itu tidak dipakai sebagai hasil final karena dipilih berdasarkan test set.
+- Gamma final yang valid dari validation-based selection adalah `0.50` dengan
+  test Macro F1 `0.77992`, sehingga class weighting belum terbukti
+  mengungguli baseline `0.78059`.
 - Calibration belum menjadi fokus utama pada tahap ini, tetapi nilai ECE dan
   Brier Score front menunjukkan confidence model masih layak dianalisis lebih
   lanjut pada tahap lanjutan.
@@ -187,12 +189,14 @@ Macro F1 **0.80**.
 Berdasarkan hasil yang tersedia, strategi fusion tetap layak dipertahankan
 sebagai hasil terbaik penelitian ini karena memberikan peningkatan Macro F1
 terhadap baseline front single-view. Hasil baseline fusion berada pada
-**0.78059**, sedangkan Experiment 19 mendorongnya naik menjadi **0.79323**
-melalui side class-weighting pada `gamma = 0.95`.
+**0.78059**, dan nilai ini tetap menjadi hasil utama yang valid setelah
+Experiment 19 dievaluasi ulang dengan protokol pemilihan gamma berbasis
+validation.
 
-Meski demikian, peningkatan tersebut tetap disertai trade-off. Pada baseline
-fusion, masalah utama berada pada false alarm kelas `safe_driving`, sedangkan
-pada kandidat terbaik Experiment 19, false alarm tersebut membaik tetapi
-error `phone->safe` justru meningkat. Karena itu, interpretasi hasil perlu
-menekankan bahwa peningkatan Macro F1 tidak berarti seluruh aspek performa
-membaik secara bersamaan.
+Experiment 19 tetap berguna sebagai ablation class weighting karena menunjukkan
+bahwa perubahan bobot kelas memang menggeser trade-off antara `safe->phone` dan
+`phone->safe`. Namun, pada protokol yang benar, gamma final terpilih `0.50`
+hanya mencapai Macro F1 **0.77992**, sehingga class weighting belum terbukti
+mengungguli baseline. Karena itu, hasil utama penelitian tidak berubah:
+Front14A + Side13 dengan fusion Macro F1 **0.78059**, dan average fusion serta
+adaptive fusion tetap identik.
