@@ -1,0 +1,17 @@
+{
+  "total_samples": 220,
+  "mean_weight_front": 0.5236798,
+  "mean_weight_side": 0.4763202,
+  "std_weight_front": 0.03444654,
+  "std_weight_side": 0.03444654,
+  "min_weight_front": 0.42954538,
+  "max_weight_front": 0.61073085,
+  "count_weight_front_between_0_45_and_0_55": 167,
+  "predictions_adaptive_different_from_average": 0,
+  "adaptive_correct_when_average_wrong": 0,
+  "adaptive_wrong_when_average_correct": 0,
+  "mean_confidence_front": 0.25448279,
+  "mean_confidence_side": 0.15925859,
+  "max_weight_difference_abs": 0.11073085,
+  "mean_weight_difference_abs": 0.03357186
+}
