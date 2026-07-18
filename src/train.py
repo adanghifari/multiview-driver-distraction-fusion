@@ -70,6 +70,31 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 log = logging.getLogger(__name__)
 
 
+def resolve_class_weights(view: str, exp_config) -> list[float]:
+    """Resolve class weights, optionally computing balanced weights from train data."""
+    raw_class_weights = exp_config["class_weights"] if exp_config else CLASS_WEIGHTS
+
+    if raw_class_weights != "balanced":
+        return raw_class_weights
+
+    df_train = load_split_dataframe(view, "train")
+    counts = {
+        label_id: int((df_train["binary_label"] == label_name).sum())
+        for label_name, label_id in BINARY_LABEL_MAP.items()
+    }
+    total = sum(counts.values())
+    n_classes = len(counts)
+    if total == 0 or any(v == 0 for v in counts.values()):
+        raise ValueError("Distribusi label train tidak valid untuk menghitung balanced class weights.")
+
+    weights = [total / (n_classes * counts[i]) for i in range(n_classes)]
+    log.info(
+        "Balanced class weights dihitung dari train split: safe_driving=%d, phone_use=%d",
+        counts[0], counts[1],
+    )
+    return weights
+
+
 def seed_everything(seed=42):
     """Kunci semua random seed agar eksperimen dapat direproduksi sepenuhnya."""
     random.seed(seed)
@@ -217,7 +242,7 @@ def run_training(view: str, max_epochs: int = MAX_EPOCHS, exp_id: str = "",
     )
     weight_decay = exp_config["weight_decay"] if exp_config else WEIGHT_DECAY
     label_smoothing = exp_config["label_smoothing"] if exp_config else LABEL_SMOOTHING
-    class_weights_values = exp_config["class_weights"] if exp_config else CLASS_WEIGHTS
+    class_weights_values = resolve_class_weights(view, exp_config)
 
     # ── Tampilkan Ringkasan Konfigurasi Eksperimen ──
     log.info("\n" + "=" * 45)

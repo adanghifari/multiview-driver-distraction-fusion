@@ -35,6 +35,7 @@ Penggunaan:
 
 import json
 import logging
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -216,6 +217,8 @@ def main():
                         help="Path checkpoint front eksplisit, misal checkpoints/front_best_exp14A.pt")
     parser.add_argument("--side-checkpoint", type=str, default=None,
                         help="Path checkpoint side eksplisit, misal checkpoints/side_best_exp13_backup.pt")
+    parser.add_argument("--output", type=str, default=None,
+                        help="Path output JSON eksplisit, misal results/fusion_comparison_exp19.json")
     args = parser.parse_args()
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -303,7 +306,11 @@ def main():
         "average_fusion": eval_avg,
         "adaptive_fusion": eval_adapt,
     }
-    if ckpt_front.get("experiment") == "experiment_14A":
+    if args.output:
+        results_path = Path(args.output)
+        if not results_path.is_absolute():
+            results_path = Path.cwd() / results_path
+    elif ckpt_front.get("experiment") == "experiment_14A":
         results_path = RESULTS_DIR / "fusion_comparison_exp14A.json"
     else:
         suffix = f"_{args.exp_id}" if args.exp_id else ""

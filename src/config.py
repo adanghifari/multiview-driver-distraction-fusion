@@ -172,4 +172,22 @@ EXPERIMENT_CONFIGS = {
             "while keeping light dropout and weight decay regularization."
         ),
     },
+    "experiment_19_side": {
+        "view": "side",
+        "checkpoint_name": "side_best_exp19.pt",
+        "history_name": "side_history_exp19.json",
+        "summary_name": "experiment_19_side_metrics.json",
+        "learning_rate": 3e-5,
+        "weight_decay": 1e-4,
+        "dropout": 0.3,
+        "label_smoothing": 0.0,
+        "num_stages_to_freeze": 4,
+        "early_stopping_patience": 5,
+        "lr_scheduler_patience": 1,
+        "class_weights": "balanced",
+        "description": (
+            "Side-view revision v2 with balanced class weights to improve safe-driving "
+            "recall while keeping the same binary setup, optimizer family, and fusion pipeline."
+        ),
+    },
 }

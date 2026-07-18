@@ -190,7 +190,7 @@ def print_metrics(view_or_method: str, metrics: dict):
 # Evaluasi satu view
 # ──────────────────────────────────────────────────────────────────────────────
 
-def evaluate_view(view: str, exp_id: str = "", checkpoint_path: str = None) -> dict:
+def evaluate_view(view: str, exp_id: str = "", checkpoint_path: str = None, output_path: str = None) -> dict:
     """Evaluasi model single-view pada test set, simpan hasil."""
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -232,7 +232,11 @@ def evaluate_view(view: str, exp_id: str = "", checkpoint_path: str = None) -> d
     # Simpan
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
     experiment = checkpoint.get("experiment", "")
-    if experiment in EXPERIMENT_CONFIGS:
+    if output_path:
+        metrics_path = Path(output_path)
+        if not metrics_path.is_absolute():
+            metrics_path = Path.cwd() / metrics_path
+    elif experiment in EXPERIMENT_CONFIGS:
         metrics_path = RESULTS_DIR / EXPERIMENT_CONFIGS[experiment]["summary_name"]
     else:
         suffix = f"_{exp_id}" if exp_id else ""
@@ -260,13 +264,15 @@ def main():
                         help="ID Eksperimen (opsional, misal 'exp3')")
     parser.add_argument("--checkpoint", type=str, default=None,
                         help="Path checkpoint eksplisit, misal checkpoints/front_best_exp14A.pt")
+    parser.add_argument("--output", type=str, default=None,
+                        help="Path output JSON eksplisit, misal results/experiment_19_side_metrics.json")
     args = parser.parse_args()
 
     if args.checkpoint and not args.view:
         parser.error("--checkpoint membutuhkan --view agar model yang benar dapat dibangun.")
 
     if args.view:
-        evaluate_view(args.view, exp_id=args.exp_id, checkpoint_path=args.checkpoint)
+        evaluate_view(args.view, exp_id=args.exp_id, checkpoint_path=args.checkpoint, output_path=args.output)
     else:
         # Evaluasi kedua view
         for v in ("front", "side"):
