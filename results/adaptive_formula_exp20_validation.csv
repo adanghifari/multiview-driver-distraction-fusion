@@ -1,0 +1,8 @@
+split,formula,accuracy,precision_macro,recall_macro,macro_f1,confusion_matrix,safe_to_phone,phone_to_safe,predictions_different_from_average,predictions_different_from_legacy_adaptive_softmax,mean_weight_front,mean_weight_side,std_weight_front,std_weight_side,min_weight_front,max_weight_front,count_weight_front_between_0_45_and_0_55
+val,average_fusion,0.88,0.77189,0.72382,0.74398,"[[17, 17], [10, 181]]",17,10,0,0,0.5,0.5,0.0,0.0,0.5,0.5,225
+val,legacy_adaptive_softmax,0.88,0.77189,0.72382,0.74398,"[[17, 17], [10, 181]]",17,10,0,0,0.51916833,0.48083167,0.03664454,0.03664454,0.43044193,0.60461691,169
+val,legacy_adaptive_ratio,0.88,0.77189,0.72382,0.74398,"[[17, 17], [10, 181]]",17,10,0,0,0.59144129,0.40855871,0.22383844,0.22383844,0.00988625,0.99844779,42
+val,margin_adaptive_ratio,0.88,0.77189,0.72382,0.74398,"[[17, 17], [10, 181]]",17,10,0,0,0.59144129,0.40855871,0.22383844,0.22383844,0.00988625,0.99844779,42
+val,entropy_adaptive_ratio,0.88,0.77189,0.72382,0.74398,"[[17, 17], [10, 181]]",17,10,0,0,0.63812405,0.36187595,0.30301644,0.30301644,9.688e-05,0.99999765,21
+val,maxprob_adaptive_ratio,0.88,0.77189,0.72382,0.74398,"[[17, 17], [10, 181]]",17,10,0,0,0.526527,0.473473,0.05314746,0.05314746,0.39249214,0.64603372,129
+val,reliability_weighted_static_fusion,0.88,0.77189,0.72382,0.74398,"[[17, 17], [10, 181]]",17,10,0,0,0.4918045,0.5081955,0.0,0.0,0.4918045,0.4918045,225

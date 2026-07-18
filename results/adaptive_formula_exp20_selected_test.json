@@ -1,0 +1,64 @@
+{
+  "formula": "average_fusion",
+  "label": "Average Fusion",
+  "split": "test",
+  "metrics": {
+    "accuracy": 0.89091,
+    "precision_macro": 0.86565,
+    "recall_macro": 0.73889,
+    "f1_macro": 0.78059,
+    "confusion_matrix": [
+      [
+        20,
+        20
+      ],
+      [
+        4,
+        176
+      ]
+    ],
+    "classification_report": {
+      "safe_driving": {
+        "precision": 0.8333333333333334,
+        "recall": 0.5,
+        "f1-score": 0.625,
+        "support": 40.0
+      },
+      "phone_use": {
+        "precision": 0.8979591836734694,
+        "recall": 0.9777777777777777,
+        "f1-score": 0.9361702127659575,
+        "support": 180.0
+      },
+      "accuracy": 0.8909090909090909,
+      "macro avg": {
+        "precision": 0.8656462585034014,
+        "recall": 0.7388888888888889,
+        "f1-score": 0.7805851063829787,
+        "support": 220.0
+      },
+      "weighted avg": {
+        "precision": 0.8862090290661719,
+        "recall": 0.8909090909090909,
+        "f1-score": 0.8795938104448743,
+        "support": 220.0
+      }
+    }
+  },
+  "safe_to_phone": 20,
+  "phone_to_safe": 4,
+  "predictions_different_from_average": 0,
+  "predictions_different_from_legacy_adaptive_softmax": 0,
+  "mean_weight_front": 0.5,
+  "mean_weight_side": 0.5,
+  "std_weight_front": 0.0,
+  "std_weight_side": 0.0,
+  "min_weight_front": 0.5,
+  "max_weight_front": 0.5,
+  "count_weight_front_between_0_45_and_0_55": 220,
+  "comparison_with_baseline": {
+    "macro_f1_delta": 0.0,
+    "safe_to_phone_delta": 0,
+    "phone_to_safe_delta": 0
+  }
+}

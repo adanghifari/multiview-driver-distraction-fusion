@@ -161,6 +161,37 @@ membaik tipis dari **20** menjadi **19**, tetapi `phone->safe` memburuk dari
 **4** menjadi **6**. Tidak ada konfigurasi validation-based final yang
 menembus Macro F1 **0.80**.
 
+## Ringkasan Eksplorasi Formula Adaptive Fusion (Experiment 20)
+
+Experiment 20 dilakukan sebagai eksplorasi lanjutan pada level decision-level
+fusion tanpa retraining. Tujuannya adalah menguji beberapa variasi adaptive
+atau re-weighted fusion berbasis probabilitas untuk melihat apakah perubahan
+definisi confidence dan mekanisme pembobotan dapat menghasilkan prediksi akhir
+yang berbeda dari average fusion.
+
+Seluruh kandidat yang diuji, yaitu `average_fusion`,
+`legacy_adaptive_softmax`, `legacy_adaptive_ratio`,
+`margin_adaptive_ratio`, `entropy_adaptive_ratio`,
+`maxprob_adaptive_ratio`, dan `reliability_weighted_static_fusion`,
+memperoleh hasil validation yang identik. Semua formula sama-sama menghasilkan
+Macro F1 **0.74398** pada validation, dan seluruhnya memiliki
+`diff_vs_avg = 0`, sehingga tidak ada satu pun formula yang menghasilkan
+prediksi berbeda dari average fusion.
+
+Karena seluruh kandidat seri pada validation, tie-break memilih formula paling
+sederhana, yaitu `average_fusion`. Ketika formula terpilih ini dievaluasi satu
+kali pada test set, hasilnya tetap sama dengan baseline utama, yaitu Macro F1
+**0.78059** dengan confusion matrix `[[20, 20], [4, 176]]`,
+`safe->phone = 20`, dan `phone->safe = 4`.
+
+Interpretasi utama Experiment 20 adalah bahwa variasi weighted probability
+adaptive fusion belum cukup untuk mengubah keputusan akhir pada konfigurasi
+Front14A + Side13. Dengan kata lain, average fusion pada probabilitas mentah
+sudah secara implisit membawa informasi confidence, sehingga confidence-based
+re-weighting menjadi redundant pada eksperimen ini. Hasil utama penelitian
+tetap tidak berubah, dan adaptive fusion belum terbukti lebih efektif daripada
+average fusion.
+
 ## Poin Utama Untuk Bab Hasil dan Pembahasan
 
 - Macro F1 tetap menjadi metrik utama untuk menarik kesimpulan.
@@ -180,6 +211,13 @@ menembus Macro F1 **0.80**.
 - Gamma final yang valid dari validation-based selection adalah `0.50` dengan
   test Macro F1 `0.77992`, sehingga class weighting belum terbukti
   mengungguli baseline `0.78059`.
+- Experiment 20 mengevaluasi beberapa variasi adaptive/re-weighted fusion
+  tanpa retraining, tetapi semua kandidat seri pada validation dan identik
+  dengan average fusion.
+- Formula terpilih Experiment 20 adalah `average_fusion` karena paling
+  sederhana, dan hasil test tetap berada pada Macro F1 `0.78059`.
+- Adaptive fusion berbasis confidence-weighting belum terbukti lebih efektif
+  daripada average fusion pada konfigurasi checkpoint yang dipakai.
 - Calibration belum menjadi fokus utama pada tahap ini, tetapi nilai ECE dan
   Brier Score front menunjukkan confidence model masih layak dianalisis lebih
   lanjut pada tahap lanjutan.
@@ -199,4 +237,6 @@ bahwa perubahan bobot kelas memang menggeser trade-off antara `safe->phone` dan
 hanya mencapai Macro F1 **0.77992**, sehingga class weighting belum terbukti
 mengungguli baseline. Karena itu, hasil utama penelitian tidak berubah:
 Front14A + Side13 dengan fusion Macro F1 **0.78059**, dan average fusion serta
-adaptive fusion tetap identik.
+adaptive fusion tetap identik. Experiment 20 kemudian menegaskan bahwa variasi
+formula adaptive fusion berbasis weighted probability average juga belum
+mengubah keputusan akhir maupun meningkatkan hasil utama tersebut.

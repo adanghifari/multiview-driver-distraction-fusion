@@ -347,6 +347,67 @@ Namun, karena hasil final validation-based selection tidak melampaui baseline,
 class weighting pada konfigurasi ini belum layak menggantikan hasil utama
 penelitian.
 
+## Experiment 20: Eksplorasi Formula Adaptive Fusion
+
+Experiment 20 dilakukan sebagai analisis eksploratif lanjutan setelah
+Experiment 17 menunjukkan bahwa adaptive fusion lama identik dengan average
+fusion. Latar belakang utama eksperimen ini adalah dugaan bahwa bukan hanya
+definisi confidence yang mungkin redundant, tetapi juga mekanisme pembentukan
+bobot pada adaptive fusion lama dapat terlalu lemah untuk mengubah keputusan
+akhir. Karena itu, Experiment 20 menguji beberapa variasi formula confidence
+dan weighting tanpa melakukan retraining, perubahan dataset, perubahan split,
+perubahan backbone, maupun perubahan checkpoint Front14A dan Side13.
+
+Formula yang diuji mencakup `average_fusion`, `legacy_adaptive_softmax`,
+`legacy_adaptive_ratio`, `margin_adaptive_ratio`,
+`entropy_adaptive_ratio`, `maxprob_adaptive_ratio`, dan
+`reliability_weighted_static_fusion`. Seluruh kandidat tersebut dievaluasi
+terlebih dahulu pada validation set, lalu formula terbaik dipilih hanya dari
+validation berdasarkan Macro F1. Jika terjadi seri, tie-break dilakukan
+dengan memprioritaskan `phone->safe` yang lebih rendah, lalu `safe->phone`
+yang lebih rendah, lalu formula yang paling sederhana.
+
+Hasil Experiment 20 menunjukkan bahwa seluruh formula memperoleh nilai
+validation yang identik, yaitu Macro F1 **0.74398**, dengan `safe->phone = 17`
+dan `phone->safe = 10`. Selain itu, seluruh kandidat menghasilkan
+`diff_vs_avg = 0`, sehingga tidak ada satu pun formula yang menghasilkan
+prediksi akhir berbeda dari average fusion. Karena semua kandidat seri,
+formula yang dipilih adalah `average_fusion` sebagai opsi yang paling
+sederhana.
+
+Ketika formula terpilih tersebut diuji satu kali pada test set, hasilnya tetap
+sama dengan baseline utama, yaitu Macro F1 **0.78059** dengan confusion matrix
+`[[20, 20], [4, 176]]`, `safe->phone = 20`, dan `phone->safe = 4`. Tidak ada
+perubahan prediksi terhadap average fusion maupun terhadap legacy adaptive
+fusion. Artinya, variasi adaptive confidence-weighting berbasis weighted
+probability average pada eksperimen ini belum cukup untuk mengubah keputusan
+akhir.
+
+Interpretasi yang paling hati-hati adalah bahwa average fusion pada
+probabilitas mentah sudah membawa unsur confidence secara implisit. Secara
+matematis, fusion berbentuk `w_front * P_front + w_side * P_side` dengan
+bobot positif yang berjumlah 1 merupakan convex combination, sehingga skor
+fusion selalu berada di antara probabilitas front dan side. Jika perubahan
+bobot tidak mendorong skor gabungan melintasi decision boundary 0.5, maka
+prediksi akhir akan tetap sama. Hal ini membantu menjelaskan mengapa beberapa
+formula seperti `legacy_adaptive_ratio` atau `entropy_adaptive_ratio` dapat
+menghasilkan bobot yang lebih ekstrem, tetapi tetap tidak mengubah keputusan
+klasifikasi.
+
+Pada klasifikasi biner, `margin_adaptive_ratio` juga redundant secara
+matematis terhadap `legacy_adaptive_ratio` karena
+`abs(P_phone - P_safe) = 2 * abs(P_phone - 0.5)`. Sementara itu,
+`reliability_weighted_static_fusion` tidak termasuk adaptive fusion
+per-sample, melainkan hanya pembanding static reliability-weighted fusion
+berbasis Macro F1 validation single-view.
+
+Dengan demikian, Experiment 20 tidak memberikan dasar empiris untuk
+mengganti rumus adaptive fusion utama. Hasil ini perlu diposisikan secara
+proporsional sebagai exploratory/diagnostic analysis, bukan sebagai metode
+utama baru. Average fusion tetap menjadi strategi yang paling stabil dan
+sederhana pada konfigurasi checkpoint yang digunakan, sementara adaptive
+confidence-weighting belum terbukti lebih efektif daripada average fusion.
+
 ## Pembahasan Trade-off Fusion
 
 Jika hanya melihat Macro F1, fusion merupakan hasil terbaik pada penelitian

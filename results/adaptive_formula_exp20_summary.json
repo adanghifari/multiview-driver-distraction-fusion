@@ -1,0 +1,276 @@
+{
+  "experiment": "experiment_20_adaptive_formula",
+  "front_checkpoint": "checkpoints/front_best_exp14A.pt",
+  "side_checkpoint": "checkpoints/side_best_exp13_backup.pt",
+  "validation_sample_count": 225,
+  "test_sample_count": 220,
+  "validation_single_view_macro_f1": {
+    "front": 0.72581,
+    "side": 0.75
+  },
+  "validation_results": [
+    {
+      "split": "val",
+      "formula": "average_fusion",
+      "accuracy": 0.88,
+      "precision_macro": 0.77189,
+      "recall_macro": 0.72382,
+      "macro_f1": 0.74398,
+      "confusion_matrix": "[[17, 17], [10, 181]]",
+      "safe_to_phone": 17,
+      "phone_to_safe": 10,
+      "predictions_different_from_average": 0,
+      "predictions_different_from_legacy_adaptive_softmax": 0,
+      "mean_weight_front": 0.5,
+      "mean_weight_side": 0.5,
+      "std_weight_front": 0.0,
+      "std_weight_side": 0.0,
+      "min_weight_front": 0.5,
+      "max_weight_front": 0.5,
+      "count_weight_front_between_0_45_and_0_55": 225
+    },
+    {
+      "split": "val",
+      "formula": "legacy_adaptive_softmax",
+      "accuracy": 0.88,
+      "precision_macro": 0.77189,
+      "recall_macro": 0.72382,
+      "macro_f1": 0.74398,
+      "confusion_matrix": "[[17, 17], [10, 181]]",
+      "safe_to_phone": 17,
+      "phone_to_safe": 10,
+      "predictions_different_from_average": 0,
+      "predictions_different_from_legacy_adaptive_softmax": 0,
+      "mean_weight_front": 0.51916833,
+      "mean_weight_side": 0.48083167,
+      "std_weight_front": 0.03664454,
+      "std_weight_side": 0.03664454,
+      "min_weight_front": 0.43044193,
+      "max_weight_front": 0.60461691,
+      "count_weight_front_between_0_45_and_0_55": 169
+    },
+    {
+      "split": "val",
+      "formula": "legacy_adaptive_ratio",
+      "accuracy": 0.88,
+      "precision_macro": 0.77189,
+      "recall_macro": 0.72382,
+      "macro_f1": 0.74398,
+      "confusion_matrix": "[[17, 17], [10, 181]]",
+      "safe_to_phone": 17,
+      "phone_to_safe": 10,
+      "predictions_different_from_average": 0,
+      "predictions_different_from_legacy_adaptive_softmax": 0,
+      "mean_weight_front": 0.59144129,
+      "mean_weight_side": 0.40855871,
+      "std_weight_front": 0.22383844,
+      "std_weight_side": 0.22383844,
+      "min_weight_front": 0.00988625,
+      "max_weight_front": 0.99844779,
+      "count_weight_front_between_0_45_and_0_55": 42
+    },
+    {
+      "split": "val",
+      "formula": "margin_adaptive_ratio",
+      "accuracy": 0.88,
+      "precision_macro": 0.77189,
+      "recall_macro": 0.72382,
+      "macro_f1": 0.74398,
+      "confusion_matrix": "[[17, 17], [10, 181]]",
+      "safe_to_phone": 17,
+      "phone_to_safe": 10,
+      "predictions_different_from_average": 0,
+      "predictions_different_from_legacy_adaptive_softmax": 0,
+      "mean_weight_front": 0.59144129,
+      "mean_weight_side": 0.40855871,
+      "std_weight_front": 0.22383844,
+      "std_weight_side": 0.22383844,
+      "min_weight_front": 0.00988625,
+      "max_weight_front": 0.99844779,
+      "count_weight_front_between_0_45_and_0_55": 42
+    },
+    {
+      "split": "val",
+      "formula": "entropy_adaptive_ratio",
+      "accuracy": 0.88,
+      "precision_macro": 0.77189,
+      "recall_macro": 0.72382,
+      "macro_f1": 0.74398,
+      "confusion_matrix": "[[17, 17], [10, 181]]",
+      "safe_to_phone": 17,
+      "phone_to_safe": 10,
+      "predictions_different_from_average": 0,
+      "predictions_different_from_legacy_adaptive_softmax": 0,
+      "mean_weight_front": 0.63812405,
+      "mean_weight_side": 0.36187595,
+      "std_weight_front": 0.30301644,
+      "std_weight_side": 0.30301644,
+      "min_weight_front": 9.688e-05,
+      "max_weight_front": 0.99999765,
+      "count_weight_front_between_0_45_and_0_55": 21
+    },
+    {
+      "split": "val",
+      "formula": "maxprob_adaptive_ratio",
+      "accuracy": 0.88,
+      "precision_macro": 0.77189,
+      "recall_macro": 0.72382,
+      "macro_f1": 0.74398,
+      "confusion_matrix": "[[17, 17], [10, 181]]",
+      "safe_to_phone": 17,
+      "phone_to_safe": 10,
+      "predictions_different_from_average": 0,
+      "predictions_different_from_legacy_adaptive_softmax": 0,
+      "mean_weight_front": 0.526527,
+      "mean_weight_side": 0.473473,
+      "std_weight_front": 0.05314746,
+      "std_weight_side": 0.05314746,
+      "min_weight_front": 0.39249214,
+      "max_weight_front": 0.64603372,
+      "count_weight_front_between_0_45_and_0_55": 129
+    },
+    {
+      "split": "val",
+      "formula": "reliability_weighted_static_fusion",
+      "accuracy": 0.88,
+      "precision_macro": 0.77189,
+      "recall_macro": 0.72382,
+      "macro_f1": 0.74398,
+      "confusion_matrix": "[[17, 17], [10, 181]]",
+      "safe_to_phone": 17,
+      "phone_to_safe": 10,
+      "predictions_different_from_average": 0,
+      "predictions_different_from_legacy_adaptive_softmax": 0,
+      "mean_weight_front": 0.4918045,
+      "mean_weight_side": 0.5081955,
+      "std_weight_front": 0.0,
+      "std_weight_side": 0.0,
+      "min_weight_front": 0.4918045,
+      "max_weight_front": 0.4918045,
+      "count_weight_front_between_0_45_and_0_55": 225
+    }
+  ],
+  "selected_formula": {
+    "formula": "average_fusion",
+    "label": "Average Fusion",
+    "split": "val",
+    "metrics": {
+      "accuracy": 0.88,
+      "precision_macro": 0.77189,
+      "recall_macro": 0.72382,
+      "f1_macro": 0.74398,
+      "confusion_matrix": [
+        [
+          17,
+          17
+        ],
+        [
+          10,
+          181
+        ]
+      ],
+      "classification_report": {
+        "safe_driving": {
+          "precision": 0.6296296296296297,
+          "recall": 0.5,
+          "f1-score": 0.5573770491803278,
+          "support": 34.0
+        },
+        "phone_use": {
+          "precision": 0.9141414141414141,
+          "recall": 0.9476439790575916,
+          "f1-score": 0.9305912596401028,
+          "support": 191.0
+        },
+        "accuracy": 0.88,
+        "macro avg": {
+          "precision": 0.7718855218855218,
+          "recall": 0.7238219895287958,
+          "f1-score": 0.7439841544102153,
+          "support": 225.0
+        },
+        "weighted avg": {
+          "precision": 0.8711485222596335,
+          "recall": 0.88,
+          "f1-score": 0.8741944456150701,
+          "support": 225.0
+        }
+      }
+    },
+    "safe_to_phone": 17,
+    "phone_to_safe": 10,
+    "predictions_different_from_average": 0,
+    "predictions_different_from_legacy_adaptive_softmax": 0,
+    "mean_weight_front": 0.5,
+    "mean_weight_side": 0.5,
+    "std_weight_front": 0.0,
+    "std_weight_side": 0.0,
+    "min_weight_front": 0.5,
+    "max_weight_front": 0.5,
+    "count_weight_front_between_0_45_and_0_55": 225
+  },
+  "selected_test_result": {
+    "formula": "average_fusion",
+    "label": "Average Fusion",
+    "split": "test",
+    "metrics": {
+      "accuracy": 0.89091,
+      "precision_macro": 0.86565,
+      "recall_macro": 0.73889,
+      "f1_macro": 0.78059,
+      "confusion_matrix": [
+        [
+          20,
+          20
+        ],
+        [
+          4,
+          176
+        ]
+      ],
+      "classification_report": {
+        "safe_driving": {
+          "precision": 0.8333333333333334,
+          "recall": 0.5,
+          "f1-score": 0.625,
+          "support": 40.0
+        },
+        "phone_use": {
+          "precision": 0.8979591836734694,
+          "recall": 0.9777777777777777,
+          "f1-score": 0.9361702127659575,
+          "support": 180.0
+        },
+        "accuracy": 0.8909090909090909,
+        "macro avg": {
+          "precision": 0.8656462585034014,
+          "recall": 0.7388888888888889,
+          "f1-score": 0.7805851063829787,
+          "support": 220.0
+        },
+        "weighted avg": {
+          "precision": 0.8862090290661719,
+          "recall": 0.8909090909090909,
+          "f1-score": 0.8795938104448743,
+          "support": 220.0
+        }
+      }
+    },
+    "safe_to_phone": 20,
+    "phone_to_safe": 4,
+    "predictions_different_from_average": 0,
+    "predictions_different_from_legacy_adaptive_softmax": 0,
+    "mean_weight_front": 0.5,
+    "mean_weight_side": 0.5,
+    "std_weight_front": 0.0,
+    "std_weight_side": 0.0,
+    "min_weight_front": 0.5,
+    "max_weight_front": 0.5,
+    "count_weight_front_between_0_45_and_0_55": 220,
+    "comparison_with_baseline": {
+      "macro_f1_delta": 0.0,
+      "safe_to_phone_delta": 0,
+      "phone_to_safe_delta": 0
+    }
+  }
+}
