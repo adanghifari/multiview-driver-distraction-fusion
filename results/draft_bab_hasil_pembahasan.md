@@ -335,6 +335,11 @@ menaikkan error `phone->safe` dari **4** menjadi **6**. Oleh karena itu,
 class weighting memang mengubah keseimbangan jenis kesalahan, tetapi belum
 memberi bukti peningkatan performa fusion yang valid secara metodologis.
 
+Perbandingan antara baseline dan gamma terpilih pada Experiment 19 bersifat
+deskriptif. Penelitian ini belum melakukan uji statistik formal atau bootstrap
+confidence interval per-subjek, sehingga selisih kecil antara Macro F1
+**0.78059** dan **0.77992** tidak ditafsirkan sebagai perbedaan signifikan.
+
 Dengan demikian, Experiment 19 tetap penting sebagai **ablation class
 weighting** pada side view. Eksperimen ini menunjukkan bahwa perubahan class
 weight dapat menggeser perilaku model side dan memengaruhi trade-off fusion.
