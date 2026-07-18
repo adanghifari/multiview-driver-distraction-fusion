@@ -1,0 +1,24 @@
+{
+  "accuracy": 0.81364,
+  "precision_macro": 0.66553,
+  "recall_macro": 0.60417,
+  "f1_macro": 0.62023,
+  "confusion_matrix": [
+    [
+      11,
+      29
+    ],
+    [
+      12,
+      168
+    ]
+  ],
+  "safe_to_phone": 29,
+  "phone_to_safe": 12,
+  "view": "side",
+  "checkpoint_path": "D:\\Skripsi\\Experiment\\checkpoints\\final_v1\\side_best_final_v1.pt",
+  "best_epoch": 11,
+  "val_macro_f1": 0.75,
+  "ece_binary": 0.18263,
+  "brier_score": 0.16537
+}

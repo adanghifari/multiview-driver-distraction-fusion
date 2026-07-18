@@ -1,0 +1,26 @@
+{
+  "experiment": "",
+  "view": "side",
+  "checkpoint_path": "D:\\Skripsi\\Experiment\\checkpoints\\final_v1\\side_best_final_v1.pt",
+  "history_path": "D:\\Skripsi\\Experiment\\results\\final_v1\\side_history_final_v1.json",
+  "hyperparameters": {
+    "backbone": "EfficientNetV2-S",
+    "optimizer": "AdamW",
+    "learning_rate": 2e-05,
+    "weight_decay": 0.002,
+    "dropout": 0.3,
+    "label_smoothing": 0.0,
+    "class_weight_gamma": 1.0,
+    "scheduler": "ReduceLROnPlateau",
+    "early_stopping": true,
+    "early_stopping_patience": 7,
+    "num_stages_to_freeze": 4,
+    "metric_for_best_model": "validation Macro F1"
+  },
+  "best_epoch": 11,
+  "best_validation_macro_f1": 0.75,
+  "train_loss_at_best_epoch": 0.50153,
+  "validation_loss_at_best_epoch": 0.56022,
+  "train_validation_loss_gap_at_best_epoch": 0.05869,
+  "test_metrics": null
+}

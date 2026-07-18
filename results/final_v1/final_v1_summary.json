@@ -1,0 +1,259 @@
+{
+  "final_v1_retrain": true,
+  "reference_results": {
+    "front": {
+      "macro_f1": 0.76626,
+      "confusion_matrix": [
+        [
+          24,
+          16
+        ],
+        [
+          14,
+          166
+        ]
+      ]
+    },
+    "side": {
+      "macro_f1": 0.62023,
+      "confusion_matrix": [
+        [
+          11,
+          29
+        ],
+        [
+          12,
+          168
+        ]
+      ]
+    },
+    "average_fusion": {
+      "macro_f1": 0.78059,
+      "confusion_matrix": [
+        [
+          20,
+          20
+        ],
+        [
+          4,
+          176
+        ]
+      ]
+    },
+    "adaptive_fusion": {
+      "macro_f1": 0.78059,
+      "confusion_matrix": [
+        [
+          20,
+          20
+        ],
+        [
+          4,
+          176
+        ]
+      ],
+      "adaptive_different_from_average": 0
+    }
+  },
+  "side13_configuration_note": "Konfigurasi Side13 diturunkan dari history, ablation summary, dan config repo. Tidak ditemukan preset EXPERIMENT_CONFIGS khusus untuk Side13, tetapi LR=2e-5, WD=2e-3, dropout=0.3, label_smoothing=0.0, freeze=4, class_weights=[2.5,1.0], scheduler ReduceLROnPlateau, dan early stopping patience=7 konsisten dengan artefak yang tersedia.",
+  "front_single_view": {
+    "accuracy": 0.86364,
+    "precision_macro": 0.77183,
+    "recall_macro": 0.76111,
+    "f1_macro": 0.76626,
+    "confusion_matrix": [
+      [
+        24,
+        16
+      ],
+      [
+        14,
+        166
+      ]
+    ],
+    "safe_to_phone": 16,
+    "phone_to_safe": 14,
+    "view": "front",
+    "checkpoint_path": "D:\\Skripsi\\Experiment\\checkpoints\\final_v1\\front_best_final_v1.pt",
+    "best_epoch": 9,
+    "val_macro_f1": 0.72581,
+    "ece_binary": 0.12513,
+    "brier_score": 0.11311
+  },
+  "side_single_view": {
+    "accuracy": 0.81364,
+    "precision_macro": 0.66553,
+    "recall_macro": 0.60417,
+    "f1_macro": 0.62023,
+    "confusion_matrix": [
+      [
+        11,
+        29
+      ],
+      [
+        12,
+        168
+      ]
+    ],
+    "safe_to_phone": 29,
+    "phone_to_safe": 12,
+    "view": "side",
+    "checkpoint_path": "D:\\Skripsi\\Experiment\\checkpoints\\final_v1\\side_best_final_v1.pt",
+    "best_epoch": 11,
+    "val_macro_f1": 0.75,
+    "ece_binary": 0.18263,
+    "brier_score": 0.16537
+  },
+  "fusion": {
+    "average_fusion": {
+      "accuracy": 0.89091,
+      "precision_macro": 0.86565,
+      "recall_macro": 0.73889,
+      "f1_macro": 0.78059,
+      "confusion_matrix": [
+        [
+          20,
+          20
+        ],
+        [
+          4,
+          176
+        ]
+      ],
+      "safe_to_phone": 20,
+      "phone_to_safe": 4
+    },
+    "adaptive_fusion": {
+      "accuracy": 0.89091,
+      "precision_macro": 0.86565,
+      "recall_macro": 0.73889,
+      "f1_macro": 0.78059,
+      "confusion_matrix": [
+        [
+          20,
+          20
+        ],
+        [
+          4,
+          176
+        ]
+      ],
+      "safe_to_phone": 20,
+      "phone_to_safe": 4
+    },
+    "adaptive_different_from_average": 0
+  },
+  "training_summaries": {
+    "front": {
+      "experiment": "experiment_14A",
+      "view": "front",
+      "checkpoint_path": "D:\\Skripsi\\Experiment\\checkpoints\\final_v1\\front_best_final_v1.pt",
+      "history_path": "D:\\Skripsi\\Experiment\\results\\final_v1\\front_history_final_v1.json",
+      "hyperparameters": {
+        "backbone": "EfficientNetV2-S",
+        "optimizer": "AdamW",
+        "learning_rate": 3e-05,
+        "weight_decay": 0.0003,
+        "dropout": 0.4,
+        "label_smoothing": 0.0,
+        "class_weight_gamma": 1.0,
+        "scheduler": "ReduceLROnPlateau",
+        "early_stopping": true,
+        "early_stopping_patience": 4,
+        "num_stages_to_freeze": 5,
+        "metric_for_best_model": "validation Macro F1"
+      },
+      "best_epoch": 9,
+      "best_validation_macro_f1": 0.72581,
+      "train_loss_at_best_epoch": 0.47353,
+      "validation_loss_at_best_epoch": 0.51736,
+      "train_validation_loss_gap_at_best_epoch": 0.04383,
+      "test_metrics": null
+    },
+    "side": {
+      "experiment": "",
+      "view": "side",
+      "checkpoint_path": "D:\\Skripsi\\Experiment\\checkpoints\\final_v1\\side_best_final_v1.pt",
+      "history_path": "D:\\Skripsi\\Experiment\\results\\final_v1\\side_history_final_v1.json",
+      "hyperparameters": {
+        "backbone": "EfficientNetV2-S",
+        "optimizer": "AdamW",
+        "learning_rate": 2e-05,
+        "weight_decay": 0.002,
+        "dropout": 0.3,
+        "label_smoothing": 0.0,
+        "class_weight_gamma": 1.0,
+        "scheduler": "ReduceLROnPlateau",
+        "early_stopping": true,
+        "early_stopping_patience": 7,
+        "num_stages_to_freeze": 4,
+        "metric_for_best_model": "validation Macro F1"
+      },
+      "best_epoch": 11,
+      "best_validation_macro_f1": 0.75,
+      "train_loss_at_best_epoch": 0.50153,
+      "validation_loss_at_best_epoch": 0.56022,
+      "train_validation_loss_gap_at_best_epoch": 0.05869,
+      "test_metrics": null
+    }
+  },
+  "training_diagnostics": {
+    "front": {
+      "best_epoch": 9,
+      "best_validation_macro_f1": 0.72581,
+      "train_loss_at_best_epoch": 0.47353,
+      "validation_loss_at_best_epoch": 0.51736,
+      "train_validation_loss_gap_at_best_epoch": 0.04383,
+      "generalization_status": "OK",
+      "dropout": 0.4,
+      "weight_decay": 0.0003,
+      "label_smoothing": 0.0,
+      "num_stages_to_freeze": 5
+    },
+    "side": {
+      "best_epoch": 11,
+      "best_validation_macro_f1": 0.75,
+      "train_loss_at_best_epoch": 0.50153,
+      "validation_loss_at_best_epoch": 0.56022,
+      "train_validation_loss_gap_at_best_epoch": 0.05869,
+      "generalization_status": "OK",
+      "dropout": 0.3,
+      "weight_decay": 0.002,
+      "label_smoothing": 0.0,
+      "num_stages_to_freeze": 4
+    }
+  },
+  "reference_comparison": {
+    "front": {
+      "reference_f1_macro": 0.76626,
+      "actual_f1_macro": 0.76626,
+      "delta_f1_macro": 0.0
+    },
+    "side": {
+      "reference_f1_macro": 0.62023,
+      "actual_f1_macro": 0.62023,
+      "delta_f1_macro": 0.0
+    },
+    "average_fusion": {
+      "reference_f1_macro": 0.78059,
+      "actual_f1_macro": 0.78059,
+      "delta_f1_macro": 0.0
+    },
+    "adaptive_fusion": {
+      "reference_f1_macro": 0.78059,
+      "actual_f1_macro": 0.78059,
+      "delta_f1_macro": 0.0
+    }
+  },
+  "scope": {
+    "dataset": "3MDAD",
+    "task": "binary safe_driving vs phone_use",
+    "views": [
+      "front",
+      "side"
+    ],
+    "backbone": "EfficientNetV2-S",
+    "fusion_level": "decision-level fusion",
+    "primary_metric": "Macro F1"
+  }
+}

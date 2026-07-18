@@ -1,0 +1,5 @@
+method,accuracy,precision_macro,recall_macro,f1_macro,safe_to_phone,phone_to_safe,ece_binary,brier_score,generalization_status
+front_single_view,0.86364,0.77183,0.76111,0.76626,16,14,0.12513,0.11311,OK
+side_single_view,0.81364,0.66553,0.60417,0.62023,29,12,0.18263,0.16537,OK
+average_fusion,0.89091,0.86565,0.73889,0.78059,20,4,,,
+adaptive_fusion,0.89091,0.86565,0.73889,0.78059,20,4,,,
