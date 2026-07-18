@@ -279,27 +279,82 @@ melalui threshold tuning pada konfigurasi ini, walaupun analisis ini tetap
 bermanfaat untuk menegaskan bahwa batas performa fusion saat ini tidak mudah
 didorong hanya dengan menggeser threshold keputusan.
 
+## Experiment 19: Side Class-Weighting
+
+Experiment 19 dilakukan karena upaya analisis pada level fusion di Experiment
+17 dan 18 belum berhasil meningkatkan hasil utama. Arah perbaikannya kemudian
+dipindahkan ke model side single-view melalui class-weighting sweep, tanpa
+mengubah front checkpoint, dataset, split, backbone, arsitektur model, maupun
+metode fusion. Tujuannya adalah memperkuat kontribusi side view agar informasi
+komplementer yang dibawa ke fusion menjadi lebih bermanfaat secara kuantitatif.
+
+Motivasi eksperimen ini cukup jelas jika melihat baseline side. Pada
+Experiment 13, side single-view hanya mencapai Macro F1 **0.62023** dan secara
+umum lebih lemah dibanding front. Salah satu indikasi pentingnya adalah recall
+kelas `safe_driving` yang relatif rendah, sehingga model side cenderung mudah
+mengarahkan sampel aman ke kelas `phone_use`. Kelemahan ini ikut membatasi
+seberapa besar kontribusi side ketika digabungkan dengan front.
+
+Experiment 19 kemudian menguji class-weighting berbasis rumus
+`weight = balanced_weight ** gamma` pada model side, dengan beberapa rentang
+gamma sampai akhirnya ditemukan kandidat terbaik pada **gamma = 0.95**.
+Pada konfigurasi ini, hasil fusion antara Front14A dan Side hasil class
+weighting mencapai Macro F1 **0.79323**, lebih tinggi dibanding baseline
+fusion Front14A + Side13 yang berada pada **0.78059**. Dengan demikian, class
+weighting pada side dapat dikatakan berhasil meningkatkan Macro F1 fusion,
+meskipun peningkatannya tetap terbatas dan belum menembus **0.80**.
+
+Dilihat dari confusion matrix, baseline fusion lama memiliki bentuk
+`[[20, 20], [4, 176]]`, sedangkan kandidat terbaik Experiment 19 pada
+`gamma = 0.95` menghasilkan confusion matrix `[[25, 15], [11, 169]]`.
+Perubahan ini menunjukkan trade-off yang cukup penting. Di satu sisi, error
+`safe->phone` membaik dari **20** menjadi **15**, sehingga false alarm pada
+kelas aman menurun. Namun di sisi lain, error `phone->safe` memburuk dari
+**4** menjadi **11**, yang berarti lebih banyak sampel `phone_use` terlewat
+dibanding baseline fusion lama. Karena itu, hasil Experiment 19 tidak boleh
+ditafsirkan sebagai perbaikan seragam pada seluruh aspek.
+
+Pencarian lanjutan di sekitar kandidat terbaik juga sudah dilakukan melalui
+narrow sweep pada gamma `0.93`, `0.94`, `0.96`, `0.97`, dan `0.98`. Tidak ada
+satu pun konfigurasi tersebut yang melampaui performa `gamma = 0.95`.
+Sebagai pembanding, `gamma = 1.00` menghasilkan Macro F1 fusion **0.79166**
+dengan confusion matrix `[[26, 14], [13, 167]]`, sehingga tetap sedikit di
+bawah `gamma = 0.95`. Temuan ini menegaskan bahwa **gamma = 0.95** merupakan
+kandidat terbaik final pada Experiment 19 dalam konfigurasi yang diuji.
+
+Secara keseluruhan, Experiment 19 memberi temuan penting bahwa peningkatan
+lebih lanjut masih mungkin dicapai dengan memperbaiki kualitas modalitas side,
+bukan hanya dengan memodifikasi aturan fusion. Akan tetapi, pola hasilnya juga
+menunjukkan bahwa peningkatan Macro F1 fusion tetap datang bersama perubahan
+karakter error. Oleh sebab itu, hasil terbaik Experiment 19 lebih tepat
+diposisikan sebagai peningkatan yang nyata tetapi tetap memiliki trade-off,
+bukan sebagai solusi yang memperbaiki seluruh komponen performa secara bersamaan.
+
 ## Pembahasan Trade-off Fusion
 
 Jika hanya melihat Macro F1, fusion merupakan hasil terbaik pada penelitian
 ini. Nilai Macro F1 meningkat dari **0.76626** pada front single-view menjadi
-**0.78059** pada fusion. Karena Macro F1 adalah metrik utama, maka hasil ini
-cukup untuk menyatakan bahwa fusion memberikan peningkatan performa akhir.
+**0.78059** pada baseline fusion, dan kemudian meningkat lagi menjadi
+**0.79323** pada kandidat terbaik Experiment 19. Karena Macro F1 adalah
+metrik utama, maka hasil ini cukup untuk menyatakan bahwa fusion memberikan
+peningkatan performa akhir.
 
 Namun, pembahasan hasil tidak boleh berhenti pada kesimpulan tersebut saja.
 Angka confusion matrix dan analisis error menunjukkan bahwa peningkatan Macro F1
-dicapai bersamaan dengan perubahan karakter kesalahan. Fusion membuat sistem
-lebih kuat dalam mengenali `phone_use`, yang terlihat dari turunnya error
-`phone -> safe` dari 14 menjadi 4. Akan tetapi, fusion juga membuat sistem
-lebih mudah menganggap sampel aman sebagai `phone_use`, sehingga error
-`safe -> phone` naik dari 16 menjadi 20.
+dicapai bersamaan dengan perubahan karakter kesalahan. Pada baseline fusion,
+sistem menjadi lebih kuat dalam mengenali `phone_use`, yang terlihat dari
+turunnya error `phone -> safe` dari 14 menjadi 4. Akan tetapi, fusion juga
+membuat sistem lebih mudah menganggap sampel aman sebagai `phone_use`,
+sehingga error `safe -> phone` naik dari 16 menjadi 20. Pada Experiment 19,
+arah trade-off berubah: kandidat terbaik `gamma = 0.95` justru menurunkan
+error `safe -> phone` menjadi 15, tetapi menaikkan `phone -> safe` menjadi 11.
 
 Dengan demikian, trade-off fusion dapat dirumuskan secara hati-hati sebagai
-berikut: fusion meningkatkan sensitivitas terhadap `phone_use`, tetapi dengan
-konsekuensi penurunan performa pada kelas `safe_driving`. Dalam konteks
-penelitian ini, hasil tersebut tetap dapat dianggap positif karena metrik utama
-meningkat, tetapi interpretasinya harus disertai penjelasan bahwa perbaikan
-tidak bersifat seragam pada semua kelas.
+berikut: fusion memang meningkatkan performa keseluruhan menurut Macro F1,
+tetapi distribusi kesalahannya dapat berubah tergantung kualitas modalitas side
+yang digunakan. Dalam konteks penelitian ini, hasil tersebut tetap dapat
+dianggap positif karena metrik utama meningkat, tetapi interpretasinya harus
+disertai penjelasan bahwa perbaikan tidak bersifat seragam pada semua kelas.
 
 ## Keterbatasan Hasil
 
@@ -319,18 +374,29 @@ sampel terpilih. Hasilnya sangat berguna untuk menjelaskan pola kesalahan, tetap
 tetap tidak dimaksudkan sebagai generalisasi absolut terhadap seluruh populasi
 data di luar sampel yang dianalisis.
 
+Keempat, meskipun Experiment 19 berhasil meningkatkan Macro F1 fusion menjadi
+**0.79323**, tidak ada konfigurasi class-weighting yang berhasil menembus
+**0.80**. Selain itu, peningkatan tersebut juga dibayar dengan memburuknya
+error `phone->safe` dibanding baseline fusion lama. Karena itu, hasil ini lebih
+tepat dipahami sebagai perbaikan terarah dengan trade-off yang masih perlu
+dipertimbangkan, bukan sebagai titik akhir yang sepenuhnya optimal.
+
 ## Kesimpulan Sementara
 
 Berdasarkan seluruh hasil yang tersedia, front single-view tetap menjadi
 baseline tunggal terkuat, sedangkan side single-view berperan lebih efektif
-sebagai modalitas komplementer daripada sebagai classifier utama. Fusion, baik
-average maupun adaptive, meningkatkan Macro F1 dari **0.76626** menjadi
-**0.78059**, sehingga menjadi hasil terbaik pada penelitian ini menurut metrik
-utama yang digunakan.
+sebagai modalitas komplementer daripada sebagai classifier utama. Baseline
+fusion average maupun adaptive meningkatkan Macro F1 dari **0.76626** menjadi
+**0.78059**, dan Experiment 19 kemudian menunjukkan bahwa perbaikan lebih lanjut
+masih dapat dicapai melalui side class-weighting hingga mencapai **0.79323**
+pada kandidat terbaik `gamma = 0.95`.
 
 Meski demikian, adaptive fusion belum mengungguli average fusion karena
-hasil keduanya identik. Selain itu, peningkatan performa fusion disertai
-trade-off berupa naiknya false alarm pada kelas `safe_driving`. Oleh sebab itu,
-kesimpulan yang paling tepat bukan bahwa fusion selalu lebih baik dalam semua
-aspek, melainkan bahwa fusion memberi peningkatan performa keseluruhan sambil
-mengubah distribusi kesalahan menjadi lebih sensitif terhadap `phone_use`.
+hasil keduanya identik. Selain itu, peningkatan performa fusion tetap disertai
+trade-off yang berubah bentuk antar konfigurasi. Pada baseline fusion, masalah
+utama berada pada false alarm `safe_driving`, sedangkan pada kandidat terbaik
+Experiment 19, false alarm tersebut membaik tetapi error `phone_use -> safe`
+justru membesar. Oleh sebab itu, kesimpulan yang paling tepat bukan bahwa
+seluruh aspek performa selalu membaik, melainkan bahwa fusion memberi
+peningkatan performa keseluruhan menurut Macro F1 sambil tetap membawa
+konsekuensi tertentu pada distribusi kesalahan.

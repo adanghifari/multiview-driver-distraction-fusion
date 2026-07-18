@@ -70,7 +70,7 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 log = logging.getLogger(__name__)
 
 
-def resolve_class_weights(view: str, exp_config) -> list[float]:
+def resolve_class_weights(view: str, exp_config, class_weight_gamma: float = 1.0) -> list[float]:
     """Resolve class weights, optionally computing balanced weights from train data."""
     raw_class_weights = exp_config["class_weights"] if exp_config else CLASS_WEIGHTS
 
@@ -87,10 +87,19 @@ def resolve_class_weights(view: str, exp_config) -> list[float]:
     if total == 0 or any(v == 0 for v in counts.values()):
         raise ValueError("Distribusi label train tidak valid untuk menghitung balanced class weights.")
 
-    weights = [total / (n_classes * counts[i]) for i in range(n_classes)]
+    weights_balanced = [total / (n_classes * counts[i]) for i in range(n_classes)]
+    weights = [float(w ** class_weight_gamma) for w in weights_balanced]
     log.info(
         "Balanced class weights dihitung dari train split: safe_driving=%d, phone_use=%d",
         counts[0], counts[1],
+    )
+    log.info(
+        "Balanced class weights sebelum gamma: safe_driving=%.4f, phone_use=%.4f",
+        weights_balanced[0], weights_balanced[1],
+    )
+    log.info(
+        "Class weight gamma: %.2f -> weights final: safe_driving=%.4f, phone_use=%.4f",
+        class_weight_gamma, weights[0], weights[1],
     )
     return weights
 
@@ -201,7 +210,8 @@ class EarlyStopping:
 # ──────────────────────────────────────────────────────────────────────────────
 
 def run_training(view: str, max_epochs: int = MAX_EPOCHS, exp_id: str = "",
-                 lr: float = None, experiment: str = ""):
+                 lr: float = None, experiment: str = "", class_weight_gamma: float = 1.0,
+                 checkpoint_path: str = None, history_path: str = None, summary_path: str = None):
     """Latih model single-view dan simpan checkpoint + history."""
     seed_everything(SPLIT_SEED)
 
@@ -242,7 +252,7 @@ def run_training(view: str, max_epochs: int = MAX_EPOCHS, exp_id: str = "",
     )
     weight_decay = exp_config["weight_decay"] if exp_config else WEIGHT_DECAY
     label_smoothing = exp_config["label_smoothing"] if exp_config else LABEL_SMOOTHING
-    class_weights_values = resolve_class_weights(view, exp_config)
+    class_weights_values = resolve_class_weights(view, exp_config, class_weight_gamma=class_weight_gamma)
 
     # ── Tampilkan Ringkasan Konfigurasi Eksperimen ──
     log.info("\n" + "=" * 45)
@@ -255,6 +265,7 @@ def run_training(view: str, max_epochs: int = MAX_EPOCHS, exp_id: str = "",
     log.info(f"  Scheduler      : ReduceLROnPlateau")
     log.info(f"  Dropout        : {dropout_rate}")
     log.info(f"  Label Smoothing: {label_smoothing}")
+    log.info(f"  ClassWeight γ  : {class_weight_gamma:.2f}")
     log.info(f"  Frozen Stages  : {freeze_stages}")
     log.info(f"  EarlyStopping  : patience={early_stopping_patience}")
     log.info(f"  Experiment     : {experiment if experiment else 'default'}")
@@ -302,7 +313,19 @@ def run_training(view: str, max_epochs: int = MAX_EPOCHS, exp_id: str = "",
     CHECKPOINT_DIR.mkdir(parents=True, exist_ok=True)
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
     
-    if exp_config:
+    if checkpoint_path:
+        ckpt_path = Path(checkpoint_path)
+        if not ckpt_path.is_absolute():
+            ckpt_path = Path.cwd() / ckpt_path
+        history_out = Path(history_path) if history_path else (RESULTS_DIR / f"{view}_history_custom.json")
+        if not history_out.is_absolute():
+            history_out = Path.cwd() / history_out
+        summary_out = Path(summary_path) if summary_path else None
+        if summary_out is not None and not summary_out.is_absolute():
+            summary_out = Path.cwd() / summary_out
+        history_path = history_out
+        summary_path = summary_out
+    elif exp_config:
         ckpt_path = CHECKPOINT_DIR / exp_config["checkpoint_name"]
         history_path = RESULTS_DIR / exp_config["history_name"]
         summary_path = RESULTS_DIR / exp_config["summary_name"]
@@ -390,6 +413,7 @@ def run_training(view: str, max_epochs: int = MAX_EPOCHS, exp_id: str = "",
                     "lr_scheduler_factor": LR_SCHEDULER_FACTOR,
                     "lr_scheduler_patience": lr_scheduler_patience,
                     "class_weights": class_weights.cpu().tolist(),
+                    "class_weight_gamma": class_weight_gamma,
                 },
             }, ckpt_path)
 
@@ -436,6 +460,7 @@ def run_training(view: str, max_epochs: int = MAX_EPOCHS, exp_id: str = "",
                 "weight_decay": weight_decay,
                 "dropout": dropout_rate,
                 "label_smoothing": label_smoothing,
+                "class_weight_gamma": class_weight_gamma,
                 "scheduler": "ReduceLROnPlateau",
                 "early_stopping": True,
                 "early_stopping_patience": early_stopping_patience,
@@ -475,6 +500,14 @@ def main():
                              "Contoh: --lr 1e-5")
     parser.add_argument("--experiment", choices=sorted(EXPERIMENT_CONFIGS.keys()), default="",
                         help="Preset eksperimen khusus, misalnya experiment_14A untuk front-only.")
+    parser.add_argument("--class-weight-gamma", type=float, default=1.0,
+                        help="Gamma untuk balanced class weight. Hanya berpengaruh bila preset memakai class_weights='balanced'.")
+    parser.add_argument("--checkpoint-path", type=str, default=None,
+                        help="Path checkpoint output eksplisit, misal checkpoints/side_best_exp19_gamma025.pt")
+    parser.add_argument("--history-path", type=str, default=None,
+                        help="Path history output eksplisit, misal results/side_history_exp19_gamma025.json")
+    parser.add_argument("--summary-path", type=str, default=None,
+                        help="Path summary output eksplisit, misal results/experiment_19_side_metrics_gamma025.json")
     args = parser.parse_args()
 
     run_training(
@@ -483,6 +516,10 @@ def main():
         exp_id=args.exp_id,
         lr=args.lr,
         experiment=args.experiment,
+        class_weight_gamma=args.class_weight_gamma,
+        checkpoint_path=args.checkpoint_path,
+        history_path=args.history_path,
+        summary_path=args.summary_path,
     )
 
 

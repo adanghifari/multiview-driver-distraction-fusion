@@ -5,8 +5,8 @@
 Tahap akhir penelitian ini tidak melakukan training ulang, tuning tambahan,
 perubahan arsitektur model, perubahan dataset, maupun perubahan metode fusion.
 Ringkasan ini sepenuhnya disusun dari hasil yang sudah tersedia pada
-Experiment 14A revisi, Experiment 15, Experiment 16, Experiment 17, dan
-Experiment 18.
+Experiment 14A revisi, Experiment 15, Experiment 16, Experiment 17,
+Experiment 18, dan Experiment 19.
 
 Fokus evaluasi utama adalah **Macro F1-score**, karena penelitian ini perlu
 menilai keseimbangan performa pada dua kelas, yaitu `safe_driving` dan
@@ -135,6 +135,32 @@ Dengan demikian, hasil utama tetap menggunakan threshold **0.50** dengan Macro
 F1 **0.78059**, dan peningkatan lebih lanjut belum berhasil dicapai melalui
 adaptive sharpening maupun threshold tuning pada konfigurasi saat ini.
 
+## Ringkasan Side Class-Weighting (Experiment 19)
+
+Experiment 19 memindahkan arah perbaikan dari level fusion ke modalitas side
+single-view melalui class-weighting sweep. Motivasi utamanya adalah karena side
+baseline masih relatif lemah, terutama dalam membedakan sampel aman dari
+`phone_use`, sehingga kontribusi side pada fusion belum optimal.
+
+Baseline fusion lama antara Front14A dan Side13 memiliki Macro F1
+**0.78059** dengan confusion matrix `[[20, 20], [4, 176]]`. Setelah dilakukan
+sweep class weighting pada side, kandidat terbaik diperoleh pada
+**gamma = 0.95** dengan hasil fusion Macro F1 **0.79323** dan confusion matrix
+`[[25, 15], [11, 169]]`. Ini berarti Experiment 19 berhasil meningkatkan Macro
+F1 fusion dibanding baseline fusion sebelumnya.
+
+Namun, perbaikannya tetap disertai trade-off. Error `safe->phone` membaik dari
+**20** menjadi **15**, tetapi error `phone->safe` memburuk dari **4** menjadi
+**11**. Dengan demikian, hasil terbaik Experiment 19 tidak dapat dibaca
+sebagai perbaikan menyeluruh pada semua aspek, melainkan sebagai peningkatan
+Macro F1 dengan perubahan karakter kesalahan.
+
+Sebagai pembanding, konfigurasi **gamma = 1.00** menghasilkan Macro F1 fusion
+**0.79166** dengan confusion matrix `[[26, 14], [13, 167]]`. Narrow sweep pada
+gamma `0.93`, `0.94`, `0.96`, `0.97`, dan `0.98` juga tidak berhasil
+melampaui `gamma = 0.95`. Tidak ada konfigurasi Experiment 19 yang menembus
+Macro F1 **0.80**.
+
 ## Poin Utama Untuk Bab Hasil dan Pembahasan
 
 - Macro F1 tetap menjadi metrik utama untuk menarik kesimpulan.
@@ -147,15 +173,26 @@ adaptive sharpening maupun threshold tuning pada konfigurasi saat ini.
   identik pada seluruh metrik evaluasi utama.
 - Threshold tuning pada Experiment 18 juga belum memperbaiki hasil, sehingga
   threshold 0.50 tetap dipakai sebagai hasil utama.
+- Experiment 19 menunjukkan bahwa perbaikan lebih lanjut lebih mungkin datang
+  dari penguatan kualitas side view daripada dari modifikasi bobot fusion.
+- Kandidat terbaik Experiment 19 adalah `gamma = 0.95` dengan Macro F1 fusion
+  `0.79323`, tetapi hasil ini tetap memiliki trade-off pada error
+  `phone->safe`.
 - Calibration belum menjadi fokus utama pada tahap ini, tetapi nilai ECE dan
   Brier Score front menunjukkan confidence model masih layak dianalisis lebih
   lanjut pada tahap lanjutan.
 
 ## Kesimpulan Sementara
 
-Berdasarkan hasil yang tersedia, strategi fusion layak dipertahankan sebagai
-hasil terbaik penelitian ini karena memberikan peningkatan Macro F1 terhadap
-baseline front single-view. Meski demikian, peningkatan tersebut disertai
-trade-off berupa naiknya false alarm pada kelas `safe_driving`, sehingga
-interpretasi hasil perlu menekankan keseimbangan antara manfaat komplementer
-side view dan risiko bias keputusan fusion terhadap kelas aman.
+Berdasarkan hasil yang tersedia, strategi fusion tetap layak dipertahankan
+sebagai hasil terbaik penelitian ini karena memberikan peningkatan Macro F1
+terhadap baseline front single-view. Hasil baseline fusion berada pada
+**0.78059**, sedangkan Experiment 19 mendorongnya naik menjadi **0.79323**
+melalui side class-weighting pada `gamma = 0.95`.
+
+Meski demikian, peningkatan tersebut tetap disertai trade-off. Pada baseline
+fusion, masalah utama berada pada false alarm kelas `safe_driving`, sedangkan
+pada kandidat terbaik Experiment 19, false alarm tersebut membaik tetapi
+error `phone->safe` justru meningkat. Karena itu, interpretasi hasil perlu
+menekankan bahwa peningkatan Macro F1 tidak berarti seluruh aspek performa
+membaik secara bersamaan.

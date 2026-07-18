@@ -1,0 +1,178 @@
+{
+  "single_front": {
+    "accuracy": 0.86364,
+    "precision_macro": 0.77183,
+    "recall_macro": 0.76111,
+    "f1_macro": 0.76626,
+    "confusion_matrix": [
+      [
+        24,
+        16
+      ],
+      [
+        14,
+        166
+      ]
+    ],
+    "classification_report": {
+      "safe_driving": {
+        "precision": 0.631578947368421,
+        "recall": 0.6,
+        "f1-score": 0.6153846153846154,
+        "support": 40.0
+      },
+      "phone_use": {
+        "precision": 0.9120879120879121,
+        "recall": 0.9222222222222223,
+        "f1-score": 0.9171270718232044,
+        "support": 180.0
+      },
+      "accuracy": 0.8636363636363636,
+      "macro avg": {
+        "precision": 0.7718334297281666,
+        "recall": 0.7611111111111111,
+        "f1-score": 0.76625584360391,
+        "support": 220.0
+      },
+      "weighted avg": {
+        "precision": 0.8610862821389137,
+        "recall": 0.8636363636363636,
+        "f1-score": 0.8622648070161881,
+        "support": 220.0
+      }
+    },
+    "method": "Single-view FRONT"
+  },
+  "single_side": {
+    "accuracy": 0.69545,
+    "precision_macro": 0.57279,
+    "recall_macro": 0.6,
+    "f1_macro": 0.57535,
+    "confusion_matrix": [
+      [
+        18,
+        22
+      ],
+      [
+        45,
+        135
+      ]
+    ],
+    "classification_report": {
+      "safe_driving": {
+        "precision": 0.2857142857142857,
+        "recall": 0.45,
+        "f1-score": 0.34951456310679613,
+        "support": 40.0
+      },
+      "phone_use": {
+        "precision": 0.8598726114649682,
+        "recall": 0.75,
+        "f1-score": 0.8011869436201781,
+        "support": 180.0
+      },
+      "accuracy": 0.6954545454545454,
+      "macro avg": {
+        "precision": 0.5727934485896269,
+        "recall": 0.6,
+        "f1-score": 0.5753507533634871,
+        "support": 220.0
+      },
+      "weighted avg": {
+        "precision": 0.7554801886012077,
+        "recall": 0.6954545454545454,
+        "f1-score": 0.7190646926177451,
+        "support": 220.0
+      }
+    },
+    "method": "Single-view SIDE"
+  },
+  "average_fusion": {
+    "accuracy": 0.87273,
+    "precision_macro": 0.79254,
+    "recall_macro": 0.75694,
+    "f1_macro": 0.77256,
+    "confusion_matrix": [
+      [
+        23,
+        17
+      ],
+      [
+        11,
+        169
+      ]
+    ],
+    "classification_report": {
+      "safe_driving": {
+        "precision": 0.6764705882352942,
+        "recall": 0.575,
+        "f1-score": 0.6216216216216216,
+        "support": 40.0
+      },
+      "phone_use": {
+        "precision": 0.9086021505376344,
+        "recall": 0.9388888888888889,
+        "f1-score": 0.9234972677595629,
+        "support": 180.0
+      },
+      "accuracy": 0.8727272727272727,
+      "macro avg": {
+        "precision": 0.7925363693864642,
+        "recall": 0.7569444444444444,
+        "f1-score": 0.7725594446905922,
+        "support": 220.0
+      },
+      "weighted avg": {
+        "precision": 0.8663964119372088,
+        "recall": 0.8727272727272727,
+        "f1-score": 0.8686107866435736,
+        "support": 220.0
+      }
+    },
+    "method": "Average Fusion (50:50)"
+  },
+  "adaptive_fusion": {
+    "accuracy": 0.87273,
+    "precision_macro": 0.79254,
+    "recall_macro": 0.75694,
+    "f1_macro": 0.77256,
+    "confusion_matrix": [
+      [
+        23,
+        17
+      ],
+      [
+        11,
+        169
+      ]
+    ],
+    "classification_report": {
+      "safe_driving": {
+        "precision": 0.6764705882352942,
+        "recall": 0.575,
+        "f1-score": 0.6216216216216216,
+        "support": 40.0
+      },
+      "phone_use": {
+        "precision": 0.9086021505376344,
+        "recall": 0.9388888888888889,
+        "f1-score": 0.9234972677595629,
+        "support": 180.0
+      },
+      "accuracy": 0.8727272727272727,
+      "macro avg": {
+        "precision": 0.7925363693864642,
+        "recall": 0.7569444444444444,
+        "f1-score": 0.7725594446905922,
+        "support": 220.0
+      },
+      "weighted avg": {
+        "precision": 0.8663964119372088,
+        "recall": 0.8727272727272727,
+        "f1-score": 0.8686107866435736,
+        "support": 220.0
+      }
+    },
+    "method": "Adaptive Fusion (confidence)"
+  }
+}

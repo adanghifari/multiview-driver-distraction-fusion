@@ -1,0 +1,71 @@
+{
+  "accuracy": 0.8,
+  "precision_macro": 0.62626,
+  "recall_macro": 0.57639,
+  "f1_macro": 0.58696,
+  "confusion_matrix": [
+    [
+      9,
+      31
+    ],
+    [
+      13,
+      167
+    ]
+  ],
+  "classification_report": {
+    "safe_driving": {
+      "precision": 0.4090909090909091,
+      "recall": 0.225,
+      "f1-score": 0.2903225806451613,
+      "support": 40.0
+    },
+    "phone_use": {
+      "precision": 0.8434343434343434,
+      "recall": 0.9277777777777778,
+      "f1-score": 0.8835978835978836,
+      "support": 180.0
+    },
+    "accuracy": 0.8,
+    "macro avg": {
+      "precision": 0.6262626262626263,
+      "recall": 0.576388888888889,
+      "f1-score": 0.5869602321215225,
+      "support": 220.0
+    },
+    "weighted avg": {
+      "precision": 0.7644628099173554,
+      "recall": 0.8,
+      "f1-score": 0.7757296466973886,
+      "support": 220.0
+    }
+  },
+  "ece_binary": 0.18622,
+  "brier_score": 0.16996,
+  "test_accuracy": 0.8,
+  "test_precision_macro": 0.62626,
+  "test_recall_macro": 0.57639,
+  "test_macro_f1": 0.58696,
+  "view": "side",
+  "best_epoch": 5,
+  "val_macro_f1": 0.7194,
+  "checkpoint_path": "checkpoints\\side_best_exp19_gamma075.pt",
+  "train_loss_at_best_epoch": 0.5870793714667811,
+  "validation_loss_at_best_epoch": 0.6042775905132294,
+  "train_validation_loss_gap_at_best_epoch": 0.01719821904644825,
+  "hyperparameters": {
+    "learning_rate": 3e-05,
+    "weight_decay": 0.0001,
+    "dropout": 0.3,
+    "label_smoothing": 0.0,
+    "num_stages_to_freeze": 4,
+    "early_stopping_patience": 5,
+    "lr_scheduler_factor": 0.5,
+    "lr_scheduler_patience": 1,
+    "class_weights": [
+      2.3246896266937256,
+      0.6791021227836609
+    ],
+    "class_weight_gamma": 0.75
+  }
+}
