@@ -168,6 +168,37 @@ Hasil final menunjukkan bahwa average fusion adalah metode utama yang paling sed
 
 Dengan demikian, hasil utama penelitian adalah konfigurasi Front14A Revisi + Side13 dengan average fusion, Macro F1 0.78059, accuracy 0.89091, precision macro 0.86565, dan recall macro 0.73889.
 
+## Audit Kesesuaian Branch
+
+Audit ini menjelaskan cabang Git yang dipakai sebagai rujukan angka utama pada ringkasan, sekaligus membatasi kasus yang tidak sepenuhnya berasal dari satu branch eksperimen.
+
+| Rentang / Eksperimen | Branch / Artefak Rujukan | Status Kesesuaian |
+|---|---|---|
+| Exp 1 | `origin/experiment_1:results/fusion_comparison.json` | Sesuai dengan tabel kronologis. |
+| Exp 2 | `origin/experiment_2:results/fusion_comparison.json` | Sesuai dengan tabel kronologis. |
+| Exp 3 | `origin/experiment_3:results/fusion_comparison.json` | Sesuai dengan tabel kronologis. |
+| Exp 4 | `origin/experiment_4:results/fusion_comparison.json` | Sesuai dengan tabel kronologis. |
+| Exp 5 | `origin/experiment_5:results/fusion_comparison.json` | Sesuai dengan tabel kronologis. |
+| Exp 6 | `origin/experiment_6:results/fusion_comparison.json` | Sesuai dengan tabel kronologis. |
+| Exp 7 | `origin/experiment_7:results/fusion_comparison.json` | Sesuai dengan tabel kronologis. |
+| Exp 8 | `origin/experiment_8:results/fusion_comparison.json` | Sesuai dengan tabel kronologis. |
+| Exp 9 | `origin/experiment_9:results/fusion_comparison.json` | Sesuai dengan tabel kronologis. |
+| Exp 10 | `origin/experiment_10:results/fusion_comparison.json` | Sesuai dengan tabel kronologis. |
+| Exp 11 | `origin/experiment_11:results/fusion_comparison.json` | Sesuai dengan tabel kronologis. |
+| Exp 12 | `origin/experiment_12:results/fusion_comparison.json` dan `results/ringkasan_akhir_ablasi.md` | Sesuai; Exp 12 menjadi baseline ablasi. |
+| Exp 13 Lama / Baru / DO sweep | Artefak ablasi di `results/ringkasan_akhir_ablasi.md`, `results/fusion_comparison_ls_isolated.json`, notebook Exp 13, dan catatan run | Tidak memakai `origin/experiment_13:results/fusion_comparison.json` sebagai sumber utama karena branch tersebut berisi metrik lama yang sama dengan baseline awal, bukan paket ablasi akhir. |
+| Exp 14 / 14A branch | `origin/experiment_14:results/fusion_comparison.json` dan `origin/experiment_14B:results/fusion_comparison.json` | Sesuai dengan baris Exp 14 / 14A branch. |
+| Exp 14A Revisi | `origin/experiment_20_adaptive_formula:results/fusion_comparison_exp14A.json` dan `results/experiment_14A_front_metrics.json` | Sesuai; menjadi basis hasil final stabil. |
+| Exp 15 | `results/error_summary_exp15.json` dan `experiment_15_notes.md` | Sesuai; analisis tanpa training ulang. |
+| Exp 16 | `results/exp16_selected_failure_cases.csv`, folder `results/exp16_failure_case_images/`, dan `experiment_16_notes.md` | Sesuai; analisis visual tanpa training ulang. |
+| Exp 17 | `results/adaptive/adaptive_sharpening_exp17B.json` dan `experiment_17_notes.md` | Sesuai; hasil adaptive tetap identik dengan average fusion. |
+| Exp 18 | `results/threshold_test_exp18.json` dan `experiment_18_notes.md` | Sesuai; threshold 0.49 menurunkan hasil test. |
+| Exp 19 | `origin/experiment_19` / `origin/experiment_20_adaptive_formula` pada artefak `results/fusion_comparison_exp19*.json`, `results/experiment_19_mild_class_weight_summary.json`, dan `results/gamma_selection_exp19_summary.json` | Sesuai; gamma test-best dicatat sebagai eksploratif, sedangkan gamma final valid dipilih dari validation. |
+| Exp 20 | `origin/experiment_20_adaptive_formula:results/adaptive_formula_exp20_summary.json` dan `results/adaptive_formula_exp20_selected_test.json` | Sesuai; formula terpilih tetap average fusion. |
+| Final v1 | `origin/final_v1_retrain:results/final_v1/final_v1_summary.json` | Sesuai; reproduksi artefak final di folder `results/final_v1/`. |
+
+Catatan branch: file `summary.md` saat audit ini hanya ada pada branch `experiment_20_threshold_analysis`. Branch eksperimen lama tetap diperlakukan sebagai sumber artefak historis, bukan tempat penyimpanan salinan ringkasan final.
+
 ## Sumber Artefak Utama
 
 - `main:results/fusion_comparison.json` atau `origin/experiment_1:results/fusion_comparison.json` untuk Exp 1
