@@ -18,7 +18,7 @@ Model single-view memakai EfficientNetV2-S. Dua model dilatih secara terpisah un
 
 ## Konfigurasi Dasar Pipeline
 
-Konfigurasi umum yang dipertahankan sepanjang rangkaian eksperimen:
+Konfigurasi umum pipeline, dengan beberapa variasi eksploratif per eksperimen:
 
 | Komponen | Nilai |
 |---|---|
@@ -33,32 +33,33 @@ Konfigurasi umum yang dipertahankan sepanjang rangkaian eksperimen:
 | Early stopping | Berdasarkan validation Macro F1 |
 | Decision threshold | 0.50 |
 | Metrik utama | Macro F1 |
-| Class weight dasar | `[2.5, 1.0]` untuk `safe_driving` dan `phone_use` |
+| Class weight dasar fase ablasi/final | Umumnya `[2.5, 1.0]` untuk `safe_driving` dan `phone_use`; beberapa eksperimen awal/gamma sweep memakai konfigurasi berbeda |
 
 Catatan view: `RGB1` adalah side view dan `RGB2` adalah front view.
 
 ## Ringkasan Kronologis Eksperimen
 
-Catatan protokol: Exp 1-2 masih memakai test set besar pada artefak awal dengan support sekitar 6003 sampel. Exp 3-7 memakai artefak dengan support sekitar 1215 sampel. Mulai Exp 8-20, evaluasi akhir yang dipakai pada rangkaian final menggunakan test set yang lebih kecil dan terkunci, dengan support 220 sampel. Karena itu, angka antar fase awal tidak selalu dapat dibandingkan langsung tanpa melihat perubahan protokol data.
+Catatan protokol: Exp 1-3 masih memakai artefak awal dengan support sekitar 6003 sampel. Exp 4-7 memakai artefak dengan support sekitar 1215 sampel. Exp 8 memakai artefak eksploratif dengan support 419 sampel. Mulai Exp 9 sampai rangkaian final, evaluasi test utama memakai support 220 sampel. Karena itu, angka antar fase awal tidak selalu dapat dibandingkan langsung tanpa melihat perubahan protokol data.
 
 | Eksperimen | Tujuan / Fokus | Konfigurasi Utama | Front F1 | Side F1 | Avg Fusion F1 | Adaptive F1 | Keputusan / Catatan |
 |---|---|---|---:|---:|---:|---:|---|
 | Exp 1 | Baseline awal pipeline | LR 1e-4; dropout 0.3; patience 5; belum ada freeze/WD khusus | 0.8225 | 0.8370 | 0.8410 | 0.8410 | Average/adaptive fusion sedikit unggul dari single-view. |
-| Exp 2 | Perbaikan pipeline awal | LR 5e-5; dropout 0.3; WD 1e-4; freeze 2; scheduler aktif | 0.8212 | 0.8344 | 0.8392 | 0.8392 | Mirip Exp 1, tidak memberi peningkatan besar. |
-| Exp 3 | Regularisasi dan subsampling | LR 5e-5; dropout 0.5; WD 5e-4; freeze 4; frame stride 5 | 0.8825 | 0.8032 | 0.8443 | 0.8443 | Front single-view menjadi sangat kuat; fusion tidak melampaui front. |
-| Exp 4 | Revisi artefak konfigurasi v4 | Konfigurasi sama dengan Exp 3 pada branch: LR 5e-5, dropout 0.5, WD 5e-4, freeze 4, stride 5 | 0.8825 | 0.8032 | 0.8443 | 0.8443 | Branch Exp 3 dan Exp 4 menunjuk artefak/metrik yang sama. |
+| Exp 2 | Perbaikan pipeline awal | LR 1e-4; dropout 0.3; WD 1e-4; freeze 4; scheduler aktif | 0.8093 | 0.7618 | 0.7920 | 0.7920 | Performa turun dibanding Exp 1 pada artefak branch GitHub. |
+| Exp 3 | Perbaikan LR dan freeze awal | LR 5e-5; dropout 0.3; WD 1e-4; freeze 2; scheduler aktif | 0.8212 | 0.8344 | 0.8392 | 0.8392 | Mirip Exp 1, tidak memberi peningkatan besar. |
+| Exp 4 | Regularisasi dan subsampling v4 | LR 5e-5; dropout 0.5; WD 5e-4; freeze 4; frame stride 5 | 0.8825 | 0.8032 | 0.8443 | 0.8443 | Front single-view menjadi sangat kuat; fusion tidak melampaui front. |
 | Exp 5 | LR rendah dengan regularisasi v4 | LR 5e-6; dropout 0.5; WD 5e-4; freeze 4; frame stride 5 | 0.8375 | 0.7381 | 0.7990 | 0.7990 | LR rendah membuat training lebih stabil, tetapi fusion turun. |
 | Exp 6 | Config v5 awal / regularisasi lebih kuat | LR 5e-6; dropout 0.6; WD 1e-3; freeze 5; frame stride 5 | 0.8293 | 0.7326 | 0.8287 | 0.8287 | Front dan fusion hampir sama; artefak branch lebih konsisten daripada output cell notebook lama. |
 | Exp 7 | Optimasi side view | LR 5e-6; dropout 0.6; WD 1e-2; front freeze 5; side freeze 3; label smoothing 0.1; class weight `[5.15, 1.0]` | 0.8074 | 0.7301 | 0.8328 | 0.8328 | Fusion mulai lebih baik dari single-view pada konfigurasi ini. |
-| Exp 8 | Golden Balance | Front freeze 4; side freeze 3; class weight moderat; side learning rate 2e-5 | 0.8631 | 0.7712 | 0.8749 | 0.8749 | Hasil eksploratif awal tertinggi. |
-| Exp 9 | Extreme temporal subsampling | Frame stride dinaikkan menjadi 30 untuk memangkas redundansi temporal | 0.7850 | 0.7508 | 0.8044 | 0.8044 | Performa turun dibanding Exp 8, tetapi fusion tetap unggul. |
-| Exp 10 | Penyeimbangan front view dan reduksi ECE | Front freeze 5; side freeze 4; front learning rate 3e-5 | 0.5999 | 0.6333 | 0.6433 | 0.6433 | Performa turun besar; konfigurasi terlalu konservatif untuk front. |
-| Exp 11 | Optimasi regularization dan patience front | Dropout front direlaksasi ke 0.5; weight decay 2e-3; patience front 4 | 0.7399 | 0.5682 | 0.7614 | 0.7614 | Front membaik, side masih lemah. |
-| Exp 12 | Baseline ablation / side view rescue | Front dropout 0.5, WD 2e-3, patience 3; side dropout 0.3, patience 7; label smoothing 0.12 | 0.7399 | 0.6262 | 0.7614 | 0.7614 | Dipakai sebagai baseline ablasi. |
+| Exp 8 | Golden Balance | Front LR 5e-5; side LR 2e-5; dropout 0.5; WD 5e-4; front freeze 4; side freeze 3; LS 0.1; class weight `[2.5, 1.0]`; stride 15 | 0.8631 | 0.7712 | 0.8749 | 0.8749 | Hasil eksploratif awal tertinggi, tetapi memakai support 419. |
+| Exp 9 | Extreme temporal subsampling | Konfigurasi Exp 8 dengan frame stride dinaikkan menjadi 30 untuk memangkas redundansi temporal | 0.7850 | 0.7508 | 0.8044 | 0.8044 | Performa turun dibanding Exp 8, tetapi fusion tetap unggul. |
+| Exp 10 | Penyeimbangan front view dan reduksi ECE | Front LR 3e-5; front dropout 0.6; side dropout 0.5; WD 5e-3; front freeze 5; side freeze 4; LS 0.12; stride 30 | 0.5999 | 0.6333 | 0.6433 | 0.6433 | Performa turun besar; konfigurasi terlalu konservatif untuk front. |
+| Exp 11 | Optimasi regularization dan patience front | Front dropout 0.5; side dropout 0.5; WD 2e-3; patience front 4; LS 0.12; stride 30 | 0.7401 | 0.6333 | 0.7669 | 0.7669 | Front membaik dibanding Exp 10, fusion naik tetapi belum menjadi baseline final. |
+| Exp 12 | Baseline ablation / side view rescue | Front dropout 0.5, WD 2e-3, patience 3; side dropout 0.3, patience 7; LS 0.12; stride 30 | 0.7399 | 0.6262 | 0.7614 | 0.7614 | Dipakai sebagai baseline ablasi. |
 | Exp 13 Lama | Weight decay dan label smoothing campur | Dropout front 0.5; dropout side 0.3; label smoothing 0.0; weight decay 1e-2 | 0.7206 | 0.6262 | 0.7773 | - | Weight decay tinggi tidak memberi perbaikan jelas. |
 | Exp 13 Baru | Isolasi label smoothing | Dropout front 0.5; dropout side 0.3; label smoothing 0.0; weight decay 2e-3 | 0.7740 | 0.6202 | 0.7841 | - | Menonaktifkan label smoothing menjadi faktor dominan peningkatan. |
 | Exp 13 DO=0.60 | Uji dropout front lebih tinggi | Dropout front 0.60; side dikunci dari Exp 13 Baru | 0.7022 | 0.6202 | 0.6460 | - | Gap membaik, tetapi performa turun drastis. |
 | Exp 13 DO=0.55 | Uji dropout front sedang | Dropout front 0.55; side dikunci dari Exp 13 Baru | 0.7075 | 0.6202 | 0.6729 | - | Regularisasi masih terlalu menekan performa. |
+| Exp 14 / 14A branch | Stabilisasi front awal pada branch GitHub | Front hasil branch `experiment_14`; side tetap kontrol dari Exp 13 | 0.7556 | 0.6202 | 0.7447 | 0.7447 | Fusion turun dari Exp 13 Baru sehingga belum dipakai sebagai hasil final. |
 | Exp 14A Awal | Stabilisasi front awal | Freeze stage 6; label smoothing 0.05; regularisasi lebih kuat | - | - | - | Gagal karena collapse ke kelas mayoritas `phone_use`. |
 | Exp 14A Revisi | Stabilisasi front final | Front: lr 3e-5, WD 3e-4, dropout 0.4, label smoothing 0.0, freeze 5, patience 4. Side tetap kontrol dari Exp 13. | 0.7663 | 0.6202 | 0.7806 | 0.7806 | Konfigurasi stabil dan menjadi basis hasil final. |
 | Exp 15 | Analisis error numerik | Tidak ada training ulang; memakai Front14A + Side13 | 0.7663 | 0.6202 | 0.7806 | 0.7806 | Menghitung pola error per-sample. |
@@ -70,7 +71,7 @@ Catatan protokol: Exp 1-2 masih memakai test set besar pada artefak awal dengan 
 | Exp 19 Full Balanced | Class weight full balanced | Side memakai class weight balanced penuh | - | 0.5577 | 0.7917 | - | Fusion tampak naik, tetapi side single-view turun. |
 | Exp 19 Gamma Sweep | Mild class weighting | Gamma 0.25 sampai 0.98; test-best eksploratif gamma 0.95 | - | 0.5535 pada gamma 0.95 | 0.7932 pada gamma 0.95 | - | Tidak dijadikan final karena gamma dipilih berdasarkan test set. |
 | Exp 19 Final Valid | Validation-based gamma selection | Gamma dipilih dari validation; gamma terpilih 0.50 | - | 0.6435 | 0.7799 | - | Belum mengungguli baseline final 0.7806. |
-| Exp 20 | Eksplorasi formula adaptive fusion | Average fusion, legacy adaptive softmax, legacy ratio, margin ratio, entropy ratio, maxprob ratio, reliability static | - | - | 0.7806 | 0.7806 | Semua formula identik pada validation dan test; average fusion dipilih karena paling sederhana. |
+| Exp 20 | Eksplorasi formula adaptive fusion | Average fusion, legacy adaptive softmax, legacy ratio, margin ratio, entropy ratio, maxprob ratio, reliability static | - | - | 0.7806 | 0.7806 | Semua formula identik pada validation; average fusion dipilih dan hasil test tetap sama dengan baseline. |
 
 ## Ringkasan Ablasi Utama
 
@@ -136,25 +137,26 @@ Interpretasi final:
 | Rank | Eksperimen | Skenario | Macro F1 Fusion | Status Pemakaian |
 |---:|---|---|---:|---|
 | 1 | Exp 8 | Golden Balance | 0.8749 | Eksploratif awal |
-| 2 | Exp 3 | Regularisasi + stride 5 | 0.8443 | Eksploratif awal; protokol lama |
-| 3 | Exp 4 | Revisi artefak v4 | 0.8443 | Eksploratif awal; sama dengan Exp 3 |
-| 4 | Exp 1 | Baseline awal | 0.8410 | Eksploratif awal; test set besar |
-| 5 | Exp 2 | Perbaikan pipeline awal | 0.8392 | Eksploratif awal; test set besar |
-| 6 | Exp 7 | Optimasi side view | 0.8328 | Eksploratif awal |
-| 7 | Exp 6 | Config v5 awal | 0.8287 | Eksploratif awal |
-| 8 | Exp 9 | Extreme temporal subsampling | 0.8044 | Eksploratif awal |
-| 9 | Exp 5 | LR rendah + regularisasi v4 | 0.7990 | Eksploratif awal |
+| 2 | Exp 4 | Regularisasi + stride 5 | 0.8443 | Eksploratif awal; protokol lama |
+| 3 | Exp 1 | Baseline awal | 0.8410 | Eksploratif awal; test set besar |
+| 4 | Exp 3 | Perbaikan LR dan freeze awal | 0.8392 | Eksploratif awal; test set besar |
+| 5 | Exp 7 | Optimasi side view | 0.8328 | Eksploratif awal |
+| 6 | Exp 6 | Config v5 awal | 0.8287 | Eksploratif awal |
+| 7 | Exp 9 | Extreme temporal subsampling | 0.8044 | Eksploratif awal |
+| 8 | Exp 5 | LR rendah + regularisasi v4 | 0.7990 | Eksploratif awal |
+| 9 | Exp 2 | Perbaikan pipeline awal | 0.7920 | Eksploratif awal; test set besar |
 | 10 | Exp 13 Baru | Isolasi label smoothing | 0.7841 | Ablasi lama terbaik |
 | 11 | Exp 14A Revisi / Final v1 | Stabilisasi front | 0.7806 | Hasil final stabil |
 | 12 | Exp 19 Final Valid | Gamma 0.50 validation-selected | 0.7799 | Ablasi class weighting, tidak mengganti final |
 | 13 | Exp 13 Lama | WD dan LS campur | 0.7773 | Ablasi |
-| 14 | Exp 11 | Optimasi front regularization | 0.7614 | Eksplorasi |
+| 14 | Exp 11 | Optimasi front regularization | 0.7669 | Eksplorasi |
 | 15 | Exp 12 | Baseline ablation | 0.7614 | Baseline ablasi |
-| 16 | Exp 13 DO=0.55 | Dropout front 0.55 | 0.6729 | Tidak dipakai |
-| 17 | Exp 13 DO=0.60 | Dropout front 0.60 | 0.6460 | Tidak dipakai |
-| 18 | Exp 10 | Reduksi ECE | 0.6433 | Tidak dipakai |
+| 16 | Exp 14 / 14A branch | Stabilisasi front awal pada branch GitHub | 0.7447 | Tidak dipakai |
+| 17 | Exp 13 DO=0.55 | Dropout front 0.55 | 0.6729 | Tidak dipakai |
+| 18 | Exp 13 DO=0.60 | Dropout front 0.60 | 0.6460 | Tidak dipakai |
+| 19 | Exp 10 | Reduksi ECE | 0.6433 | Tidak dipakai |
 
-Catatan penting: walaupun Exp 8 memiliki Macro F1 fusion tertinggi secara angka, hasil final penelitian tetap menggunakan konfigurasi final v1 / Exp 14A Revisi karena rangkaian ablasi akhir menekankan stabilitas, validitas protokol, dan reproduksibilitas artefak final. Ranking ini berguna untuk melihat riwayat eksperimen, tetapi fase Exp 1-7 memakai protokol evaluasi yang berbeda dari fase final.
+Catatan penting: walaupun Exp 8 memiliki Macro F1 fusion tertinggi secara angka, hasil final penelitian tetap menggunakan konfigurasi final v1 / Exp 14A Revisi karena rangkaian ablasi akhir menekankan stabilitas, validitas protokol, dan reproduksibilitas artefak final. Ranking ini berguna untuk melihat riwayat eksperimen, tetapi fase Exp 1-8 memakai protokol evaluasi yang berbeda dari fase final.
 
 ## Kesimpulan Eksperimen
 
@@ -168,13 +170,20 @@ Dengan demikian, hasil utama penelitian adalah konfigurasi Front14A Revisi + Sid
 
 ## Sumber Artefak Utama
 
-- `main:results/fusion_comparison.json` untuk Exp 1
+- `main:results/fusion_comparison.json` atau `origin/experiment_1:results/fusion_comparison.json` untuk Exp 1
 - `origin/experiment_2:results/fusion_comparison.json` untuk Exp 2
 - `origin/experiment_3:results/fusion_comparison.json` untuk Exp 3
 - `origin/experiment_4:results/fusion_comparison.json` untuk Exp 4
 - `origin/experiment_5:results/fusion_comparison.json` untuk Exp 5
 - `origin/experiment_6:results/fusion_comparison.json` untuk Exp 6
 - `origin/experiment_7:results/fusion_comparison.json` untuk Exp 7
+- `origin/experiment_8:results/fusion_comparison.json` untuk Exp 8
+- `origin/experiment_9:results/fusion_comparison.json` untuk Exp 9
+- `origin/experiment_10:results/fusion_comparison.json` untuk Exp 10
+- `origin/experiment_11:results/fusion_comparison.json` untuk Exp 11
+- `origin/experiment_12:results/fusion_comparison.json` untuk Exp 12
+- `origin/experiment_14:results/fusion_comparison.json` dan `origin/experiment_14B:results/fusion_comparison.json` untuk Exp 14 / 14A branch
+- `origin/experiment_20_adaptive_formula:results/fusion_comparison_exp14A.json` untuk Exp 14A Revisi
 - `notebooks/experiment_6.ipynb` sampai `notebooks/experiment_13.ipynb`
 - `experiment_notes.md`
 - `experiment_15_notes.md`
@@ -185,5 +194,6 @@ Dengan demikian, hasil utama penelitian adalah konfigurasi Front14A Revisi + Sid
 - `experiment_20_adaptive_formula_notes.md`
 - `results/ringkasan_akhir_ablasi.md`
 - `results/final_experiment_summary.md`
+- `results/final_v1/threshold_analysis/threshold_analysis_summary.md`
 - `results/final_v1/final_v1_summary.md`
 - `results/final_v1/final_v1_summary.json`
