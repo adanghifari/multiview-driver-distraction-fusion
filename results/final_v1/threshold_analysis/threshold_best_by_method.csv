@@ -1,0 +1,4 @@
+rank,method,threshold,accuracy,precision_macro,recall_macro,macro_f1,balanced_accuracy,roc_auc,pr_auc,mcc,cohen_kappa,tn,fp,fn,tp,safe_to_phone,phone_to_safe,predicted_safe,predicted_phone,different_vs_average,different_vs_softmax,different_vs_linear
+1,adaptive_linear_normalization,0.50,0.89091,0.86565,0.73889,0.78059,0.73889,0.87694,0.96921,0.5911,0.56579,20,20,4,176,20,4,24,196,0,0,0
+2,adaptive_softmax,0.50,0.89091,0.86565,0.73889,0.78059,0.73889,0.87056,0.9653,0.5911,0.56579,20,20,4,176,20,4,24,196,0,0,0
+3,average_fusion,0.50,0.89091,0.86565,0.73889,0.78059,0.73889,0.86556,0.96293,0.5911,0.56579,20,20,4,176,20,4,24,196,0,0,0

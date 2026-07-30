@@ -1,0 +1,4 @@
+method,accuracy,precision_macro,recall_macro,f1_macro,balanced_accuracy,roc_auc,pr_auc,mcc,cohen_kappa,confusion_matrix,safe_to_phone,phone_to_safe
+average_fusion,0.89091,0.86565,0.73889,0.78059,0.73889,0.86556,0.96293,0.5911,0.56579,"[[20, 20], [4, 176]]",20,4
+adaptive_softmax,0.89091,0.86565,0.73889,0.78059,0.73889,0.87056,0.9653,0.5911,0.56579,"[[20, 20], [4, 176]]",20,4
+adaptive_linear_normalization,0.89091,0.86565,0.73889,0.78059,0.73889,0.87694,0.96921,0.5911,0.56579,"[[20, 20], [4, 176]]",20,4

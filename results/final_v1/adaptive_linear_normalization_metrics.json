@@ -1,0 +1,71 @@
+{
+  "average_fusion": {
+    "accuracy": 0.89091,
+    "precision_macro": 0.86565,
+    "recall_macro": 0.73889,
+    "f1_macro": 0.78059,
+    "confusion_matrix": [
+      [
+        20,
+        20
+      ],
+      [
+        4,
+        176
+      ]
+    ],
+    "safe_to_phone": 20,
+    "phone_to_safe": 4,
+    "balanced_accuracy": 0.73889,
+    "roc_auc": 0.86556,
+    "pr_auc": 0.96293,
+    "mcc": 0.5911,
+    "cohen_kappa": 0.56579
+  },
+  "adaptive_softmax": {
+    "accuracy": 0.89091,
+    "precision_macro": 0.86565,
+    "recall_macro": 0.73889,
+    "f1_macro": 0.78059,
+    "confusion_matrix": [
+      [
+        20,
+        20
+      ],
+      [
+        4,
+        176
+      ]
+    ],
+    "safe_to_phone": 20,
+    "phone_to_safe": 4,
+    "balanced_accuracy": 0.73889,
+    "roc_auc": 0.87056,
+    "pr_auc": 0.9653,
+    "mcc": 0.5911,
+    "cohen_kappa": 0.56579
+  },
+  "adaptive_linear_normalization": {
+    "accuracy": 0.89091,
+    "precision_macro": 0.86565,
+    "recall_macro": 0.73889,
+    "f1_macro": 0.78059,
+    "confusion_matrix": [
+      [
+        20,
+        20
+      ],
+      [
+        4,
+        176
+      ]
+    ],
+    "safe_to_phone": 20,
+    "phone_to_safe": 4,
+    "balanced_accuracy": 0.73889,
+    "roc_auc": 0.87694,
+    "pr_auc": 0.96921,
+    "mcc": 0.5911,
+    "cohen_kappa": 0.56579
+  }
+}

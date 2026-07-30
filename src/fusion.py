@@ -157,6 +157,29 @@ def adaptive_fusion(scores_front: np.ndarray, scores_side: np.ndarray,
     return w_front * scores_front + w_side * scores_side
 
 
+def adaptive_linear_normalization_fusion(
+    scores_front: np.ndarray,
+    scores_side: np.ndarray,
+    threshold: float = DECISION_THRESHOLD,
+) -> np.ndarray:
+    """Adaptive fusion pembanding dengan normalisasi linear confidence.
+
+    d_i     = |S_i - threshold|
+    w_i     = d_i / (d_front + d_side)
+    S_fused = w_front * S_front + w_side * S_side
+
+    Jika d_front + d_side = 0, bobot dibuat 0.5 dan 0.5.
+    """
+    d_front = np.abs(scores_front - threshold)
+    d_side = np.abs(scores_side - threshold)
+    denom = d_front + d_side
+
+    w_front = np.divide(d_front, denom, out=np.full_like(d_front, 0.5, dtype=float), where=denom != 0)
+    w_side = np.divide(d_side, denom, out=np.full_like(d_side, 0.5, dtype=float), where=denom != 0)
+
+    return w_front * scores_front + w_side * scores_side
+
+
 # %%
 # Inferensi & evaluasi
 # ──────────────────────────────────────────────────────────────────────────────
