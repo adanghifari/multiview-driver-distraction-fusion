@@ -248,4 +248,24 @@ EXPERIMENT_CONFIGS = {
             "the proposal fusion methods."
         ),
     },
+    "experiment_21C_side": {
+        "view": "side",
+        "checkpoint_name": "side_best_exp21C.pt",
+        "history_name": "side_history_exp21C.json",
+        "summary_name": "experiment_21C_side_metrics.json",
+        "learning_rate": 2e-5,
+        "weight_decay": 5e-4,
+        "dropout": 0.3,
+        "label_smoothing": 0.0,
+        "num_stages_to_freeze": 4,
+        "early_stopping_patience": 6,
+        "lr_scheduler_patience": 2,
+        "class_weights": CLASS_WEIGHTS,
+        "description": (
+            "Experiment 21C side probability stabilization: keep stride 20 and "
+            "front 21B fixed, retrain side with freeze depth 4 and validation-loss "
+            "checkpoint selection to reduce phone-use bias without changing the "
+            "proposal fusion methods."
+        ),
+    },
 }
