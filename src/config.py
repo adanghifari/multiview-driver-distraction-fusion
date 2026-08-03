@@ -228,4 +228,24 @@ EXPERIMENT_CONFIGS = {
             "relaxed from final_v1."
         ),
     },
+    "experiment_21B_front": {
+        "view": "front",
+        "checkpoint_name": "front_best_exp21B.pt",
+        "history_name": "front_history_exp21B.json",
+        "summary_name": "experiment_21B_front_metrics.json",
+        "learning_rate": 3e-5,
+        "weight_decay": 5e-4,
+        "dropout": 0.4,
+        "label_smoothing": 0.0,
+        "num_stages_to_freeze": 5,
+        "early_stopping_patience": 4,
+        "lr_scheduler_patience": 1,
+        "class_weights": CLASS_WEIGHTS,
+        "description": (
+            "Experiment 21B front stabilization: keep the Exp21 stride-20 "
+            "protocol and side checkpoint fixed, but restore front freeze depth "
+            "to 5 to reduce the borderline train-validation gap without changing "
+            "the proposal fusion methods."
+        ),
+    },
 }
