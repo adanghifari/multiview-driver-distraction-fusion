@@ -1,25 +1,25 @@
 {
-  "accuracy": 0.84783,
-  "precision_macro": 0.75131,
-  "recall_macro": 0.80824,
-  "f1_macro": 0.77284,
+  "accuracy": 0.86364,
+  "precision_macro": 0.77183,
+  "recall_macro": 0.76111,
+  "f1_macro": 0.76626,
   "confusion_matrix": [
     [
-      44,
-      15
+      24,
+      16
     ],
     [
-      34,
-      229
+      14,
+      166
     ]
   ],
-  "safe_to_phone": 15,
-  "phone_to_safe": 34,
+  "safe_to_phone": 16,
+  "phone_to_safe": 14,
   "view": "front",
   "checkpoint_path": "D:\\Skripsi\\Experiment\\checkpoints\\experiment_21\\front_best_exp21.pt",
-  "best_epoch": 6,
-  "val_macro_f1": 0.69548,
-  "ece_binary": 0.14496,
-  "brier_score": 0.11678,
-  "support": 322
+  "best_epoch": 9,
+  "val_macro_f1": 0.72581,
+  "ece_binary": 0.12513,
+  "brier_score": 0.11311,
+  "support": 220
 }

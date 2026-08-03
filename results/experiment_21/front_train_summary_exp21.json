@@ -14,13 +14,14 @@
     "scheduler": "ReduceLROnPlateau",
     "early_stopping": true,
     "early_stopping_patience": 4,
-    "num_stages_to_freeze": 4,
-    "metric_for_best_model": "validation Macro F1"
+    "num_stages_to_freeze": 5,
+    "metric_for_best_model": "validation Macro F1",
+    "frame_stride": 30
   },
-  "best_epoch": 6,
-  "best_validation_macro_f1": 0.69548,
-  "train_loss_at_best_epoch": 0.41393,
-  "validation_loss_at_best_epoch": 0.51268,
-  "train_validation_loss_gap_at_best_epoch": 0.09876,
+  "best_epoch": 9,
+  "best_validation_macro_f1": 0.72581,
+  "train_loss_at_best_epoch": 0.47353,
+  "validation_loss_at_best_epoch": 0.51736,
+  "train_validation_loss_gap_at_best_epoch": 0.04383,
   "test_metrics": null
 }

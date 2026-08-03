@@ -1,5 +1,5 @@
 method,accuracy,precision_macro,recall_macro,f1_macro,safe_to_phone,phone_to_safe,ece_binary,brier_score,generalization_status
-front_single_view,0.84783,0.75131,0.80824,0.77284,15,34,0.14496,0.11678,BORDERLINE
-side_single_view,0.82919,0.7096,0.63907,0.66044,39,16,0.13012,0.13621,OK
-average_fusion,0.86646,0.78063,0.75392,0.76597,25,18,,,
-adaptive_fusion,0.86646,0.78063,0.75392,0.76597,25,18,,,
+front_single_view,0.86364,0.77183,0.76111,0.76626,16,14,0.12513,0.11311,OK
+side_single_view,0.80909,0.69857,0.74722,0.7159,14,28,0.14317,0.13552,OVERFIT
+average_fusion,0.9,0.83967,0.8125,0.82504,13,9,,,
+adaptive_fusion,0.9,0.83967,0.8125,0.82504,13,9,,,

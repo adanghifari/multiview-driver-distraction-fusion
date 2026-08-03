@@ -3,6 +3,7 @@ import json
 import pandas as pd
 
 from src.experiment_21.config_experiment_21 import (
+    FRAME_STRIDE_EXP21,
     FRONT_CONFIG,
     PIPELINE_DESCRIPTION,
     REFERENCE_EXP8,
@@ -52,7 +53,7 @@ def build_markdown(summary: dict) -> str:
             "",
             "- Dataset: 3MDAD binary `safe_driving` vs `phone_use`.",
             "- Split: subject-based split yang sama dengan final pipeline.",
-            "- Frame stride: 20.",
+            f"- Frame stride: {FRAME_STRIDE_EXP21}.",
             "- Primary metric: Macro F1.",
             "- Threshold: 0.50.",
             "- Fusion: decision-level average fusion dan adaptive confidence fusion.",
@@ -74,7 +75,7 @@ def build_markdown(summary: dict) -> str:
             "",
             f"- Final v1 reference fusion Macro F1: {REFERENCE_FINAL_V1['average_fusion_f1_macro']:.5f} with stride {REFERENCE_FINAL_V1['frame_stride']} and support {REFERENCE_FINAL_V1['test_support']}.",
             f"- Exp 8 exploratory fusion Macro F1: {REFERENCE_EXP8['average_fusion_f1_macro']:.5f} with stride {REFERENCE_EXP8['frame_stride']} and support {REFERENCE_EXP8['test_support']}.",
-            "- Because stride/support differ, reference rows are context, not a direct statistical claim.",
+            "- Final v1 and Experiment 21 now share stride/support, so this comparison is apple-to-apple; Exp 8 remains exploratory context only.",
         ]
     ) + "\n"
 
@@ -115,4 +116,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

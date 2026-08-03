@@ -1,40 +1,37 @@
 # Experiment 21 Notes
 
+## Current Branch
+
+- Branch: `experiment_21_stride30_best`
+- Purpose: run Experiment 21 directly with the best recipe found from the stride-20 exploration, but under the final_v1 stride-30 protocol.
+- Status: completed training/evaluation; statistical tests have been generated.
+
 ## Tujuan
 
-Experiment 21 menguji apakah sinyal kuat dari Experiment 8 dapat dibawa ke protokol final yang lebih disiplin. Eksperimen ini bukan memakai ulang angka Exp 8, tetapi melakukan retrain dengan konfigurasi Exp8-informed dan evaluasi yang terpisah.
-
-## Hipotesis
-
-Stride 20 dapat menjadi kompromi antara:
-
-- Exp 8 stride 15, yang menghasilkan performa tinggi tetapi masih lebih banyak redundansi temporal.
-- final_v1 stride 30, yang lebih ketat tetapi mungkin terlalu agresif membuang informasi frame.
-
-Jika stride 20 mempertahankan informasi visual yang penting tanpa terlalu banyak redundansi, Macro F1 fusion berpotensi naik dibanding final_v1.
+Experiment 21 versi ini dibuat untuk membandingkan konfigurasi terbaik hasil eksplorasi dengan final_v1 secara apple-to-apple. Perbandingan ini memakai frame stride yang sama dengan final_v1, yaitu stride 30, sehingga support test sama-sama 220.
 
 ## Protokol
 
 - Dataset: 3MDAD.
 - Task: binary `safe_driving` vs `phone_use`.
-- Split: subject-based split yang sama dengan pipeline final.
+- Split: subject-based split yang sama dengan final pipeline.
 - Backbone: EfficientNetV2-S.
 - Input size: 224 x 224.
 - Optimizer: AdamW.
 - Scheduler: ReduceLROnPlateau.
-- Best checkpoint: validation Macro F1.
 - Decision threshold: 0.50.
-- Frame stride: 20.
+- Frame stride: 30.
+- Fusion: average fusion dan adaptive confidence fusion.
 - Output:
   - `results/experiment_21/`
   - `checkpoints/experiment_21/`
 
 ## Konfigurasi
 
-| View | LR | WD | Dropout | Label Smoothing | Freeze | Patience | Class Weight |
-|---|---:|---:|---:|---:|---:|---:|---|
-| Front | 3e-5 | 5e-4 | 0.4 | 0.0 | 4 | 4 | `[2.5, 1.0]` |
-| Side | 2e-5 | 5e-4 | 0.3 | 0.0 | 3 | 7 | `[2.5, 1.0]` |
+| View | Source Recipe | LR | WD | Dropout | Label Smoothing | Freeze | Patience | Monitor | Class Weight |
+|---|---|---:|---:|---:|---:|---:|---:|---|---|
+| Front | Exp21B front stabilization | 3e-5 | 5e-4 | 0.4 | 0.0 | 5 | 4 | validation Macro F1 | `[2.5, 1.0]` |
+| Side | Exp21C side stabilization | 2e-5 | 5e-4 | 0.3 | 0.0 | 4 | 6 | validation loss | `[2.5, 1.0]` |
 
 ## Command
 
@@ -50,32 +47,11 @@ Jika training sudah selesai dan hanya ingin re-run evaluasi/summary:
 .venv\Scripts\python.exe -m src.experiment_21.run_experiment_21 --skip-train
 ```
 
-Train salah satu view saja:
-
-```powershell
-.venv\Scripts\python.exe -m src.experiment_21.run_experiment_21 --view front
-.venv\Scripts\python.exe -m src.experiment_21.run_experiment_21 --view side
-```
-
 Setelah script Python selesai, buka dan run:
 
 ```text
 notebooks/experiment_21.ipynb
 ```
-
-## Kriteria Keputusan
-
-Experiment 21 dapat dipertimbangkan sebagai kandidat pengganti final_v1 jika:
-
-- Fusion Macro F1 lebih tinggi dari final_v1 baseline 0.78059.
-- Train-validation gap tidak masuk kategori overfit berat.
-- Peningkatan tidak hanya berasal dari bias ke kelas mayoritas.
-- Confusion matrix tidak memperburuk `safe_driving -> phone_use` secara tidak proporsional.
-- Analisis tambahan menunjukkan hasilnya stabil dan dapat dijelaskan.
-
-## Catatan Interpretasi
-
-Perbandingan dengan Exp 8 dan final_v1 harus dibaca sebagai konteks karena stride dan support test berbeda. Klaim utama Experiment 21 berada pada artefak `results/experiment_21/`, bukan pada angka historis Exp 8.
 
 ## Hasil Aktual
 
@@ -91,25 +67,39 @@ Ringkasan hasil:
 
 | Metode | Accuracy | Precision Macro | Recall Macro | Macro F1 | safe->phone | phone->safe | Status |
 |---|---:|---:|---:|---:|---:|---:|---|
-| Front single-view | 0.84783 | 0.75131 | 0.80824 | 0.77284 | 15 | 34 | BORDERLINE |
-| Side single-view | 0.82919 | 0.70960 | 0.63907 | 0.66044 | 39 | 16 | OK |
-| Average fusion | 0.86646 | 0.78063 | 0.75392 | 0.76597 | 25 | 18 | - |
-| Adaptive fusion | 0.86646 | 0.78063 | 0.75392 | 0.76597 | 25 | 18 | - |
+| Front single-view | 0.86364 | 0.77183 | 0.76111 | 0.76626 | 16 | 14 | OK |
+| Side single-view | 0.80909 | 0.69857 | 0.74722 | 0.71590 | 14 | 28 | OVERFIT |
+| Average fusion | 0.90000 | 0.83967 | 0.81250 | 0.82504 | 13 | 9 | - |
+| Adaptive fusion | 0.90000 | 0.83967 | 0.81250 | 0.82504 | 13 | 9 | - |
 
-Training diagnostics:
+Compared with final_v1 average fusion:
 
-- Front best epoch 6, validation Macro F1 0.69548, train-validation loss gap 0.09876, sehingga dikategorikan `BORDERLINE`.
-- Side best epoch 21, validation Macro F1 0.74767, train-validation loss gap 0.05569, sehingga dikategorikan `OK`.
+- Final v1 Macro F1: 0.78059.
+- Exp21 stride30-best Macro F1: 0.82504.
+- Delta: +0.04445.
+- Support: 220 vs 220.
 
-Interpretasi sementara:
+## Statistical Tests
 
-- Exp 21 meningkatkan front single-view sedikit dibanding final_v1 reference front Macro F1 0.76626 menjadi 0.77284.
-- Fusion Exp 21 belum mengungguli final_v1 reference fusion Macro F1 0.78059; average/adaptive fusion hanya mencapai 0.76597.
-- Fusion mengurangi `phone_use -> safe_driving` error dari 34 pada front menjadi 18, tetapi menaikkan `safe_driving -> phone_use` dari 15 menjadi 25. Trade-off ini membuat Macro F1 fusion turun dibanding front single-view.
-- Adaptive fusion tetap identik dengan average fusion pada prediksi akhir.
+Artefak statistik tersedia pada:
 
-Keputusan sementara:
+- `results/experiment_21/statistical_tests_vs_final_v1/final_v1_vs_exp21_statistics.json`
+- `results/experiment_21/statistical_tests_vs_final_v1/final_v1_vs_exp21_statistics_summary.csv`
 
-- Exp 21A tidak mengganti final_v1.
-- Konfigurasi ini tetap berguna karena menunjukkan stride 20 dan freeze lebih fleksibel tidak cukup untuk memperbaiki fusion baseline.
-- Varian lanjutan yang masuk akal adalah menguji konfigurasi yang mempertahankan front improvement tetapi mengurangi dampak side terhadap false alarm `safe_driving`.
+Ringkasan:
+
+| Test | Metric | Delta Exp21 - Final v1 | P-value | 95% CI | Significant 0.05 |
+|---|---|---:|---:|---|---|
+| McNemar exact | decision correctness @ 0.50 | +2 unique correct | 0.77441 | - | No |
+| DeLong | ROC-AUC | +0.00292 | 0.85730 | - | No |
+| Paired stratified bootstrap | Macro F1 | +0.04520 | 0.11760 | [-0.01040, 0.11005] | No |
+| Paired stratified bootstrap | ROC-AUC | +0.00275 | 0.85520 | [-0.03084, 0.03444] | No |
+| Paired stratified bootstrap | PR-AUC | +0.00163 | 0.71920 | [-0.00783, 0.01110] | No |
+
+Interpretasi: Exp21 stride30-best lebih baik secara deskriptif, tetapi peningkatannya belum signifikan secara statistik pada alpha 0.05. Klaim yang aman adalah peningkatan empiris/deskriptif, bukan superioritas statistik yang kuat.
+
+## Catatan Overfit
+
+Front berstatus OK dengan train-validation loss gap 0.04383. Side berstatus OVERFIT dengan train-validation loss gap 0.22406, tetapi side tetap meningkatkan performa test dan membantu fusion naik dari 0.78059 menjadi 0.82504.
+
+Eksplorasi berikutnya boleh fokus ke side overfit untuk pengetahuan: apakah regularisasi/early stopping yang lebih konservatif dapat menurunkan gap tanpa mengorbankan Macro F1 fusion. Tujuan awal eksplorasi ini bukan langsung mengganti hasil utama, tetapi menguji apakah memperbaiki overfit side membuat hasil turun, stabil, atau justru naik.

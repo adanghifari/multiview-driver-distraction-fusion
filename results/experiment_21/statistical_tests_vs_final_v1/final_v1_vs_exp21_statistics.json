@@ -1,0 +1,64 @@
+{
+  "comparison": "Final v1 average fusion vs Experiment 21 stride30-best average fusion",
+  "prediction_alignment": {
+    "support": 220,
+    "positive_support": 180,
+    "negative_support": 40
+  },
+  "metrics": {
+    "final_v1_macro_f1": 0.78059,
+    "exp21_macro_f1": 0.82504,
+    "delta_macro_f1_exp21_minus_final_v1": 0.04446,
+    "final_v1_roc_auc": 0.86556,
+    "exp21_roc_auc": 0.86847,
+    "final_v1_pr_auc": 0.96293,
+    "exp21_pr_auc": 0.96462
+  },
+  "mcnemar_exact": {
+    "table_both_correct_final_only_exp21_only_both_wrong": [
+      [
+        191,
+        5
+      ],
+      [
+        7,
+        17
+      ]
+    ],
+    "final_only_correct": 5,
+    "exp21_only_correct": 7,
+    "p_value": 0.7744140625,
+    "significant_alpha_0_05": false
+  },
+  "delong_roc_auc": {
+    "auc_final_v1": 0.86556,
+    "auc_exp21": 0.86847,
+    "delta_auc_exp21_minus_final_v1": 0.00292,
+    "z": -0.17981,
+    "p_value": 0.8573024452541826,
+    "significant_alpha_0_05": false
+  },
+  "paired_stratified_bootstrap": {
+    "n_bootstrap": 5000,
+    "random_seed": 42,
+    "delta_is_exp21_minus_final_v1": true,
+    "macro_f1_delta": {
+      "mean_delta": 0.0452,
+      "ci95_low": -0.0104,
+      "ci95_high": 0.11005,
+      "p_bootstrap_two_sided": 0.1176
+    },
+    "roc_auc_delta": {
+      "mean_delta": 0.00275,
+      "ci95_low": -0.03084,
+      "ci95_high": 0.03444,
+      "p_bootstrap_two_sided": 0.8552
+    },
+    "pr_auc_delta": {
+      "mean_delta": 0.00163,
+      "ci95_low": -0.00783,
+      "ci95_high": 0.0111,
+      "p_bootstrap_two_sided": 0.7192
+    }
+  }
+}
