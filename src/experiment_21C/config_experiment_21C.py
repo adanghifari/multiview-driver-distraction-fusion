@@ -48,11 +48,10 @@ REFERENCE_EXP21B = {
     "adaptive_fusion_f1_macro": 0.75880,
     "front_generalization_status": "OK",
     "side_generalization_status": "OK",
-    "frame_stride": 20,
-    "test_support": 322,
+    "frame_stride": 30,
+    "test_support": 220,
 }
 
 PRIMARY_METRIC = "Macro F1"
 BATCH_SIZE_EXP21C = BATCH_SIZE
 MAX_EPOCHS_EXP21C = MAX_EPOCHS
-

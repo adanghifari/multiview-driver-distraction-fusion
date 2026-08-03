@@ -1,2 +1,1 @@
-"""Experiment 21: Exp8-informed final protocol with stride 20."""
-
+"""Experiment 21: Exp8-informed final protocol with final_v1 stride 30."""

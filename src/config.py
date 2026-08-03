@@ -204,7 +204,7 @@ EXPERIMENT_CONFIGS = {
         "lr_scheduler_patience": 1,
         "class_weights": CLASS_WEIGHTS,
         "description": (
-            "Experiment 21 front: Exp8-informed final protocol with stride 20, "
+            "Experiment 21 front: Exp8-informed final protocol with stride 30, "
             "moderate weight decay, no label smoothing, and a slightly less frozen "
             "front backbone than final_v1."
         ),
@@ -223,7 +223,7 @@ EXPERIMENT_CONFIGS = {
         "lr_scheduler_patience": 1,
         "class_weights": CLASS_WEIGHTS,
         "description": (
-            "Experiment 21 side: Exp8-informed final protocol with stride 20, "
+            "Experiment 21 side: Exp8-informed final protocol with stride 30, "
             "moderate weight decay, no label smoothing, and side freeze depth "
             "relaxed from final_v1."
         ),
@@ -242,7 +242,7 @@ EXPERIMENT_CONFIGS = {
         "lr_scheduler_patience": 1,
         "class_weights": CLASS_WEIGHTS,
         "description": (
-            "Experiment 21B front stabilization: keep the Exp21 stride-20 "
+            "Experiment 21B front stabilization: keep the Exp21 stride-30 "
             "protocol and side checkpoint fixed, but restore front freeze depth "
             "to 5 to reduce the borderline train-validation gap without changing "
             "the proposal fusion methods."
@@ -262,7 +262,7 @@ EXPERIMENT_CONFIGS = {
         "lr_scheduler_patience": 2,
         "class_weights": CLASS_WEIGHTS,
         "description": (
-            "Experiment 21C side probability stabilization: keep stride 20 and "
+            "Experiment 21C side probability stabilization: keep stride 30 and "
             "front 21B fixed, retrain side with freeze depth 4 and validation-loss "
             "checkpoint selection to reduce phone-use bias without changing the "
             "proposal fusion methods."

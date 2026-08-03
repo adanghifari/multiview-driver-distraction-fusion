@@ -15,6 +15,7 @@ from src.experiment_21C.config_experiment_21C import (
     SIDE_CONFIG,
     THRESHOLD,
 )
+from src.experiment_21.protocol import assert_checkpoint_frame_stride
 from src.final_v1.dataset_final_v1 import PairedFinalV1Dataset
 from src.final_v1.metrics_final_v1 import compute_brier_score, compute_ece_binary, compute_metrics
 
@@ -65,6 +66,8 @@ def run_single_view_evaluation_exp21C():
 
     model_front, front_ckpt = load_trained_model("front", device, checkpoint_path=str(FRONT_CONFIG_LOCKED["checkpoint_path"]))
     model_side, side_ckpt = load_trained_model("side", device, checkpoint_path=str(SIDE_CONFIG["checkpoint_path"]))
+    assert_checkpoint_frame_stride(front_ckpt, str(FRONT_CONFIG_LOCKED["checkpoint_path"]), FRAME_STRIDE_EXP21C, "Exp21B locked front")
+    assert_checkpoint_frame_stride(side_ckpt, str(SIDE_CONFIG["checkpoint_path"]), FRAME_STRIDE_EXP21C, "Exp21C side")
 
     rows = []
     labels_all = []

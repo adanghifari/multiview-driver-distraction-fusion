@@ -42,8 +42,8 @@ PIPELINE_DESCRIPTION = (
     "but retrains only the front view. The side model is locked from Experiment 21A "
     "because its training status was OK and its Macro F1 improved over final_v1. "
     "The front model restores freeze depth to 5 to reduce the borderline "
-    "train-validation gap while keeping stride 20, label smoothing 0.0, and "
-    "average/adaptive fusion unchanged."
+    "train-validation gap while keeping final_v1 stride 30, label smoothing "
+    "0.0, and average/adaptive fusion unchanged."
 )
 
 REFERENCE_EXP21A = {
@@ -53,11 +53,10 @@ REFERENCE_EXP21A = {
     "adaptive_fusion_f1_macro": 0.76597,
     "front_generalization_status": "BORDERLINE",
     "side_generalization_status": "OK",
-    "frame_stride": 20,
-    "test_support": 322,
+    "frame_stride": 30,
+    "test_support": 220,
 }
 
 PRIMARY_METRIC = "Macro F1"
 BATCH_SIZE_EXP21B = BATCH_SIZE
 MAX_EPOCHS_EXP21B = MAX_EPOCHS
-

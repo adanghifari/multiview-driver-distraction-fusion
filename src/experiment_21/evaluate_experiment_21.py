@@ -8,11 +8,13 @@ from src.config import BINARY_LABEL_MAP, MANIFEST_PAIRED_PATH, MANIFEST_SPLIT_PA
 from src.dataset import get_transforms
 from src.evaluate import load_trained_model
 from src.experiment_21.config_experiment_21 import (
+    FRAME_STRIDE_EXP21,
     FRONT_CONFIG,
     RESULTS_DIR_EXP21,
     SIDE_CONFIG,
     THRESHOLD,
 )
+from src.experiment_21.protocol import assert_checkpoint_frame_stride
 from src.final_v1.dataset_final_v1 import PairedFinalV1Dataset
 from src.final_v1.metrics_final_v1 import compute_brier_score, compute_ece_binary, compute_metrics
 from torch.utils.data import DataLoader
@@ -22,8 +24,6 @@ log = logging.getLogger(__name__)
 
 
 def load_paired_split_dataframe_exp21(split_name: str) -> pd.DataFrame:
-    from src.experiment_21.config_experiment_21 import FRAME_STRIDE_EXP21
-
     if split_name not in {"val", "test"}:
         raise ValueError("split_name must be 'val' or 'test'.")
 
@@ -62,6 +62,8 @@ def run_single_view_evaluation_exp21():
 
     model_front, front_ckpt = load_trained_model("front", device, checkpoint_path=str(FRONT_CONFIG["checkpoint_path"]))
     model_side, side_ckpt = load_trained_model("side", device, checkpoint_path=str(SIDE_CONFIG["checkpoint_path"]))
+    assert_checkpoint_frame_stride(front_ckpt, str(FRONT_CONFIG["checkpoint_path"]), FRAME_STRIDE_EXP21, "Exp21 front")
+    assert_checkpoint_frame_stride(side_ckpt, str(SIDE_CONFIG["checkpoint_path"]), FRAME_STRIDE_EXP21, "Exp21 side")
 
     rows = []
     labels_all = []

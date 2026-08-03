@@ -4,7 +4,7 @@ from src.config import BATCH_SIZE, MAX_EPOCHS, PROJECT_ROOT, SPLIT_SEED
 
 
 EXPERIMENT_ID = "experiment_21"
-FRAME_STRIDE_EXP21 = 20
+FRAME_STRIDE_EXP21 = 30
 THRESHOLD = 0.50
 SEED = SPLIT_SEED
 
@@ -57,14 +57,13 @@ REFERENCE_EXP8 = {
 
 PIPELINE_DESCRIPTION = (
     "Experiment 21 adapts the strongest exploratory signal from Experiment 8 "
-    "into a more disciplined final-style protocol. It uses stride 20 as a "
-    "middle ground between Exp8 stride 15 and final_v1 stride 30, keeps "
-    "label smoothing disabled following the final ablation, and relaxes freeze "
-    "depth toward Exp8 to test whether more capacity helps under the stricter "
-    "evaluation protocol."
+    "into a more disciplined final-style protocol. It uses stride 30 to make "
+    "the comparison apple-to-apple with final_v1, keeps label smoothing "
+    "disabled following the final ablation, and relaxes freeze depth toward "
+    "Exp8 to test whether more capacity helps under the same sampling "
+    "protocol."
 )
 
 PRIMARY_METRIC = "Macro F1"
 BATCH_SIZE_EXP21 = BATCH_SIZE
 MAX_EPOCHS_EXP21 = MAX_EPOCHS
-
