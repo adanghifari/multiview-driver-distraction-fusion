@@ -1,0 +1,28 @@
+{
+  "experiment": "experiment_21C_side",
+  "view": "side",
+  "checkpoint_path": "D:\\Skripsi\\Experiment\\checkpoints\\experiment_21C\\side_best_exp21C.pt",
+  "history_path": "D:\\Skripsi\\Experiment\\results\\experiment_21C\\side_history_exp21C.json",
+  "hyperparameters": {
+    "backbone": "EfficientNetV2-S",
+    "optimizer": "AdamW",
+    "learning_rate": 2e-05,
+    "weight_decay": 0.0005,
+    "dropout": 0.3,
+    "label_smoothing": 0.0,
+    "scheduler": "ReduceLROnPlateau",
+    "early_stopping": true,
+    "early_stopping_patience": 6,
+    "num_stages_to_freeze": 4,
+    "metric_for_best_model": "validation loss",
+    "checkpoint_monitor": "val_loss"
+  },
+  "best_epoch": 15,
+  "best_validation_loss": 0.38643,
+  "best_validation_macro_f1": 0.76723,
+  "train_loss_at_best_epoch": 0.22808,
+  "validation_loss_at_best_epoch": 0.38643,
+  "train_validation_loss_gap_at_best_epoch": 0.15835,
+  "test_metrics": null,
+  "training_minutes": 16.9
+}

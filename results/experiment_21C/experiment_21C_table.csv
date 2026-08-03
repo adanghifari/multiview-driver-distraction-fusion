@@ -1,0 +1,5 @@
+method,accuracy,precision_macro,recall_macro,f1_macro,safe_to_phone,phone_to_safe,ece_binary,brier_score,generalization_status
+front_locked_exp21B,0.86335,0.77094,0.81117,0.78797,16,28,0.15551,0.12104,OK
+side_single_view_21C,0.85404,0.75608,0.76603,0.76085,22,25,0.09635,0.10573,OVERFIT
+average_fusion,0.89441,0.83075,0.80389,0.81626,20,14,,,
+adaptive_fusion,0.89441,0.83075,0.80389,0.81626,20,14,,,
