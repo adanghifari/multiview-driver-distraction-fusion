@@ -75,3 +75,40 @@ Experiment 21B dianggap lebih baik dari 21A jika:
 
 Experiment 21B dapat dipertimbangkan mengganti final_v1 hanya jika fusion Macro F1 melampaui 0.78059 dengan interpretasi error yang masuk akal.
 
+## Hasil Aktual
+
+Artefak hasil tersedia pada:
+
+- `results/experiment_21B/experiment_21B_summary.json`
+- `results/experiment_21B/experiment_21B_summary.md`
+- `results/experiment_21B/experiment_21B_table.csv`
+- `results/experiment_21B/single_view_predictions_exp21B.csv`
+- `results/experiment_21B/fusion_predictions_exp21B.csv`
+
+Ringkasan hasil:
+
+| Metode | Accuracy | Precision Macro | Recall Macro | Macro F1 | safe->phone | phone->safe | Status |
+|---|---:|---:|---:|---:|---:|---:|---|
+| Front single-view 21B | 0.86335 | 0.77094 | 0.81117 | 0.78797 | 16 | 28 | OK |
+| Side locked Exp21A | 0.82919 | 0.70960 | 0.63907 | 0.66044 | 39 | 16 | OK |
+| Average fusion | 0.86335 | 0.77556 | 0.74544 | 0.75880 | 26 | 18 | - |
+| Adaptive fusion | 0.86335 | 0.77556 | 0.74544 | 0.75880 | 26 | 18 | - |
+
+Training diagnostics:
+
+- Front best epoch 6, validation Macro F1 0.71443, train-validation loss gap 0.06605, sehingga status front membaik dari `BORDERLINE` pada Exp 21A menjadi `OK`.
+- Side tetap dikunci dari Exp 21A dengan status `OK`.
+
+Interpretasi sementara:
+
+- Stabilisasi front berhasil: Macro F1 front naik dari 0.77284 pada Exp 21A menjadi 0.78797 pada Exp 21B.
+- Front 21B juga melampaui final_v1 front reference 0.76626.
+- Namun average/adaptive fusion turun dari 0.76597 pada Exp 21A menjadi 0.75880 pada Exp 21B.
+- Fusion tetap mengurangi `phone_use -> safe_driving` error dari 28 pada front menjadi 18, tetapi menaikkan `safe_driving -> phone_use` dari 16 menjadi 26. Trade-off ini membuat Macro F1 fusion lebih rendah dibanding front single-view.
+- Adaptive fusion masih identik dengan average fusion pada prediksi akhir.
+
+Keputusan sementara:
+
+- Exp 21B berhasil memperbaiki front, tetapi belum memperbaiki fusion.
+- Karena proposal menekankan perbandingan single-view terbaik vs average/adaptive fusion, hasil ini penting: pada protokol stride 20, single-view front 21B menjadi kandidat paling kuat, sedangkan multi-view fusion belum memberi peningkatan.
+- Exp 21B belum mengganti final_v1 sebagai hasil fusion utama, tetapi dapat dijadikan bukti bahwa perbaikan front berhasil secara valid.
