@@ -1,0 +1,93 @@
+category,item,final_v1,final_v2,delta_or_change
+protocol,dataset,3MDAD,3MDAD,same
+protocol,task,binary safe_driving vs phone_use,binary safe_driving vs phone_use,same
+protocol,frame_stride,30,30,same
+protocol,threshold,0.50,0.50,same
+protocol,image_size,224x224,224x224,same
+protocol,batch_size,32,32,same
+protocol,max_epochs,30,30,same
+protocol,seed,SPLIT_SEED,SPLIT_SEED,same
+protocol,test_support,220,220,same
+front,source_recipe,Front14A revised,Exp21B front stabilization,changed
+front,pretrained,True,True,same
+front,optimizer,AdamW,AdamW,same
+front,learning_rate,3e-5,3e-5,same
+front,weight_decay,3e-4,5e-4,+2e-4
+front,dropout,0.4,0.4,same
+front,label_smoothing,0.0,0.0,same
+front,class_weights,"[2.5, 1.0]","[2.5, 1.0]",same
+front,freeze_depth,5,5,same
+front,scheduler,ReduceLROnPlateau,ReduceLROnPlateau,same
+front,scheduler_factor,0.5,0.5,same
+front,scheduler_patience,1,1,same
+front,patience,4,4,same
+front,checkpoint_monitor,validation Macro F1,validation Macro F1,same
+side,source_recipe,Side13,Exp21C side validation-loss stabilization,changed
+side,pretrained,True,True,same
+side,optimizer,AdamW,AdamW,same
+side,learning_rate,2e-5,2e-5,same
+side,weight_decay,2e-3,5e-4,-1.5e-3
+side,dropout,0.3,0.3,same
+side,label_smoothing,0.0,0.0,same
+side,class_weights,"[2.5, 1.0]","[2.5, 1.0]",same
+side,freeze_depth,4,4,same
+side,scheduler,ReduceLROnPlateau,ReduceLROnPlateau,same
+side,scheduler_factor,0.5,0.5,same
+side,scheduler_patience,1,2,+1
+side,patience,7,6,-1
+side,checkpoint_monitor,validation Macro F1,validation loss,changed
+result,front_accuracy,0.86364,0.86364,+0.00000
+result,front_precision_macro,0.77183,0.77183,+0.00000
+result,front_recall_macro,0.76111,0.76111,+0.00000
+result,front_macro_f1,0.76626,0.76626,+0.00000
+result,front_safe_to_phone,16,16,0
+result,front_phone_to_safe,14,14,0
+result,front_ece_binary,0.12513,0.12513,+0.00000
+result,front_brier_score,0.11311,0.11311,+0.00000
+result,side_accuracy,0.81364,0.80909,-0.00455
+result,side_precision_macro,0.66553,0.69857,+0.03304
+result,side_recall_macro,0.60417,0.74722,+0.14305
+result,side_macro_f1,0.62023,0.71590,+0.09567
+result,side_safe_to_phone,29,14,-15
+result,side_phone_to_safe,12,28,+16
+result,side_ece_binary,0.18263,0.14317,-0.03946
+result,side_brier_score,0.16537,0.13552,-0.02985
+result,average_fusion_accuracy,0.89091,0.90000,+0.00909
+result,average_fusion_precision_macro,0.86565,0.83967,-0.02598
+result,average_fusion_recall_macro,0.73889,0.81250,+0.07361
+result,average_fusion_macro_f1,0.78059,0.82504,+0.04445
+result,adaptive_fusion_accuracy,0.89091,0.90000,+0.00909
+result,adaptive_fusion_precision_macro,0.86565,0.83967,-0.02598
+result,adaptive_fusion_recall_macro,0.73889,0.81250,+0.07361
+result,adaptive_fusion_macro_f1,0.78059,0.82504,+0.04445
+result,average_fusion_safe_to_phone,20,13,-7
+result,average_fusion_phone_to_safe,4,9,+5
+diagnostic,front_best_epoch,9,9,same
+diagnostic,front_best_validation_macro_f1,0.72581,0.72581,+0.00000
+diagnostic,front_train_loss_at_best_epoch,0.47353,0.47353,+0.00000
+diagnostic,front_validation_loss_at_best_epoch,0.51736,0.51736,+0.00000
+diagnostic,front_train_validation_loss_gap,0.04383,0.04383,+0.00000
+diagnostic,front_generalization_status,OK,OK,same
+diagnostic,front_metric_for_best_model,validation Macro F1,validation Macro F1,same
+diagnostic,side_best_epoch,11,25,+14
+diagnostic,side_best_validation_macro_f1,0.75000,0.73653,-0.01347
+diagnostic,side_train_loss_at_best_epoch,0.50153,0.20284,-0.29869
+diagnostic,side_validation_loss_at_best_epoch,0.56022,0.42690,-0.13332
+diagnostic,side_train_validation_loss_gap,0.05869,0.22406,+0.16537
+diagnostic,side_generalization_status,OK,OVERFIT,worse
+diagnostic,side_metric_for_best_model,validation Macro F1,validation loss,changed
+statistics,mcnemar_p_value,NA,0.77441,not significant
+statistics,delong_roc_auc_p_value,NA,0.85730,not significant
+statistics,bootstrap_macro_f1_delta_ci95,NA,"[-0.01040, 0.11005]",crosses zero
+fusion_variant_final_v2,average_fusion_roc_auc,NA,0.86847,probability-level metric
+fusion_variant_final_v2,adaptive_softmax_roc_auc,NA,0.86486,probability-level metric
+fusion_variant_final_v2,adaptive_linear_normalization_roc_auc,NA,0.84639,probability-level metric
+fusion_variant_final_v2,average_fusion_pr_auc,NA,0.96462,probability-level metric
+fusion_variant_final_v2,adaptive_softmax_pr_auc,NA,0.96326,probability-level metric
+fusion_variant_final_v2,adaptive_linear_normalization_pr_auc,NA,0.95122,probability-level metric
+fusion_variant_final_v2,average_vs_adaptive_softmax_hard_prediction_diff,NA,0,same decisions at threshold 0.50
+fusion_variant_final_v2,average_vs_adaptive_softmax_max_probability_abs_diff,NA,0.05372269,probabilities not identical
+fusion_variant_final_v2,average_vs_adaptive_linear_hard_prediction_diff,NA,0,same decisions at threshold 0.50
+fusion_variant_final_v2,average_vs_adaptive_linear_max_probability_abs_diff,NA,0.21984770,probabilities not identical
+fusion_variant_final_v2,adaptive_softmax_vs_adaptive_linear_hard_prediction_diff,NA,0,same decisions at threshold 0.50
+fusion_variant_final_v2,adaptive_softmax_vs_adaptive_linear_max_probability_abs_diff,NA,0.16739893,probabilities not identical

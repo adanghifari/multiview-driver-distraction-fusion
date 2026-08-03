@@ -1,0 +1,6 @@
+test,metric,final_v1,final_v2,delta_final_v2_minus_final_v1,p_value,significant_alpha_0_05,ci95_low,ci95_high
+McNemar exact,decision correctness @ threshold 0.50,unique_correct=5,unique_correct=7,2.0,0.7744140625,False,,
+DeLong,ROC-AUC,0.86556,0.86847,0.00292,0.8573024452541826,False,,
+Paired stratified bootstrap,macro_f1_delta,,,0.0452,0.1176,False,-0.0104,0.11005
+Paired stratified bootstrap,roc_auc_delta,,,0.00275,0.8552,False,-0.03084,0.03444
+Paired stratified bootstrap,pr_auc_delta,,,0.00163,0.7192,False,-0.00783,0.0111

@@ -1,0 +1,220 @@
+{
+  "experiment": "final_v2_retrain",
+  "analysis": "Average fusion vs adaptive probability variants on the same Final v2 predictions",
+  "threshold": 0.5,
+  "support": 220,
+  "positive_support": 180,
+  "negative_support": 40,
+  "bootstrap": {
+    "n_bootstrap": 2000,
+    "random_seed": 42
+  },
+  "methods": {
+    "Average Fusion": {
+      "accuracy": 0.9,
+      "precision_macro": 0.83967,
+      "recall_macro": 0.8125,
+      "f1_macro": 0.82504,
+      "confusion_matrix": [
+        [
+          27,
+          13
+        ],
+        [
+          9,
+          171
+        ]
+      ],
+      "safe_to_phone": 13,
+      "phone_to_safe": 9,
+      "roc_auc": 0.86847,
+      "pr_auc": 0.96462,
+      "ece_binary": 0.13322,
+      "brier_score": 0.1078,
+      "bootstrap_ci": {
+        "macro_f1": {
+          "mean": 0.82389,
+          "ci95_low": 0.75488,
+          "ci95_high": 0.89097
+        },
+        "roc_auc": {
+          "mean": 0.86777,
+          "ci95_low": 0.80152,
+          "ci95_high": 0.92625
+        },
+        "pr_auc": {
+          "mean": 0.96457,
+          "ci95_low": 0.94599,
+          "ci95_high": 0.98069
+        }
+      }
+    },
+    "Adaptive Softmax": {
+      "accuracy": 0.9,
+      "precision_macro": 0.83967,
+      "recall_macro": 0.8125,
+      "f1_macro": 0.82504,
+      "confusion_matrix": [
+        [
+          27,
+          13
+        ],
+        [
+          9,
+          171
+        ]
+      ],
+      "safe_to_phone": 13,
+      "phone_to_safe": 9,
+      "roc_auc": 0.86486,
+      "pr_auc": 0.96326,
+      "ece_binary": 0.13446,
+      "brier_score": 0.10524,
+      "bootstrap_ci": {
+        "macro_f1": {
+          "mean": 0.82389,
+          "ci95_low": 0.75488,
+          "ci95_high": 0.89097
+        },
+        "roc_auc": {
+          "mean": 0.86427,
+          "ci95_low": 0.79569,
+          "ci95_high": 0.92444
+        },
+        "pr_auc": {
+          "mean": 0.96325,
+          "ci95_low": 0.94408,
+          "ci95_high": 0.98009
+        }
+      }
+    },
+    "Adaptive Linear Normalization": {
+      "accuracy": 0.9,
+      "precision_macro": 0.83967,
+      "recall_macro": 0.8125,
+      "f1_macro": 0.82504,
+      "confusion_matrix": [
+        [
+          27,
+          13
+        ],
+        [
+          9,
+          171
+        ]
+      ],
+      "safe_to_phone": 13,
+      "phone_to_safe": 9,
+      "roc_auc": 0.84639,
+      "pr_auc": 0.95122,
+      "ece_binary": 0.10559,
+      "brier_score": 0.10071,
+      "bootstrap_ci": {
+        "macro_f1": {
+          "mean": 0.82389,
+          "ci95_low": 0.75488,
+          "ci95_high": 0.89097
+        },
+        "roc_auc": {
+          "mean": 0.84644,
+          "ci95_low": 0.7654,
+          "ci95_high": 0.91709
+        },
+        "pr_auc": {
+          "mean": 0.95175,
+          "ci95_low": 0.92259,
+          "ci95_high": 0.97689
+        }
+      }
+    }
+  },
+  "pairwise": {
+    "Average Fusion vs Adaptive Softmax": {
+      "hard_prediction_differences": 0,
+      "max_probability_abs_diff": 0.05372269,
+      "mean_probability_abs_diff": 0.01120039,
+      "mcnemar_exact": {
+        "table_both_correct_a_only_b_only_both_wrong": [
+          [
+            198,
+            0
+          ],
+          [
+            0,
+            22
+          ]
+        ],
+        "a_only_correct": 0,
+        "b_only_correct": 0,
+        "p_value": 1.0,
+        "significant_alpha_0_05": false
+      },
+      "delong_roc_auc": {
+        "auc_method_a": 0.86847,
+        "auc_method_b": 0.86486,
+        "delta_auc_b_minus_a": -0.00361,
+        "z": 0.99275,
+        "p_value": 0.32083063088485053,
+        "significant_alpha_0_05": false
+      }
+    },
+    "Average Fusion vs Adaptive Linear Normalization": {
+      "hard_prediction_differences": 0,
+      "max_probability_abs_diff": 0.2198477,
+      "mean_probability_abs_diff": 0.04717839,
+      "mcnemar_exact": {
+        "table_both_correct_a_only_b_only_both_wrong": [
+          [
+            198,
+            0
+          ],
+          [
+            0,
+            22
+          ]
+        ],
+        "a_only_correct": 0,
+        "b_only_correct": 0,
+        "p_value": 1.0,
+        "significant_alpha_0_05": false
+      },
+      "delong_roc_auc": {
+        "auc_method_a": 0.86847,
+        "auc_method_b": 0.84639,
+        "delta_auc_b_minus_a": -0.02208,
+        "z": 1.06145,
+        "p_value": 0.28848388760833443,
+        "significant_alpha_0_05": false
+      }
+    },
+    "Adaptive Softmax vs Adaptive Linear Normalization": {
+      "hard_prediction_differences": 0,
+      "max_probability_abs_diff": 0.16739893,
+      "mean_probability_abs_diff": 0.035978,
+      "mcnemar_exact": {
+        "table_both_correct_a_only_b_only_both_wrong": [
+          [
+            198,
+            0
+          ],
+          [
+            0,
+            22
+          ]
+        ],
+        "a_only_correct": 0,
+        "b_only_correct": 0,
+        "p_value": 1.0,
+        "significant_alpha_0_05": false
+      },
+      "delong_roc_auc": {
+        "auc_method_a": 0.86486,
+        "auc_method_b": 0.84639,
+        "delta_auc_b_minus_a": -0.01847,
+        "z": 1.03418,
+        "p_value": 0.3010535914930208,
+        "significant_alpha_0_05": false
+      }
+    }
+  }
+}

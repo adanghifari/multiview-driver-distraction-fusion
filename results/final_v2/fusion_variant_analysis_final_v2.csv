@@ -1,0 +1,4 @@
+method,accuracy,precision_macro,recall_macro,f1_macro,roc_auc,pr_auc,ece_binary,brier_score,safe_to_phone,phone_to_safe,confusion_matrix,bootstrap_macro_f1_ci95,bootstrap_roc_auc_ci95,bootstrap_pr_auc_ci95
+Average Fusion,0.9,0.83967,0.8125,0.82504,0.86847,0.96462,0.13322,0.1078,13,9,"[[27, 13], [9, 171]]","[0.75488, 0.89097]","[0.80152, 0.92625]","[0.94599, 0.98069]"
+Adaptive Softmax,0.9,0.83967,0.8125,0.82504,0.86486,0.96326,0.13446,0.10524,13,9,"[[27, 13], [9, 171]]","[0.75488, 0.89097]","[0.79569, 0.92444]","[0.94408, 0.98009]"
+Adaptive Linear Normalization,0.9,0.83967,0.8125,0.82504,0.84639,0.95122,0.10559,0.10071,13,9,"[[27, 13], [9, 171]]","[0.75488, 0.89097]","[0.7654, 0.91709]","[0.92259, 0.97689]"
