@@ -1,0 +1,26 @@
+{
+  "experiment": "experiment_21_front",
+  "view": "front",
+  "checkpoint_path": "D:\\Skripsi\\Experiment\\checkpoints\\experiment_21\\front_best_exp21.pt",
+  "history_path": "D:\\Skripsi\\Experiment\\results\\experiment_21\\front_history_exp21.json",
+  "hyperparameters": {
+    "backbone": "EfficientNetV2-S",
+    "optimizer": "AdamW",
+    "learning_rate": 3e-05,
+    "weight_decay": 0.0005,
+    "dropout": 0.4,
+    "label_smoothing": 0.0,
+    "class_weight_gamma": 1.0,
+    "scheduler": "ReduceLROnPlateau",
+    "early_stopping": true,
+    "early_stopping_patience": 4,
+    "num_stages_to_freeze": 4,
+    "metric_for_best_model": "validation Macro F1"
+  },
+  "best_epoch": 6,
+  "best_validation_macro_f1": 0.69548,
+  "train_loss_at_best_epoch": 0.41393,
+  "validation_loss_at_best_epoch": 0.51268,
+  "train_validation_loss_gap_at_best_epoch": 0.09876,
+  "test_metrics": null
+}

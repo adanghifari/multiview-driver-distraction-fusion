@@ -1,0 +1,40 @@
+{
+  "average_fusion": {
+    "accuracy": 0.86646,
+    "precision_macro": 0.78063,
+    "recall_macro": 0.75392,
+    "f1_macro": 0.76597,
+    "confusion_matrix": [
+      [
+        34,
+        25
+      ],
+      [
+        18,
+        245
+      ]
+    ],
+    "safe_to_phone": 25,
+    "phone_to_safe": 18
+  },
+  "adaptive_fusion": {
+    "accuracy": 0.86646,
+    "precision_macro": 0.78063,
+    "recall_macro": 0.75392,
+    "f1_macro": 0.76597,
+    "confusion_matrix": [
+      [
+        34,
+        25
+      ],
+      [
+        18,
+        245
+      ]
+    ],
+    "safe_to_phone": 25,
+    "phone_to_safe": 18
+  },
+  "adaptive_different_from_average": 0,
+  "support": 322
+}

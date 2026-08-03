@@ -76,3 +76,40 @@ Experiment 21 dapat dipertimbangkan sebagai kandidat pengganti final_v1 jika:
 ## Catatan Interpretasi
 
 Perbandingan dengan Exp 8 dan final_v1 harus dibaca sebagai konteks karena stride dan support test berbeda. Klaim utama Experiment 21 berada pada artefak `results/experiment_21/`, bukan pada angka historis Exp 8.
+
+## Hasil Aktual
+
+Artefak hasil tersedia pada:
+
+- `results/experiment_21/experiment_21_summary.json`
+- `results/experiment_21/experiment_21_summary.md`
+- `results/experiment_21/experiment_21_table.csv`
+- `results/experiment_21/single_view_predictions_exp21.csv`
+- `results/experiment_21/fusion_predictions_exp21.csv`
+
+Ringkasan hasil:
+
+| Metode | Accuracy | Precision Macro | Recall Macro | Macro F1 | safe->phone | phone->safe | Status |
+|---|---:|---:|---:|---:|---:|---:|---|
+| Front single-view | 0.84783 | 0.75131 | 0.80824 | 0.77284 | 15 | 34 | BORDERLINE |
+| Side single-view | 0.82919 | 0.70960 | 0.63907 | 0.66044 | 39 | 16 | OK |
+| Average fusion | 0.86646 | 0.78063 | 0.75392 | 0.76597 | 25 | 18 | - |
+| Adaptive fusion | 0.86646 | 0.78063 | 0.75392 | 0.76597 | 25 | 18 | - |
+
+Training diagnostics:
+
+- Front best epoch 6, validation Macro F1 0.69548, train-validation loss gap 0.09876, sehingga dikategorikan `BORDERLINE`.
+- Side best epoch 21, validation Macro F1 0.74767, train-validation loss gap 0.05569, sehingga dikategorikan `OK`.
+
+Interpretasi sementara:
+
+- Exp 21 meningkatkan front single-view sedikit dibanding final_v1 reference front Macro F1 0.76626 menjadi 0.77284.
+- Fusion Exp 21 belum mengungguli final_v1 reference fusion Macro F1 0.78059; average/adaptive fusion hanya mencapai 0.76597.
+- Fusion mengurangi `phone_use -> safe_driving` error dari 34 pada front menjadi 18, tetapi menaikkan `safe_driving -> phone_use` dari 15 menjadi 25. Trade-off ini membuat Macro F1 fusion turun dibanding front single-view.
+- Adaptive fusion tetap identik dengan average fusion pada prediksi akhir.
+
+Keputusan sementara:
+
+- Exp 21A tidak mengganti final_v1.
+- Konfigurasi ini tetap berguna karena menunjukkan stride 20 dan freeze lebih fleksibel tidak cukup untuk memperbaiki fusion baseline.
+- Varian lanjutan yang masuk akal adalah menguji konfigurasi yang mempertahankan front improvement tetapi mengurangi dampak side terhadap false alarm `safe_driving`.
