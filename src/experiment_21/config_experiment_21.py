@@ -17,7 +17,7 @@ FRONT_CONFIG = {
     "weight_decay": 5e-4,
     "dropout": 0.4,
     "label_smoothing": 0.0,
-    "num_stages_to_freeze": 4,
+    "num_stages_to_freeze": 5,
     "early_stopping_patience": 4,
     "checkpoint_path": CHECKPOINTS_DIR_EXP21 / "front_best_exp21.pt",
     "history_path": RESULTS_DIR_EXP21 / "front_history_exp21.json",
@@ -30,8 +30,11 @@ SIDE_CONFIG = {
     "weight_decay": 5e-4,
     "dropout": 0.3,
     "label_smoothing": 0.0,
-    "num_stages_to_freeze": 3,
-    "early_stopping_patience": 7,
+    "num_stages_to_freeze": 4,
+    "early_stopping_patience": 6,
+    "lr_scheduler_patience": 2,
+    "class_weights": [2.5, 1.0],
+    "checkpoint_monitor": "val_loss",
     "checkpoint_path": CHECKPOINTS_DIR_EXP21 / "side_best_exp21.pt",
     "history_path": RESULTS_DIR_EXP21 / "side_history_exp21.json",
     "summary_path": RESULTS_DIR_EXP21 / "side_train_summary_exp21.json",
@@ -56,12 +59,10 @@ REFERENCE_EXP8 = {
 }
 
 PIPELINE_DESCRIPTION = (
-    "Experiment 21 adapts the strongest exploratory signal from Experiment 8 "
-    "into a more disciplined final-style protocol. It uses stride 30 to make "
-    "the comparison apple-to-apple with final_v1, keeps label smoothing "
-    "disabled following the final ablation, and relaxes freeze depth toward "
-    "Exp8 to test whether more capacity helps under the same sampling "
-    "protocol."
+    "Experiment 21 applies the best stride-20 recipe under the final_v1 stride "
+    "30 sampling protocol: the front view uses the 21B stabilization recipe, "
+    "the side view uses the 21C validation-loss stabilization recipe, and "
+    "only proposal-compliant average/adaptive fusion is evaluated."
 )
 
 PRIMARY_METRIC = "Macro F1"

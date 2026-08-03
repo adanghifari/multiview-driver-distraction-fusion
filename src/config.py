@@ -199,14 +199,13 @@ EXPERIMENT_CONFIGS = {
         "weight_decay": 5e-4,
         "dropout": 0.4,
         "label_smoothing": 0.0,
-        "num_stages_to_freeze": 4,
+        "num_stages_to_freeze": 5,
         "early_stopping_patience": 4,
         "lr_scheduler_patience": 1,
         "class_weights": CLASS_WEIGHTS,
         "description": (
-            "Experiment 21 front: Exp8-informed final protocol with stride 30, "
-            "moderate weight decay, no label smoothing, and a slightly less frozen "
-            "front backbone than final_v1."
+            "Experiment 21 front: stride-30 apple-to-apple protocol using the "
+            "front stabilization recipe from Experiment 21B."
         ),
     },
     "experiment_21_side": {
@@ -218,14 +217,13 @@ EXPERIMENT_CONFIGS = {
         "weight_decay": 5e-4,
         "dropout": 0.3,
         "label_smoothing": 0.0,
-        "num_stages_to_freeze": 3,
-        "early_stopping_patience": 7,
-        "lr_scheduler_patience": 1,
-        "class_weights": CLASS_WEIGHTS,
+        "num_stages_to_freeze": 4,
+        "early_stopping_patience": 6,
+        "lr_scheduler_patience": 2,
+        "class_weights": [2.5, 1.0],
         "description": (
-            "Experiment 21 side: Exp8-informed final protocol with stride 30, "
-            "moderate weight decay, no label smoothing, and side freeze depth "
-            "relaxed from final_v1."
+            "Experiment 21 side: stride-30 apple-to-apple protocol using the "
+            "validation-loss side stabilization recipe from Experiment 21C."
         ),
     },
     "experiment_21B_front": {
