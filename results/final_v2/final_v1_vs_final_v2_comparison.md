@@ -118,6 +118,18 @@ Analisis ini memakai prediksi Final v2 yang sama dan threshold 0.50. Pada keputu
 
 Catatan: adaptive confidence utama di pipeline Final v2 adalah Adaptive Softmax sesuai rumus proposal. Adaptive Linear Normalization disimpan sebagai analisis tambahan untuk menunjukkan bahwa normalisasi bobot confidence biasa mengubah skor probabilitas, meskipun pada threshold 0.50 keputusan akhirnya tetap sama pada test set ini.
 
+## Threshold Exploration Final v2
+
+Eksplorasi threshold dilakukan tanpa retraining. Threshold dipilih dari validation set pada grid 0.01 sampai 0.99, lalu dievaluasi sekali pada test set. Hasil utama Final v2 tetap menggunakan threshold 0.50. Best test/oracle threshold juga dicatat hanya sebagai analisis deskriptif, bukan protocol selection resmi.
+
+| Method | Best Val Threshold | Val Macro F1 | Test Macro F1 @0.50 | Test Macro F1 Selected | Delta | Best Test/Oracle Threshold | Best Test/Oracle Macro F1 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Average Fusion | 0.51 | 0.76291 | 0.82504 | 0.81897 | -0.00607 | 0.50 | 0.82504 |
+| Adaptive Softmax | 0.51 | 0.76291 | 0.82504 | 0.82504 | +0.00000 | 0.50 | 0.82504 |
+| Adaptive Linear Normalization | 0.51 | 0.76291 | 0.82504 | 0.82504 | +0.00000 | 0.50 | 0.82504 |
+
+Interpretasi: threshold tuning berbasis validation tidak memberikan peningkatan Macro F1 test di atas baseline Final v2 threshold 0.50. Bahkan pada analisis deskriptif/oracle test, threshold terbaik tetap 0.50 untuk semua metode. Untuk Average Fusion, threshold 0.51 justru menurunkan Macro F1 karena `phone->safe` naik dari 9 ke 10. Untuk Adaptive Softmax dan Adaptive Linear Normalization, threshold 0.51 menghasilkan keputusan test yang sama dengan baseline.
+
 ## Interpretasi
 
 Final v2 unggul secara deskriptif terhadap Final v1 pada Macro F1 fusion (+0.04445), dan peningkatan utama berasal dari perbaikan side view. Namun, uji McNemar, DeLong, dan bootstrap belum menunjukkan signifikansi statistik pada alpha 0.05. Karena itu, klaim yang aman adalah Final v2 memberikan peningkatan empiris/deskriptif pada protokol evaluasi yang sama, bukan bukti superioritas statistik yang kuat.
@@ -130,4 +142,7 @@ Final v2 unggul secara deskriptif terhadap Final v1 pada Macro F1 fusion (+0.044
 - `results/final_v2/fusion_final_v2_predictions.csv`
 - `results/final_v2/fusion_variant_analysis_final_v2.json`
 - `results/final_v2/fusion_variant_analysis_final_v2.csv`
+- `results/final_v2/threshold_exploration/threshold_summary_final_v2.json`
+- `results/final_v2/threshold_exploration/threshold_search_final_v2.csv`
+- `results/final_v2/threshold_exploration/threshold_notes_final_v2.md`
 - `results/final_v2/statistical_tests_vs_final_v1/final_v1_vs_final_v2_statistics_summary.csv`
