@@ -1,0 +1,145 @@
+{
+  "experiment": "experiment_21D",
+  "description": "Experiment 21D keeps the OK front model from Experiment 21 stride30-best locked and retrains only the side view with stronger regularization. The goal is diagnostic: test whether reducing side overfit preserves, improves, or lowers fusion performance.",
+  "front_locked_exp21": {
+    "accuracy": 0.86364,
+    "precision_macro": 0.77183,
+    "recall_macro": 0.76111,
+    "f1_macro": 0.76626,
+    "confusion_matrix": [
+      [
+        24,
+        16
+      ],
+      [
+        14,
+        166
+      ]
+    ],
+    "safe_to_phone": 16,
+    "phone_to_safe": 14,
+    "view": "front_locked_exp21",
+    "checkpoint_path": "D:\\Skripsi\\Experiment\\checkpoints\\experiment_21\\front_best_exp21.pt",
+    "best_epoch": 9,
+    "val_macro_f1": 0.72581,
+    "ece_binary": 0.12513,
+    "brier_score": 0.11311,
+    "support": 220
+  },
+  "side_single_view": {
+    "accuracy": 0.83636,
+    "precision_macro": 0.72864,
+    "recall_macro": 0.75417,
+    "f1_macro": 0.73985,
+    "confusion_matrix": [
+      [
+        25,
+        15
+      ],
+      [
+        21,
+        159
+      ]
+    ],
+    "safe_to_phone": 15,
+    "phone_to_safe": 21,
+    "view": "side_regularized",
+    "checkpoint_path": "D:\\Skripsi\\Experiment\\checkpoints\\experiment_21D\\side_best_exp21D.pt",
+    "checkpoint_monitor": "val_loss",
+    "best_epoch": 26,
+    "val_loss": 0.41766,
+    "val_macro_f1": 0.75752,
+    "ece_binary": 0.12438,
+    "brier_score": 0.12192,
+    "support": 220
+  },
+  "fusion": {
+    "average_fusion": {
+      "accuracy": 0.89545,
+      "precision_macro": 0.83868,
+      "recall_macro": 0.79028,
+      "f1_macro": 0.81113,
+      "confusion_matrix": [
+        [
+          25,
+          15
+        ],
+        [
+          8,
+          172
+        ]
+      ],
+      "safe_to_phone": 15,
+      "phone_to_safe": 8
+    },
+    "adaptive_fusion": {
+      "accuracy": 0.89545,
+      "precision_macro": 0.83868,
+      "recall_macro": 0.79028,
+      "f1_macro": 0.81113,
+      "confusion_matrix": [
+        [
+          25,
+          15
+        ],
+        [
+          8,
+          172
+        ]
+      ],
+      "safe_to_phone": 15,
+      "phone_to_safe": 8
+    },
+    "adaptive_different_from_average": 0,
+    "support": 220,
+    "front_checkpoint": "locked_exp21_stride30_best",
+    "side_checkpoint": "exp21D_regularized_val_loss_monitor"
+  },
+  "training_diagnostics": {
+    "front_locked_exp21": {
+      "best_epoch": 9,
+      "best_validation_loss": null,
+      "best_validation_macro_f1": 0.72581,
+      "train_loss_at_best_epoch": 0.47353,
+      "validation_loss_at_best_epoch": 0.51736,
+      "train_validation_loss_gap_at_best_epoch": 0.04383,
+      "generalization_status": "OK"
+    },
+    "side": {
+      "best_epoch": 26,
+      "best_validation_loss": 0.41766,
+      "best_validation_macro_f1": 0.75752,
+      "train_loss_at_best_epoch": 0.20282,
+      "validation_loss_at_best_epoch": 0.41766,
+      "train_validation_loss_gap_at_best_epoch": 0.21484,
+      "generalization_status": "OVERFIT"
+    }
+  },
+  "reference_exp21_stride30_best": {
+    "front_f1_macro": 0.76626,
+    "side_f1_macro": 0.7159,
+    "average_fusion_f1_macro": 0.82504,
+    "adaptive_fusion_f1_macro": 0.82504,
+    "front_generalization_status": "OK",
+    "side_generalization_status": "OVERFIT",
+    "side_train_validation_loss_gap": 0.22406,
+    "frame_stride": 30,
+    "test_support": 220
+  },
+  "reference_final_v1": {
+    "front_f1_macro": 0.76626,
+    "side_f1_macro": 0.62023,
+    "average_fusion_f1_macro": 0.78059,
+    "adaptive_fusion_f1_macro": 0.78059,
+    "frame_stride": 30,
+    "test_support": 220
+  },
+  "reference_exp8": {
+    "front_f1_macro": 0.86314,
+    "side_f1_macro": 0.77124,
+    "average_fusion_f1_macro": 0.87494,
+    "adaptive_fusion_f1_macro": 0.87494,
+    "frame_stride": 15,
+    "test_support": 419
+  }
+}

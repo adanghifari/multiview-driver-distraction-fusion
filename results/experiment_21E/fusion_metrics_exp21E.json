@@ -1,0 +1,42 @@
+{
+  "average_fusion": {
+    "accuracy": 0.9,
+    "precision_macro": 0.83967,
+    "recall_macro": 0.8125,
+    "f1_macro": 0.82504,
+    "confusion_matrix": [
+      [
+        27,
+        13
+      ],
+      [
+        9,
+        171
+      ]
+    ],
+    "safe_to_phone": 13,
+    "phone_to_safe": 9
+  },
+  "adaptive_fusion": {
+    "accuracy": 0.9,
+    "precision_macro": 0.83967,
+    "recall_macro": 0.8125,
+    "f1_macro": 0.82504,
+    "confusion_matrix": [
+      [
+        27,
+        13
+      ],
+      [
+        9,
+        171
+      ]
+    ],
+    "safe_to_phone": 13,
+    "phone_to_safe": 9
+  },
+  "adaptive_different_from_average": 0,
+  "support": 220,
+  "front_checkpoint": "locked_exp21_stride30_best",
+  "side_checkpoint": "exp21E_light_regularized_val_loss_monitor"
+}

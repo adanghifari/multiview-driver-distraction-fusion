@@ -1,0 +1,27 @@
+{
+  "accuracy": 0.83636,
+  "precision_macro": 0.72864,
+  "recall_macro": 0.75417,
+  "f1_macro": 0.73985,
+  "confusion_matrix": [
+    [
+      25,
+      15
+    ],
+    [
+      21,
+      159
+    ]
+  ],
+  "safe_to_phone": 15,
+  "phone_to_safe": 21,
+  "view": "side_regularized",
+  "checkpoint_path": "D:\\Skripsi\\Experiment\\checkpoints\\experiment_21D\\side_best_exp21D.pt",
+  "checkpoint_monitor": "val_loss",
+  "best_epoch": 26,
+  "val_loss": 0.41766,
+  "val_macro_f1": 0.75752,
+  "ece_binary": 0.12438,
+  "brier_score": 0.12192,
+  "support": 220
+}
