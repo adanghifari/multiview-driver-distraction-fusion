@@ -190,4 +190,42 @@ EXPERIMENT_CONFIGS = {
             "recall while keeping the same binary setup, optimizer family, and fusion pipeline."
         ),
     },
+    "experiment_21_front": {
+        "view": "front",
+        "checkpoint_name": "front_best_exp21.pt",
+        "history_name": "front_history_exp21.json",
+        "summary_name": "experiment_21_front_metrics.json",
+        "learning_rate": 3e-5,
+        "weight_decay": 5e-4,
+        "dropout": 0.4,
+        "label_smoothing": 0.0,
+        "num_stages_to_freeze": 4,
+        "early_stopping_patience": 4,
+        "lr_scheduler_patience": 1,
+        "class_weights": CLASS_WEIGHTS,
+        "description": (
+            "Experiment 21 front: Exp8-informed final protocol with stride 20, "
+            "moderate weight decay, no label smoothing, and a slightly less frozen "
+            "front backbone than final_v1."
+        ),
+    },
+    "experiment_21_side": {
+        "view": "side",
+        "checkpoint_name": "side_best_exp21.pt",
+        "history_name": "side_history_exp21.json",
+        "summary_name": "experiment_21_side_metrics.json",
+        "learning_rate": 2e-5,
+        "weight_decay": 5e-4,
+        "dropout": 0.3,
+        "label_smoothing": 0.0,
+        "num_stages_to_freeze": 3,
+        "early_stopping_patience": 7,
+        "lr_scheduler_patience": 1,
+        "class_weights": CLASS_WEIGHTS,
+        "description": (
+            "Experiment 21 side: Exp8-informed final protocol with stride 20, "
+            "moderate weight decay, no label smoothing, and side freeze depth "
+            "relaxed from final_v1."
+        ),
+    },
 }
