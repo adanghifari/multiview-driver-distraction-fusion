@@ -2,16 +2,15 @@ import json
 
 from src.experiment_21.config_experiment_21 import (
     CHECKPOINTS_DIR_EXP21,
+    FRAME_STRIDE_EXP21,
     FRONT_CONFIG,
     MAX_EPOCHS_EXP21,
     RESULTS_DIR_EXP21,
     SIDE_CONFIG,
 )
-from src.experiment_21.runtime import apply_experiment_21_runtime
 
 
 def train_front_exp21():
-    apply_experiment_21_runtime()
     from src.train import run_training
 
     CHECKPOINTS_DIR_EXP21.mkdir(parents=True, exist_ok=True)
@@ -23,11 +22,11 @@ def train_front_exp21():
         checkpoint_path=str(FRONT_CONFIG["checkpoint_path"]),
         history_path=str(FRONT_CONFIG["history_path"]),
         summary_path=str(FRONT_CONFIG["summary_path"]),
+        frame_stride=FRAME_STRIDE_EXP21,
     )
 
 
 def train_side_exp21():
-    apply_experiment_21_runtime()
     from src.train import run_training
 
     CHECKPOINTS_DIR_EXP21.mkdir(parents=True, exist_ok=True)
@@ -39,6 +38,7 @@ def train_side_exp21():
         checkpoint_path=str(SIDE_CONFIG["checkpoint_path"]),
         history_path=str(SIDE_CONFIG["history_path"]),
         summary_path=str(SIDE_CONFIG["summary_path"]),
+        frame_stride=FRAME_STRIDE_EXP21,
     )
 
 
@@ -62,4 +62,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

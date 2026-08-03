@@ -13,7 +13,6 @@ from src.experiment_21.config_experiment_21 import (
     SIDE_CONFIG,
     THRESHOLD,
 )
-from src.experiment_21.runtime import apply_experiment_21_runtime
 from src.final_v1.dataset_final_v1 import PairedFinalV1Dataset
 from src.final_v1.metrics_final_v1 import compute_brier_score, compute_ece_binary, compute_metrics
 from torch.utils.data import DataLoader
@@ -23,7 +22,6 @@ log = logging.getLogger(__name__)
 
 
 def load_paired_split_dataframe_exp21(split_name: str) -> pd.DataFrame:
-    apply_experiment_21_runtime()
     from src.experiment_21.config_experiment_21 import FRAME_STRIDE_EXP21
 
     if split_name not in {"val", "test"}:
@@ -58,7 +56,6 @@ def collect_predictions(model, images, device):
 
 
 def run_single_view_evaluation_exp21():
-    apply_experiment_21_runtime()
     RESULTS_DIR_EXP21.mkdir(parents=True, exist_ok=True)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     df_test, loader = get_paired_loader_exp21("test")
@@ -136,4 +133,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

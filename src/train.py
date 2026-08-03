@@ -62,6 +62,7 @@ from src.config import (
     DROPOUT_SIDE,
     SPLIT_SEED,
     EXPERIMENT_CONFIGS,
+    FRAME_STRIDE,
 )
 from src.dataset import get_all_dataloaders, load_split_dataframe
 from src.model import build_model
@@ -211,7 +212,8 @@ class EarlyStopping:
 
 def run_training(view: str, max_epochs: int = MAX_EPOCHS, exp_id: str = "",
                  lr: float = None, experiment: str = "", class_weight_gamma: float = 1.0,
-                 checkpoint_path: str = None, history_path: str = None, summary_path: str = None):
+                 checkpoint_path: str = None, history_path: str = None, summary_path: str = None,
+                 frame_stride: int = FRAME_STRIDE):
     """Latih model single-view dan simpan checkpoint + history."""
     seed_everything(SPLIT_SEED)
 
@@ -268,6 +270,7 @@ def run_training(view: str, max_epochs: int = MAX_EPOCHS, exp_id: str = "",
     log.info(f"  ClassWeight γ  : {class_weight_gamma:.2f}")
     log.info(f"  Frozen Stages  : {freeze_stages}")
     log.info(f"  EarlyStopping  : patience={early_stopping_patience}")
+    log.info(f"  Frame Stride   : {frame_stride}")
     log.info(f"  Experiment     : {experiment if experiment else 'default'}")
     log.info(f"  Experiment ID  : {exp_id if exp_id else 'None'}")
     log.info("=" * 45 + "\n")
@@ -279,7 +282,7 @@ def run_training(view: str, max_epochs: int = MAX_EPOCHS, exp_id: str = "",
         log.info("GPU: %s", torch.cuda.get_device_name(0))
 
     # ── DataLoaders ──
-    loaders = get_all_dataloaders(view)
+    loaders = get_all_dataloaders(view, frame_stride=frame_stride)
     train_loader = loaders["train"]
     val_loader = loaders["val"]
 
@@ -414,6 +417,7 @@ def run_training(view: str, max_epochs: int = MAX_EPOCHS, exp_id: str = "",
                     "lr_scheduler_patience": lr_scheduler_patience,
                     "class_weights": class_weights.cpu().tolist(),
                     "class_weight_gamma": class_weight_gamma,
+                    "frame_stride": frame_stride,
                 },
             }, ckpt_path)
 
@@ -466,6 +470,7 @@ def run_training(view: str, max_epochs: int = MAX_EPOCHS, exp_id: str = "",
                 "early_stopping_patience": early_stopping_patience,
                 "num_stages_to_freeze": freeze_stages,
                 "metric_for_best_model": "validation Macro F1",
+                "frame_stride": frame_stride,
             },
             "best_epoch": best_idx + 1,
             "best_validation_macro_f1": history["val_macro_f1"][best_idx],
@@ -508,6 +513,8 @@ def main():
                         help="Path history output eksplisit, misal results/side_history_exp19_gamma025.json")
     parser.add_argument("--summary-path", type=str, default=None,
                         help="Path summary output eksplisit, misal results/experiment_19_side_metrics_gamma025.json")
+    parser.add_argument("--frame-stride", type=int, default=FRAME_STRIDE,
+                        help=f"Frame subsampling stride untuk train/val/test (default: {FRAME_STRIDE})")
     args = parser.parse_args()
 
     run_training(
@@ -520,6 +527,7 @@ def main():
         checkpoint_path=args.checkpoint_path,
         history_path=args.history_path,
         summary_path=args.summary_path,
+        frame_stride=args.frame_stride,
     )
 
 

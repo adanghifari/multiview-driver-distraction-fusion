@@ -15,7 +15,6 @@ from src.experiment_21B.config_experiment_21B import (
     SIDE_CONFIG_LOCKED,
     THRESHOLD,
 )
-from src.experiment_21B.runtime import apply_experiment_21B_runtime
 from src.final_v1.dataset_final_v1 import PairedFinalV1Dataset
 from src.final_v1.metrics_final_v1 import compute_brier_score, compute_ece_binary, compute_metrics
 
@@ -55,7 +54,6 @@ def collect_predictions(model, images, device):
 
 
 def run_single_view_evaluation_exp21B():
-    apply_experiment_21B_runtime()
     RESULTS_DIR_EXP21B.mkdir(parents=True, exist_ok=True)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     df_test, loader = get_paired_loader_exp21B("test")
@@ -139,4 +137,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

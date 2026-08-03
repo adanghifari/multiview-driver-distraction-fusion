@@ -86,11 +86,11 @@ def get_transforms(view: str, split: str) -> transforms.Compose:
     ])
 
 
-def load_split_dataframe(view: str, split: str) -> pd.DataFrame:
+def load_split_dataframe(view: str, split: str, frame_stride: int = FRAME_STRIDE) -> pd.DataFrame:
     """Ambil subset manifest_split.csv untuk satu view dan satu partisi.
 
-    Menerapkan frame subsampling sesuai FRAME_STRIDE dari config.py:
-    hanya frame dengan (frame - 1) % FRAME_STRIDE == 0 yang diambil
+    Menerapkan frame subsampling sesuai frame_stride:
+    hanya frame dengan (frame - 1) % frame_stride == 0 yang diambil
     (frame ke-1, 6, 11, 16, ...). Diterapkan pada semua split secara
     konsisten agar tidak ada ketidaksesuaian antara train/val/test.
     """
@@ -100,16 +100,17 @@ def load_split_dataframe(view: str, split: str) -> pd.DataFrame:
         raise ValueError(f"Tidak ada data untuk view='{view}', split='{split}'. Cek manifest_split.csv.")
 
     # Frame subsampling: ambil 1 dari setiap FRAME_STRIDE frame [v4]
-    if FRAME_STRIDE > 1:
-        subset = subset[(subset["frame"] - 1) % FRAME_STRIDE == 0]
+    if frame_stride > 1:
+        subset = subset[(subset["frame"] - 1) % frame_stride == 0]
         log.info("Frame subsampling diterapkan (stride=%d): %d frame tersisa untuk view=%s split=%s",
-                 FRAME_STRIDE, len(subset), view, split)
+                 frame_stride, len(subset), view, split)
 
     return subset
 
 
 def get_dataloader(view: str, split: str, batch_size: int = BATCH_SIZE,
-                    num_workers: int = 0, shuffle: bool = None) -> DataLoader:
+                    num_workers: int = 0, shuffle: bool = None,
+                    frame_stride: int = FRAME_STRIDE) -> DataLoader:
     """Bangun satu DataLoader untuk kombinasi view + split tertentu.
 
     view: 'front' atau 'side'
@@ -120,7 +121,7 @@ def get_dataloader(view: str, split: str, batch_size: int = BATCH_SIZE,
     if split not in ("train", "val", "test"):
         raise ValueError(f"split harus 'train', 'val', atau 'test', dapat: {split}")
 
-    df_subset = load_split_dataframe(view, split)
+    df_subset = load_split_dataframe(view, split, frame_stride=frame_stride)
     transform = get_transforms(view, split)
     dataset = DriverViewDataset(df_subset, transform)
 
@@ -140,10 +141,15 @@ def get_dataloader(view: str, split: str, batch_size: int = BATCH_SIZE,
     return loader
 
 
-def get_all_dataloaders(view: str, batch_size: int = BATCH_SIZE, num_workers: int = 0) -> dict:
+def get_all_dataloaders(
+    view: str,
+    batch_size: int = BATCH_SIZE,
+    num_workers: int = 0,
+    frame_stride: int = FRAME_STRIDE,
+) -> dict:
     """Shortcut: bangun train/val/test DataLoader sekaligus untuk satu view."""
     return {
-        split: get_dataloader(view, split, batch_size=batch_size, num_workers=num_workers)
+        split: get_dataloader(view, split, batch_size=batch_size, num_workers=num_workers, frame_stride=frame_stride)
         for split in ("train", "val", "test")
     }
 

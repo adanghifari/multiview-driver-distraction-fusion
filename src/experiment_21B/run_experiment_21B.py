@@ -2,7 +2,6 @@ import argparse
 
 from src.experiment_21B.evaluate_experiment_21B import run_single_view_evaluation_exp21B
 from src.experiment_21B.fusion_experiment_21B import run_fusion_evaluation_exp21B
-from src.experiment_21B.runtime import apply_experiment_21B_runtime
 from src.experiment_21B.summarize_experiment_21B import run_summary_exp21B
 from src.experiment_21B.train_experiment_21B import train_front_exp21B
 
@@ -12,7 +11,6 @@ def main():
     parser.add_argument("--skip-train", action="store_true", help="Skip front training and use existing Exp 21B checkpoint.")
     args = parser.parse_args()
 
-    apply_experiment_21B_runtime()
     if not args.skip_train:
         train_front_exp21B()
 
@@ -23,4 +21,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

@@ -1,11 +1,9 @@
 import json
 
-from src.experiment_21B.config_experiment_21B import CHECKPOINTS_DIR_EXP21B, FRONT_CONFIG, MAX_EPOCHS_EXP21B, RESULTS_DIR_EXP21B
-from src.experiment_21B.runtime import apply_experiment_21B_runtime
+from src.experiment_21B.config_experiment_21B import CHECKPOINTS_DIR_EXP21B, FRAME_STRIDE_EXP21B, FRONT_CONFIG, MAX_EPOCHS_EXP21B, RESULTS_DIR_EXP21B
 
 
 def train_front_exp21B():
-    apply_experiment_21B_runtime()
     from src.train import run_training
 
     CHECKPOINTS_DIR_EXP21B.mkdir(parents=True, exist_ok=True)
@@ -17,6 +15,7 @@ def train_front_exp21B():
         checkpoint_path=str(FRONT_CONFIG["checkpoint_path"]),
         history_path=str(FRONT_CONFIG["history_path"]),
         summary_path=str(FRONT_CONFIG["summary_path"]),
+        frame_stride=FRAME_STRIDE_EXP21B,
     )
 
 
@@ -27,4 +26,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

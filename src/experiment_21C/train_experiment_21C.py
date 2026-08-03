@@ -7,8 +7,7 @@ import torch.nn as nn
 
 from src.config import BINARY_LABEL_MAP, LR_SCHEDULER_FACTOR, SPLIT_SEED
 from src.dataset import get_all_dataloaders, load_split_dataframe
-from src.experiment_21C.config_experiment_21C import CHECKPOINTS_DIR_EXP21C, MAX_EPOCHS_EXP21C, RESULTS_DIR_EXP21C, SIDE_CONFIG
-from src.experiment_21C.runtime import apply_experiment_21C_runtime
+from src.experiment_21C.config_experiment_21C import CHECKPOINTS_DIR_EXP21C, FRAME_STRIDE_EXP21C, MAX_EPOCHS_EXP21C, RESULTS_DIR_EXP21C, SIDE_CONFIG
 from src.model import build_model
 from src.train import seed_everything, train_one_epoch, validate
 
@@ -40,7 +39,7 @@ def _class_weights_from_config() -> list[float]:
     raw = SIDE_CONFIG["class_weights"]
     if raw != "balanced":
         return raw
-    df_train = load_split_dataframe("side", "train")
+    df_train = load_split_dataframe("side", "train", frame_stride=FRAME_STRIDE_EXP21C)
     counts = {
         label_id: int((df_train["binary_label"] == label_name).sum())
         for label_name, label_id in BINARY_LABEL_MAP.items()
@@ -50,14 +49,13 @@ def _class_weights_from_config() -> list[float]:
 
 
 def train_side_exp21C():
-    apply_experiment_21C_runtime()
     seed_everything(SPLIT_SEED)
     CHECKPOINTS_DIR_EXP21C.mkdir(parents=True, exist_ok=True)
     RESULTS_DIR_EXP21C.mkdir(parents=True, exist_ok=True)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     log.info("Device: %s", device)
-    loaders = get_all_dataloaders("side")
+    loaders = get_all_dataloaders("side", frame_stride=FRAME_STRIDE_EXP21C)
     train_loader = loaders["train"]
     val_loader = loaders["val"]
 
@@ -217,4 +215,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
